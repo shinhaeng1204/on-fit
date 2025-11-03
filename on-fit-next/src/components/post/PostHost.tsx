@@ -17,6 +17,7 @@ export default function PostHost () {
       <CardContent>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
+            {/* TODO: 프로필 사진 공통 컴포넌트 작업 필요*/}
             <span></span>
             <div>
               <p className="font-semibold">{data.name}</p>
