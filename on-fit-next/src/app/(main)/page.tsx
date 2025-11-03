@@ -1,6 +1,7 @@
 
 import HeroImage from "@/assets/hero.jpeg"
 import { Button } from "@/components/common/Button"
+import Filter from "@/components/common/main/Filter"
 import { Plus } from "lucide-react"
 import Image from "next/image"
 export default function Home() {
@@ -10,7 +11,7 @@ export default function Home() {
           <KakaoLogin />
         </div>
         {/* 히어로 이미지 */}
-        <section className="w-full relative py-30 md:py-35">
+        <section className="w-full relative py-30 md:py-35 border-border border-b">
             <Image
             src={HeroImage}
             alt="메인 배너"
@@ -36,7 +37,7 @@ export default function Home() {
             
             
         </section>
-        {/*게시글*/}
+        {/*게시글*/}<Filter/>
         <section></section>
 
         </>
