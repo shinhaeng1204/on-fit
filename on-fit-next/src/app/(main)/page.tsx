@@ -1,3 +1,4 @@
+
 import HeroImage from "@/assets/hero.jpeg"
 import { Button } from "@/components/common/Button"
 import { Plus } from "lucide-react"
@@ -5,6 +6,9 @@ import Image from "next/image"
 export default function Home() {
     return(
         <>
+        <div className="hidden">
+          <KakaoLogin />
+        </div>
         {/* 히어로 이미지 */}
         <section className="w-full relative py-30 md:py-35">
             <Image
