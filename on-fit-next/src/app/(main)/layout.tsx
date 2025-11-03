@@ -8,7 +8,7 @@ export default function HomeLayout({children}: {children: ReactNode}) {
         <>
         <Header
         variant="main"
-        title="운동 번개"
+        title="온 핏"
         titleClassName= "text-2xl text-gradient-brand font-bold"
         containerClassName="bg-card/80 backdrop-blur-sm border-b border-border"
         right={
