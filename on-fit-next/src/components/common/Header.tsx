@@ -44,9 +44,9 @@ export default function Header({
     )
 
   return (
-    <header className={`z-50 glass-card ${className}`}>
+    <header className={`top-0 sticky z-50 glass-card ${className}`}>
       <div
-        className={`relative mx-auto  px-10  py-4 w-full flex items-center justify-between ${containerClassName}`}
+        className={`mx-auto  px-10  py-4 w-full flex items-center justify-between ${containerClassName}`}
       >
         {/* 왼쪽 영역 */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
