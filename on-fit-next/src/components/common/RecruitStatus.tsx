@@ -1,10 +1,4 @@
-type StatusVariant = 'open' | 'close'
-
-interface RecruitStatusProps {
-  type: StatusVariant,
-  text: string,
-  className?: string, // 추가 스타일
-}
+import {RecruitStatusProps} from "@/types/post";
 
 const StatusStyles = {
   open : 'bg-success text-success-foreground',
