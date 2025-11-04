@@ -112,19 +112,24 @@ export default function Home() {
             alt="메인 배너"
             fill
             className="w-full object-cover opacity-50"/>
-            <div className="absolute top-10 ml-10 text-3xl md:text-4xl font-bold"> 
-                <div>동네에서 함께 운동할</div>
+            <div className="absolute top-10 ml-10 text-3xl md:text-4xl font-bold">
                 <div className="flex">
+                     <div>동네에서 함께 운동할&nbsp; </div>
+                     <div className="text-gradient-brand hidden md:block">운동 메이트를&nbsp; </div>
+                     <div className="hidden md:block">찾아보세요</div>
+                     </div> 
+               
+                <div className="flex md:hidden">
                     <div className="text-gradient-brand">운동 메이트를&nbsp; </div>
                     <div>찾아보세요</div>
                 </div>
-                <div className="mt-3 md:mt-5 font-medium text-sm text-muted-foreground">실력과 취향에 맞는 운동 메이트를 만나 <br className="md:hidden"/> 즐겁게 운동하세요</div>
+                <div className="mt-3 md:text-base font-medium text-sm text-muted-foreground">실력과 취향에 맞는 운동 메이트를 만나 <br className="md:hidden"/> 즐겁게 운동하세요</div>
                 <Button 
                 variant="hero"
                 size="default"
                 leftIcon={<Plus/>}
                 href="create"
-                className="mt-3 md:mt-5"
+                className="mt-3 md:mt-10"
                 >번개 만들기</Button>
                 
                  </div>
