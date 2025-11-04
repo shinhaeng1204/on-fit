@@ -24,6 +24,7 @@ const variants = {
   link: "text-primary underline-offset-4 hover:underline",
   hero: "bg-gradient-brand text-primary-foreground hover:shadow-glow-primary hover:scale-105 font-semibold",
   sport: "bg-card border border-primary/20 text-foreground hover:border-primary hover:shadow-glow-primary",
+  inherit: ""
 } as const;
 
 const sizes = {
@@ -31,6 +32,7 @@ const sizes = {
   sm: "h-9 rounded-md px-3",
   lg: "h-11 rounded-md px-8",
   icon: "h-10 w-10",
+  inherit: ""
 } as const;
 
 type VariantKey = keyof typeof variants;
@@ -130,6 +132,7 @@ const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonBaseProps
         type={type}
         className={classes}
         disabled={isDisabled}
+        onClick={onClick}
         data-loading={isLoading || undefined}
         aria-busy={isLoading || undefined}
         {...rest}
