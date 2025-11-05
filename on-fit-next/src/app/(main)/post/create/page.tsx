@@ -39,7 +39,7 @@ export default function Page() {
 
     try {
       setLoading(true)
-      const res = await api.post('/api/post', payload)
+      const res = await api.post('/api/posts', payload)
       alert('모임이 생성되었습니다!')
       form.reset()                 
       setSport(sportOption[0])    
