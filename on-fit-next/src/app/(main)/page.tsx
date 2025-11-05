@@ -1,107 +1,93 @@
-
+'use client'
 import HeroImage from "@/assets/hero.jpeg"
 import { Button } from "@/components/common/Button"
 import Filter from "@/components/main/Filter"
 import FitCard from "@/components/main/FitCard"
 import { Plus } from "lucide-react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
+import { api } from "@/lib/axios"
+
+type FitRow = {
+    id: string
+    sport: string
+    title: string
+    location: string
+    date_time: string
+    level: 'bronze' | 'silver' | 'gold' | 'platinum'
+    status: '모집중' | '마감'
+    current_participants: number
+    max_participants: number
+    author?: string
+
+}
 export default function Home() {
-    type Level = 'bronze' | 'silver' | 'gold' | 'platinum'
-    type Status = '모집중' | '마감'
-    
-    const mockFits: Array<{
-  id: string
-  sport: string
-  title: string
-  location: string
-  date: string
-  time: string
-  currentParticipants: number
-  maxParticipants: number
-  level: Level
-  status: Status
-  author: string
-}> 
-=[
-  {
-    id: "1",
-    sport: "배드민턴",
-    title: "강남 배드민턴 초급자 모집!",
-    location: "강남구 역삼동 체육관",
-    date: "11월 5일",
-    time: "19:00",
-    currentParticipants: 3,
-    maxParticipants: 6,
-    level: "bronze",
-    status: "모집중",
-    author: "운동왕",
-  },
-  {
-    id: "2",
-    sport: "풋살",
-    title: "주말 풋살 같이해요~",
-    location: "서초구 반포동 풋살장",
-    date: "11월 6일",
-    time: "14:00",
-    currentParticipants: 8,
-    maxParticipants: 10,
-    level: "silver",
-    status: "모집중",
-    author: "축구러버",
-  },
-  {
-    id: "3",
-    sport: "런닝",
-    title: "한강 러닝 크루 모집",
-    location: "반포 한강공원",
-    date: "11월 4일",
-    time: "06:00",
-    currentParticipants: 5,
-    maxParticipants: 8,
-    level: "gold",
-    status: "모집중",
-    author: "달리기맨",
-  },
-  {
-    id: "4",
-    sport: "클라이밍",
-    title: "더클라임 같이 가실 분",
-    location: "강남구 신사동 더클라임",
-    date: "11월 7일",
-    time: "20:00",
-    currentParticipants: 4,
-    maxParticipants: 4,
-    level: "platinum",
-    status: "마감",
-    author: "클라이머",
-  },
-  {
-    id: "5",
-    sport: "농구",
-    title: "3대3 농구 하실분",
-    location: "송파구 잠실 농구장",
-    date: "11월 8일",
-    time: "18:00",
-    currentParticipants: 4,
-    maxParticipants: 6,
-    level: "silver",
-    status: "모집중",
-    author: "농구왕",
-  },
-  {
-    id: "6",
-    sport: "테니스",
-    title: "용산 테니스 레슨 후 게임",
-    location: "용산구 테니스장",
-    date: "11월 9일",
-    time: "10:00",
-    currentParticipants: 2,
-    maxParticipants: 4,
-    level: "bronze",
-    status: "모집중",
-    author: "테니스조아",
-  },
-];
+    const router = useRouter()
+    const [items, setItems] = useState<FitRow[]>([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    // 날짜 시간 포맷터 (KST 기준)
+    const toKstDate = (iso: string) => {
+        const d = new Date(iso)
+        // KST 보정
+        const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000)
+        const m = kst.getMonth() + 1
+        const day = kst.getDate()
+        return `${m}월 ${day}일`
+    }
+
+    const toKstTime = (iso: string) => {
+        const d = new Date(iso)
+        const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000)
+        const hh = String(kst.getHours()).padStart(2, '0')
+        const mm = String(kst.getMinutes()).padStart(2, '0')
+        return `${hh}:${mm}`
+
+    }
+
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try{
+                setLoading(true)
+                setError(null)
+
+                const res = await api.get('/api/posts')
+                if(!mounted) return
+                const rows: FitRow[] = res.data?.items ?? []
+                setItems(rows)
+            } catch (e: any) {
+                if(!mounted) return
+                setError(e?.response?.data?.error ?? e.message ?? '알 수 없는 오류')
+            } finally {
+                if (mounted) setLoading(false)
+            }
+        })()
+        return () => {
+            mounted = false
+        }
+    }, [])
+   
+    const cards = useMemo(
+    () =>
+      items.map((r) => ({
+        id: r.id,
+        sport: r.sport,
+        title: r.title,
+        location: r.location,
+        date: toKstDate(r.date_time),
+        time: toKstTime(r.date_time),
+        currentParticipants: r.current_participants,
+        maxParticipants: r.max_participants,
+        level: r.level,
+        status: r.status,
+        author: r.author ?? '익명',
+      })),
+    [items]
+  )
+
     return(
         <>
         {/* 히어로 이미지 */}
@@ -127,8 +113,8 @@ export default function Home() {
                 variant="hero"
                 size="default"
                 leftIcon={<Plus/>}
-                href="create"
                 className="mt-3 md:mt-10"
+                onClick={() => router.push("/post/create")}
                 >번개 만들기</Button>
                 
                  </div>
@@ -140,7 +126,7 @@ export default function Home() {
         
             <Filter/>
             <div className="flex flex-col gap-6 md:grid md:grid-cols-3 mx-5">
-            {mockFits.map((fit) => (
+            {cards.map((fit) => (
           <FitCard
             key={fit.id}
             title={fit.title}
