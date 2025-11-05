@@ -1,83 +1,54 @@
-'use client'
-
-import {useEffect, useState} from "react";
-import {createClient} from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-interface Message {
-  id : string
-  nickname : string
-  content : string
-  created_at : string
-}
+import {Card, CardContent, CardHeader} from "@/components/common/Card";
+import {Calendar, MapPin, Users} from "lucide-react";
 
 export default function Page () {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [nickname, setNickname] = useState("")
-  const [input, setInput] = useState('')
-
-  useEffect(() => {
-    const loadMessage = async () => {
-      const {data} = await supabase.from('message').select('*').order('created_at', {ascending: true})
-      setMessages(data || [])
-    }
-
-    loadMessage()
-
-    // 실시간 구독
-    const channel = supabase
-      .channel('public:messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, payload => {
-        setMessages(prev => [...prev, payload.new as Message])
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
-
-  const sendMessage = async () => {
-    if (!nickname.trim() || !input.trim()) return
-    await supabase.from('message').insert({ content: input })
-    setInput('')
-  }
-
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-xl font-bold mb-2">💬 Supabase Chat Test</h1>
-
-      <input
-        className="border rounded px-2 py-1 w-full mb-2"
-        placeholder="닉네임 입력"
-        value={nickname}
-        onChange={e => setNickname(e.target.value)}
-      />
-
-      <div className="border rounded h-96 overflow-y-auto p-2 mb-2">
-        {messages.map(msg => (
-          <div key={msg.id} className="mb-1">
-            <b>{msg.nickname}</b>: {msg.content}
+    <main>
+      {/* 채팅방 정보 */}
+      <div className="bg-card/50 border-b border-border">
+        <div className="container mx-auto px-4 py-3 flex flex-wrap gap-4 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <MapPin className="h-4 w-4" />
+            <p>강남구 역삼동 체육관</p>
           </div>
-        ))}
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Calendar className="h-4 w-4" />
+            <p>11월 5일 19:00</p>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Users className="h-4 w-4" />
+            <p>3/6명</p>
+          </div>
+        </div>
       </div>
-
-      <div className="flex gap-2">
-        <input
-          className="border flex-1 rounded px-2 py-1"
-          placeholder="메시지를 입력하세요"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && sendMessage()}
-        />
-        <button onClick={sendMessage} className="bg-blue-500 text-white px-3 rounded">
-          전송
-        </button>
+      {/* 채팅방 대화 내용 */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="container mx-auto px-4 py-4 space-y-4">
+          {/* 개설 주최자 소개 */}
+          <div className="flex justify-center">
+            <span className="bg-secondary/50 text-muted-foreground text-xs px-3 py-1 rounded-full">
+              운동왕님이 채팅방을 개설했습니다.
+            </span>
+          </div>
+          {/* 대화 */}
+          <div className="flex gap-3">
+            {/* TODO:프로필 이미지 추가 */}
+            <div className="flex flex-col items-start max-w-[70%]">
+              <p className="text-xs text-muted-foreground mb-1">운동왕</p>
+              <div className="px-4 py-2 rounded-2xl bg-card border border-border">안녕하세요!</div>
+              <p className="text-xs text-muted-foreground mt-1">오후 02:17</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            {/* TODO:프로필 이미지 추가 */}
+            <div className="flex flex-col items-start max-w-[70%]">
+              <p className="text-xs text-muted-foreground mb-1">배드민턴 러버</p>
+              <div className="px-4 py-2 rounded-2xl bg-card border border-border">안녕하세요!</div>
+              <p className="text-xs text-muted-foreground mt-1">오후 02:33</p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </main>
   )
 }
