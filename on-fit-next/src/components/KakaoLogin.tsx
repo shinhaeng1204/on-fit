@@ -1,5 +1,5 @@
 'use client'
-import { getToken } from "@/api"
+import { getToken } from "@/app/api"
 import { useEffect } from "react"
 
 const client_id = "50f5edb620ccf07aca7fc0d12debbb11"
