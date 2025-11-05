@@ -1,9 +1,11 @@
 import {Card, CardContent, CardHeader} from "@/components/common/Card";
-import {Calendar, MapPin, Users} from "lucide-react";
+import {Calendar, MapPin, Send, Users} from "lucide-react";
+import {Input} from "@/components/common/Input";
+import {Button} from "@/components/common/Button";
 
 export default function Page () {
   return (
-    <main>
+    <main className="flex flex-col h-screen">
       {/* 채팅방 정보 */}
       <div className="bg-card/50 border-b border-border">
         <div className="container mx-auto px-4 py-3 flex flex-wrap gap-4 text-sm">
@@ -48,6 +50,13 @@ export default function Page () {
             </div>
           </div>
         </div>
+      </div>
+      {/* 채팅 입력 폼 */}
+      <div className="border-t border-border bg-card/80 backdrop-blur-sm container mx-auto px-4 py-4">
+        <form action="" className="flex gap-2">
+          <Input type="text" placeholder="메시지를 입력하세요..."/>
+          <Button><Send className="h-4 w-4" /></Button>
+        </form>
       </div>
     </main>
   )
