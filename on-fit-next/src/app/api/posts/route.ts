@@ -93,3 +93,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: `TypeError: ${err.message}` }, { status: 400 })
   }
 }
+
+export async function GET() {
+  const {data, error} = await sbAdmin
+  .from('Fit')
+  .select('*')
+  .order('created_at', {ascending: false})
+
+  if(error) {
+    return NextResponse.json({ok: false, error: error.message}, {status: 500})
+  }
+
+  return NextResponse.json({ok: true, items: data})
+}
