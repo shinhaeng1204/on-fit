@@ -1,4 +1,4 @@
-
+'use client'
 import HeroImage from "@/assets/hero.jpeg"
 import { Button } from "@/components/common/Button"
 import Filter from "@/components/main/Filter"
@@ -6,7 +6,10 @@ import FitCard from "@/components/main/FitCard"
 import KakaoLogin from "@/components/KakaoLogin"
 import { Plus } from "lucide-react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 export default function Home() {
+    const router = useRouter()
+
     type Level = 'bronze' | 'silver' | 'gold' | 'platinum'
     type Status = '모집중' | '마감'
     
@@ -128,8 +131,8 @@ export default function Home() {
                 variant="hero"
                 size="default"
                 leftIcon={<Plus/>}
-                href="create"
                 className="mt-3 md:mt-10"
+                onClick={() => router.push("/post/create")}
                 >번개 만들기</Button>
                 
                  </div>
