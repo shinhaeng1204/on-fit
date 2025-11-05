@@ -6,12 +6,13 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/common/Tabs"
 import { Button } from "@/components/common/Button";
+import { KakaoLoginButton, GoogleLoginButton } from "@/components/auth/OAuthButtons";
 
 
 export default function Page(){
     const [isLoading, setIsLoading] = useState(false);
-    const client_id = "50f5edb620ccf07aca7fc0d12debbb11"
-    const redirect_uri = "http://localhost:3000"
+    const client_id = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID!
+    const redirect_uri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI!
     const response_type = "code"
     const authParam = new URLSearchParams({
             client_id,
@@ -21,11 +22,9 @@ export default function Page(){
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    // 디자인만 구현 - 실제 로직은 나중에
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    if(isLoading) return
+    setIsLoading(true)
+    
   };
 
   const handleSignup = (e: React.FormEvent) => {
@@ -36,10 +35,6 @@ export default function Page(){
       setIsLoading(false);
     }, 1000);
   };
-
-  const handleKakao = ()=>{
-
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
@@ -93,11 +88,8 @@ export default function Page(){
                   >
                     {isLoading ? "로그인 중..." : "로그인"}
                   </Button>
-                  <Link href={`https://kauth.kakao.com/oauth/authorize?${authParam.toString()}`} prefetch={false} className="w-full">
-                    <Button type="button" className="w-full" variant="outline">
-                    카카오 계정으로 로그인
-                    </Button>
-                    </Link>
+                  <KakaoLoginButton />
+                  <GoogleLoginButton />
                 </CardFooter>
               </form>
             </Card>

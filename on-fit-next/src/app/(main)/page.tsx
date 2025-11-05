@@ -3,7 +3,6 @@ import HeroImage from "@/assets/hero.jpeg"
 import { Button } from "@/components/common/Button"
 import Filter from "@/components/main/Filter"
 import FitCard from "@/components/main/FitCard"
-import KakaoLogin from "@/components/KakaoLogin"
 import { Plus } from "lucide-react"
 import Image from "next/image"
 export default function Home() {
