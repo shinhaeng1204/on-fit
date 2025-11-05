@@ -26,7 +26,7 @@ export default function Filter() {
                 </div>
             </CardHeader>
             <CardContent className="pb-3 md:py-4">
-                <div className="md:flex grid grid-cols-2 gap-2 md:flex-wrap md:gap-3">
+                <div className=" grid grid-cols-2 gap-2 md:flex md:gap-3">
                     <DropBox defaultValue = '종목 선택' options={sportsOptions} value={sport} onChange={setSport}/>
                     <DropBox defaultValue="지역 선택" options={locationOptions} value={location} onChange={setLocation}/>
                     <DropBox defaultValue="실력 선택" options={levelOptions} value={level} onChange={setLevel}/>
