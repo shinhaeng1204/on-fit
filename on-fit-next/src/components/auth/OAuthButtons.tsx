@@ -11,7 +11,6 @@ export function KakaoLoginButton(){
             provider:'kakao',
             options:{
                 redirectTo:`${BASE_URL}/auth/confirm`,
-                flowType: 'pkce',
             }
         })
         if(error) console.error('[kakao oauth]', error)
@@ -30,7 +29,6 @@ export function GoogleLoginButton(){
             provider:'google',
             options:{
                 redirectTo:`${BASE_URL}/auth/confirm`,
-                flowType: 'pkce',
         }
         })
         if(error) console.error('[google oauth]', error)
