@@ -1,7 +1,9 @@
+'use client'
 import {Card, CardContent, CardHeader} from "@/components/common/Card";
 import Badge from "@/components/common/Badge";
 import {Button} from "@/components/common/Button";
 import {UserPlus} from "lucide-react"
+import {useParams} from "next/navigation";
 
 const data = {
   name : '운동왕',
@@ -9,6 +11,9 @@ const data = {
 }
 
 export default function PostHost () {
+  const router = useParams();
+  console.log(router.id)
+
   return (
     <Card>
       <CardHeader>

@@ -7,6 +7,7 @@ import { Button } from "../common/Button";
 type Level = 'bronze' | 'silver' | 'gold' | 'platinum'
 
 interface FitCardProps {
+  id: string
   title: string
   status: string
   sport: string
@@ -20,6 +21,7 @@ interface FitCardProps {
 
 
 export default function FitCard({
+    id,
     title,
     status,
     sport,
@@ -59,7 +61,7 @@ export default function FitCard({
 
                 <div className="flex mt-2 justify-between items-center">
                     <Badge type={level} className="max-h-6"/>
-                    <Button variant="sport" size="sm">참여하기</Button>
+                    <Button variant="sport" size="sm" href={`/post/${id}`}>참여하기</Button>
                 </div>
             </CardContent>
         </Card>
