@@ -8,6 +8,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 import { api } from "@/lib/axios"
+import AfterAuthRefetchOnce from "./AfterAuthRefetchOnce"
 import {toKstDate, toKstTime} from "@/lib/dateFormatter";
 
 type FitRow = {
@@ -71,6 +72,7 @@ export default function Home() {
 
     return(
         <>
+        <AfterAuthRefetchOnce />
         {/* 히어로 이미지 */}
         <section className="w-full relative py-30 md:py-35 border-border border-b">
             <Image

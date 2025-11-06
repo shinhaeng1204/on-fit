@@ -1,16 +1,17 @@
 'use client'
 
-import { supabase } from "@/lib/supabase"
+import { sbClient } from "@/lib/supabase-client"
 import { Button } from "../common/Button"
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? (typeof window !== 'undefined' ? window.location.origin: "")
 
 export function KakaoLoginButton(){
     const onClick = async () =>{
-        const {error} = await supabase.auth.signInWithOAuth({
+        const {error} = await sbClient.auth.signInWithOAuth({
             provider:'kakao',
             options:{
-                redirectTo:`${BASE_URL}/`
+                redirectTo:`${BASE_URL}/auth/confirm`,
+                flowType: 'pkce',
             }
         })
         if(error) console.error('[kakao oauth]', error)
@@ -25,9 +26,12 @@ export function KakaoLoginButton(){
 
 export function GoogleLoginButton(){
     const onClick = async () =>{
-        const {error} = await supabase.auth.signInWithOAuth({
+        const {error} = await sbClient.auth.signInWithOAuth({
             provider:'google',
-            options:{redirectTo:`${BASE_URL}/`}
+            options:{
+                redirectTo:`${BASE_URL}/auth/confirm`,
+                flowType: 'pkce',
+        }
         })
         if(error) console.error('[google oauth]', error)
     }

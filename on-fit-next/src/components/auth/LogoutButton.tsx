@@ -1,20 +1,35 @@
 'use client'
 
 import { useRouter } from "next/navigation"
-import { supabase } from "@/lib/supabase"
+import { sbClient } from "@/lib/supabase-client"
 import { Button } from "../common/Button"
 
 export default function LogoutButton(){
     const router = useRouter()
 
-    const onLogout = async () =>{
-        const {error} = await supabase.auth.signOut()
-        if(error){
-            console.error('[logout] failed: ', error)
-            return
-        }
+    // const onLogout = async () =>{
+    //     const {error} = await sbClient.auth.signOut()
+    //     if(error){
+    //         console.error('[logout] failed: ', error)
+    //         return
+    //     }
+    //     router.replace('/')
+    // }
+    const onLogout = async () => {
+    try {
+      // 서버가 Supabase signOut + HttpOnly 쿠키 제거
+      const res = await fetch('/api/auth/logout', { method: 'POST' })
+      if (!res.ok) throw new Error('logout failed')
+
+        await sbClient.auth.signOut().catch(()=>{})
         router.replace('/')
+        router.refresh
+    } catch (e) {
+      console.error('[logout] failed:', e)
+      // (선택) 사용하던 클라 세션이 있을 수도 있으니 안전하게 한 번 더
+      // await sbClient.auth.signOut().catch(() => {})
     }
+  }
     return (
         <Button type="button" onClick={onLogout} variant="outline" className="w-full">
             로그아웃
