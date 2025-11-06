@@ -49,7 +49,7 @@ export async function POST(req: Request) {
 
   // Supabase 연결 테스트 (ping)
   try {
-    const { error: pingErr } = await sbAdmin.from('Fit').select('id').limit(1)
+    const { error: pingErr } = await sbAdmin.from('posts').select('id').limit(1)
     if (pingErr) {
       console.error(' Supabase Ping Fail:', pingErr)
       return NextResponse.json({ ok: false, error: `PING_FAIL: ${pingErr.message}` }, { status: 500 })
@@ -96,7 +96,7 @@ export async function POST(req: Request) {
 
 export async function GET() {
   const {data, error} = await sbAdmin
-  .from('Fit')
+  .from('posts')
   .select('*')
   .order('created_at', {ascending: false})
 

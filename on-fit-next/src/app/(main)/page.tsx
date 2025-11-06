@@ -8,6 +8,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 import { api } from "@/lib/axios"
+import {toKstDate, toKstTime} from "@/lib/dateFormatter";
 
 type FitRow = {
     id: string
@@ -20,32 +21,12 @@ type FitRow = {
     current_participants: number
     max_participants: number
     author?: string
-
 }
 export default function Home() {
     const router = useRouter()
     const [items, setItems] = useState<FitRow[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-
-    // 날짜 시간 포맷터 (KST 기준)
-    const toKstDate = (iso: string) => {
-        const d = new Date(iso)
-        // KST 보정
-        const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000)
-        const m = kst.getMonth() + 1
-        const day = kst.getDate()
-        return `${m}월 ${day}일`
-    }
-
-    const toKstTime = (iso: string) => {
-        const d = new Date(iso)
-        const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000)
-        const hh = String(kst.getHours()).padStart(2, '0')
-        const mm = String(kst.getMinutes()).padStart(2, '0')
-        return `${hh}:${mm}`
-
-    }
 
     useEffect(() => {
         let mounted = true;
@@ -129,6 +110,7 @@ export default function Home() {
             {cards.map((fit) => (
           <FitCard
             key={fit.id}
+            id={fit.id}
             title={fit.title}
             status={fit.status}
             sport={fit.sport}
