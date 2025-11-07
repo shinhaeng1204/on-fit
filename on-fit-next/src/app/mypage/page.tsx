@@ -5,6 +5,8 @@ import { Card } from '@/components/common/Card';
 import ProfileHeader from '@/app/mypage/components/ProfileHeader';
 import BadgeSection from '@/app/mypage/components/BadgeSection';
 import ActivityTabs from '@/app/mypage/components/ActivityTabs';
+import RegionSection from '@/app/mypage/components/RegionSection';
+import PreferredExercisesSection from '@/app/mypage/components/PreferredExercisesSection';
 
 export default function MyPage() {
   const user = {
@@ -31,7 +33,9 @@ export default function MyPage() {
     { id: 'c_2', title: '잠실 배구 모임', date: '2024-10-27', status: 'open' as const },
   ];
 
-  // 레이아웃이 이미 컨테이너/여백을 관리하므로 여기선 섹션만 반환
+  const region = "강남구";
+  const exercises = ["배드민턴", "풋살", "농구", "테니스"];
+
   return (
     <div className="space-y-6">
       <Card className="p-0">
@@ -46,6 +50,15 @@ export default function MyPage() {
           }}
         />
       </Card>
+      
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <Card className="p-0">
+          <RegionSection region={region} />
+        </Card>
+        <Card className="p-0">
+          <PreferredExercisesSection exercises={exercises} />
+        </Card>
+      </div>
 
       <Card className="p-0">
         <BadgeSection
@@ -53,6 +66,8 @@ export default function MyPage() {
           badges={user.badges}
         />
       </Card>
+      
+     
 
       <Card className="p-0">
         <ActivityTabs
