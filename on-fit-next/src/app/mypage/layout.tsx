@@ -1,24 +1,21 @@
+// src/app/mypage/layout.tsx
 import type { ReactNode } from "react";
-import BottomNav from "@/components/common/BottomNav";
-import { Button } from "@/components/common/Button";
-import { Settings } from "lucide-react";
+import { ToastProvider } from "@/app/mypage/components/Toast";
+import TopBar from "@/app/mypage/components/TopBar";
+import BottomNav from "@/components/common/BottomNav"; // ✅ 공통 컴포넌트로 import
 
 export default function MyPageLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-dvh flex flex-col">
-      <header className="sticky top-0 z-20 backdrop-blur bg-background/60 border-b">
-        <div className="mx-auto w-full max-w-3xl px-4 py-3 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">마이페이지</h1>
-          <Button variant="ghost" size="sm" href="/settings" aria-label="설정">
-            <Settings className="size-4" />
-            <span className="ml-1 hidden sm:inline"></span>
-          </Button>
+    <ToastProvider>
+      <div className="flex min-h-dvh flex-col">
+        <TopBar bordered />
+        <main className="flex-1 mx-auto w-full max-w-screen-md px-4 pb-24 pt-4">
+          {children}
+        </main>
+        <div className="sticky bottom-0 left-0 w-full">
+          <BottomNav />
         </div>
-      </header>
-
-      {/* 레이아웃이 컨테이너 폭/여백을 관리 */}
-      <main className="mx-auto w-full max-w-3xl px-4 py-6 flex-1">{children}</main>
-      <BottomNav />
-    </div>
+      </div>
+    </ToastProvider>
   );
 }

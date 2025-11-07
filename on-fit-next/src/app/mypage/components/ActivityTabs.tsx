@@ -2,8 +2,7 @@
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/common/Tabs';
 import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
-import RecruitStatus from '@/components/common/RecruitStatus';
-import { Button } from '@/components/common/Button';
+import StatusPill from '@/app/mypage/components/StatusPill';
 import { cn } from '@/lib/utils';
 
 type ActivityItem = { id: string; title: string; date: string; status: 'open' | 'close' };
@@ -47,13 +46,8 @@ export default function ActivityTabs({
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <RecruitStatus
-                        type={a.status}
-                        text={a.status === 'open' ? '모집중' : '완료'}
-                      />
-                      <Button variant="ghost" size="sm">
-                        상세
-                      </Button>
+                      <StatusPill status={a.status}/>
+                      
                     </div>
                   </div>
                 ))}
