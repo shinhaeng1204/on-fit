@@ -3,42 +3,66 @@ import { useState } from "react";
 import { Input } from "@/components/common/Input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/common/Card";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, UserRound } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/common/Tabs"
 import { Button } from "@/components/common/Button";
-
+import { KakaoLoginButton, GoogleLoginButton } from "@/components/auth/OAuthButtons";
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/axios";
+import { mutate } from "swr";
 
 export default function Page(){
-    const [isLoading, setIsLoading] = useState(false);
-    const client_id = "50f5edb620ccf07aca7fc0d12debbb11"
-    const redirect_uri = "http://localhost:3000"
-    const response_type = "code"
-    const authParam = new URLSearchParams({
-            client_id,
-            redirect_uri,
-            response_type
-        })
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [loginEmail, setLoginEmail] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
+
+  const [signupEmail, setSignupEmail] = useState('')
+  const [signupPw, setSignupPw] = useState('')
+  const [signupPwConfirm, setSignupPwConfirm] = useState('')
+
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    setIsLoading(true);
-    // 디자인만 구현 - 실제 로직은 나중에
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    if(isLoading) return
+    setIsLoading(true)
+    setError(null)
+    try{
+      await api.post('/api/auth/login', {
+        email: loginEmail.trim(),
+        password: loginPassword,
+      })
+      await mutate('/api/auth/me')
+      router.push('/')
+    } catch(err:any){
+      setError(err.response?.data?.error || '로그인에 실패했어요.')
+    } finally {
+      setIsLoading(false)
+    }
+    
   };
 
-  const handleSignup = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // 디자인만 구현 - 실제 로직은 나중에
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  const handleKakao = ()=>{
-
+  async function handleSignup(e:React.FormEvent){
+    e.preventDefault()
+    if(isLoading) return
+    if(signupPw !== signupPwConfirm){
+      setError('비밀번호가 일치하지 않습니다.')
+      return
+    }
+    setIsLoading(true)
+    setError(null)
+    try {
+      await api.post('/api/auth/signup', {
+        email: signupEmail.trim(),
+        password: signupPw,
+      })
+      router.refresh()
+    } catch(err:any){
+      setError(err.response?.data?.error || '회원가입에 실패했어요.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -71,6 +95,8 @@ export default function Page(){
                       id="login-email"
                       type="email"
                       placeholder="name@example.com"
+                      value={loginEmail}
+                      onChange={(e)=>setLoginEmail(e.target.value)}
                       required
                     />
                   </div>
@@ -80,6 +106,8 @@ export default function Page(){
                       id="login-password"
                       type="password"
                       placeholder="••••••••"
+                      value = {loginPassword}
+                      onChange={(e)=>setLoginPassword(e.target.value)}
                       required
                     />
                   </div>
@@ -93,11 +121,8 @@ export default function Page(){
                   >
                     {isLoading ? "로그인 중..." : "로그인"}
                   </Button>
-                  <Link href={`https://kauth.kakao.com/oauth/authorize?${authParam.toString()}`} prefetch={false} className="w-full">
-                    <Button type="button" className="w-full" variant="outline">
-                    카카오 계정으로 로그인
-                    </Button>
-                    </Link>
+                  <KakaoLoginButton />
+                  <GoogleLoginButton />
                 </CardFooter>
               </form>
             </Card>
@@ -119,6 +144,8 @@ export default function Page(){
                       id="signup-email"
                       type="email"
                       placeholder="name@example.com"
+                      value={signupEmail}
+                      onChange={(e)=>setSignupEmail(e.target.value)}
                       required
                     />
                   </div>
@@ -128,6 +155,8 @@ export default function Page(){
                       id="signup-password"
                       type="password"
                       placeholder="••••••••"
+                      value={signupPw}
+                      onChange={(e)=>setSignupPw(e.target.value)}
                       required
                     />
                   </div>
@@ -137,6 +166,8 @@ export default function Page(){
                       id="signup-password-confirm"
                       type="password"
                       placeholder="••••••••"
+                      value={signupPwConfirm}
+                      onChange={(e)=>setSignupPwConfirm(e.target.value)}
                       required
                     />
                   </div>

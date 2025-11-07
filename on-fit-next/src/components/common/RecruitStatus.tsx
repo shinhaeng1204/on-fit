@@ -1,8 +1,8 @@
 import {RecruitStatusProps} from "@/types/post";
 
 const StatusStyles = {
-  open : 'bg-success text-success-foreground',
-  close : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+  모집중 : 'bg-success text-success-foreground',
+  마감 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
 }
 
 export default function RecruitStatus ({type, text, className = '' } : RecruitStatusProps) {
