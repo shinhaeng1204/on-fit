@@ -1,14 +1,14 @@
 // src/app/mypage/layout.tsx
-import type { ReactNode } from "react";
-import { ToastProvider } from "@/app/mypage/components/Toast";
-import TopBar from "@/app/mypage/components/TopBar";
-import BottomNav from "@/components/common/BottomNav"; // ✅ 공통 컴포넌트로 import
+import type { ReactNode } from 'react';
+import { ToastProvider } from '@/app/mypage/components/Toast';
+import MyPageHeader from '@/app/mypage/components/MyPageHeader';
+import BottomNav from '@/components/common/BottomNav';
 
 export default function MyPageLayout({ children }: { children: ReactNode }) {
   return (
     <ToastProvider>
       <div className="flex min-h-dvh flex-col">
-        <TopBar bordered />
+        <MyPageHeader />
         <main className="flex-1 mx-auto w-full max-w-screen-md px-4 pb-24 pt-4">
           {children}
         </main>
