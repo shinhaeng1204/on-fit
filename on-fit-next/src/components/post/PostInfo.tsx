@@ -147,7 +147,7 @@ export default function PostInfo () {
           </div>
         </CardContent>
       </Card>
-      <ReportModal isOpen={isOpen} onClose={() => setIsOpen(false)}/>
+      <ReportModal isOpen={isOpen} onClose={() => setIsOpen(false)} postId={id} postTitle={data?.title} />
     </>
   )
 }
