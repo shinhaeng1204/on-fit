@@ -39,7 +39,7 @@ export default function ConfirmPage() {
           await mutate('/api/auth/me')
         }
       } finally {
-        router.replace('/')
+        router.replace('/auth/check')
       }
     })()
   }, [router, sp])

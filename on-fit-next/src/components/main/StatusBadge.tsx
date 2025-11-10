@@ -1,4 +1,6 @@
 import { cn } from "@/lib/utils"
+import { propagateServerField } from "next/dist/server/lib/render-server"
+import { Children } from "react"
 
 const variant = {
   default:
@@ -14,7 +16,7 @@ const variant = {
 
 type VariantType = keyof typeof variant
 
-interface BadgeProps {
+interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement>{
   variant?: VariantType
   className?: string
   children?: React.ReactNode
@@ -24,6 +26,7 @@ export default function StatusBadge({
   variant: v = "default",
   className,
   children,
+  ...props
 }: BadgeProps) {
   return (
     <span
@@ -32,6 +35,7 @@ export default function StatusBadge({
         variant[v],
         className
       )}
+      {...props}
     >
       {children}
     </span>
