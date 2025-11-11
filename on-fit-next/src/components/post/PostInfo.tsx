@@ -8,27 +8,13 @@ import {Button} from "@/components/common/Button";
 import React, {useEffect, useState} from "react";
 import {postType, sportType} from "@/types/post";
 import ReportModal from "@/components/post/ReportModal";
-import {useParams} from "next/navigation";
+import {useParams, useRouter} from "next/navigation";
 import {api} from "@/lib/axios";
 import {toKstDate, toKstTime} from "@/lib/dateFormatter";
 
-/*const data = {
-  title : '강남 배드민턴 초급자 모집',
-  sports : 1,
-  status : 'open',
-  description : '배드민턴 함께 칠 분들 구합니다! 초급자 환영이고, 재밌게 운동하실 분 오세요. 라켓은 대여 가능합니다.',
-  location : '강남구 역삼동 체육관',
-  date : '2024년 11월 5일',
-  time : '저녁 7:00 PM',
-  totalMember : 6,
-  currentMember : 3,
-  level : 'bronze',
-  requirements: '라켓(대여 가능), 운동화',
-  fee : '15,000원 (시설비 포함)',
-}*/
-
 export default function PostInfo () {
   const {id} = useParams()
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -56,6 +42,23 @@ export default function PostInfo () {
       mounted = false
     }
   }, [])
+
+  const handleJoinChat = async () => {
+    try {
+      if(data?.room_id) {
+        router.push(`/chat/${data.room_id}`)
+        return
+      }
+
+      const res = await api.post("/api/chat", {postId: id})
+      const {roomId} = res.data
+
+      router.push(`/chat/${roomId}`)
+    } catch (err) {
+      console.error("채팅방 생성 실패", err.response?.data || err.message)
+      alert("채팅방 생성 중 오류가 발생했습니다.")
+    }
+  }
 
   return (
     <>
@@ -137,7 +140,7 @@ export default function PostInfo () {
           </div>
           {/*참여, 신고*/}
           <div className="flex gap-3 pt-4">
-            <Button size="lg" href={'/'} fullWidth="true" leftIcon={<MessageCircle />} className="cursor-pointer">참여하기</Button>
+            <Button size="lg" onClick={handleJoinChat} fullWidth="true" leftIcon={<MessageCircle />} className="cursor-pointer">참여하기</Button>
             <Button
               variant='sport'
               size="lg"

@@ -1,37 +1,36 @@
-import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+import {sbAdmin} from "@/lib/supabase-admin";
+import {createClient} from "@supabase/supabase-js";
 
 export async function POST(req: Request) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
   try {
     const cookieStore = await cookies()
-    const accessToken = cookieStore.get('sb-access-token')?.value
+    const accessToken = cookieStore.get("sb-access-token")?.value
 
     if (!accessToken) {
-      return NextResponse.json({ error: 'Unauthorized: token missing' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized: token missing" }, { status: 401 })
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: { persistSession: false },
-    })
+    const authClient = createClient(url, anonKey)
+    const { data: userData, error: userError } = await authClient.auth.getUser(accessToken)
 
-    const { data: user, error: userError } = await supabase.auth.getUser(accessToken)
-
-    if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (userError || !userData?.user) {
+      console.error("Invalid user token:", userError)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    const user = userData.user
 
     const { postId, targetUserId, reason, details } = await req.json()
     if (!postId || !reason) {
       return NextResponse.json({ error: '필수 값이 존재하지 않습니다.' }, { status: 400 })
     }
 
-    console.log(user)
-
-    const { error } = await supabase.from('reports').insert({
+    const { error } = await sbAdmin.from('reports').insert({
       reporter_id: user.id,
       post_id: postId,
       target_user_id: targetUserId,
