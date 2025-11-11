@@ -119,7 +119,7 @@ export default function Page(){
         password: r.data.password,
       })
       await mutate('/api/auth/me')
-      router.push('/')
+      router.push('/auth/check')
     } catch(err:any){
       setError(normalizeAuthError(err.response?.data?.error))
     } finally {
