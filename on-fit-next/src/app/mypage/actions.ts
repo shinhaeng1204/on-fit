@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { createSupabaseServerClient } from '@/lib/route-helpers';
 
 export async function updateNickname(formData: FormData) {
   const nickname = (formData.get('nickname') as string)?.trim();

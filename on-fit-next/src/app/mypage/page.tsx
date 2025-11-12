@@ -5,7 +5,7 @@ import BadgeSection from '@/app/mypage/components/BadgeSection';
 import ActivityTabs from '@/app/mypage/components/ActivityTabs';
 import RegionSection from '@/app/mypage/components/RegionSection';
 import PreferredExercisesSection from '@/app/mypage/components/PreferredExercisesSection';
-import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { createSupabaseServerClient } from '@/lib/route-helpers';
 
 export default async function MyPage() {
   const supabase =  await createSupabaseServerClient();
