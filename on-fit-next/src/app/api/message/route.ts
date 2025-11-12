@@ -1,7 +1,7 @@
 import {cookies} from "next/headers";
 import {NextResponse} from "next/server";
 import {createClient} from "@supabase/supabase-js";
-import {sbAdmin} from "@/lib/supabase-admin";
+import { createSupabaseServerClient } from "@/lib/route-helpers";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -61,10 +61,12 @@ export async function GET(req: Request) {
   if (!roomId) {
     return NextResponse.json({ error: "Missing roomId" }, { status: 400 });
   }
+  
+  const supabase = await createSupabaseServerClient()
 
   try {
     // 1️⃣ 메시지 가져오기
-    const { data: messages, error: messagesError } = await sbAdmin
+    const { data: messages, error: messagesError } = await supabase
       .from("messages")
       .select("*")
       .eq("room_id", roomId)
@@ -75,7 +77,7 @@ export async function GET(req: Request) {
     // 2️⃣ 참여자 프로필 가져오기
     const userIds = Array.from(new Set(messages.map(m => m.sender_id)));
 
-    const { data: profiles, error: profilesError } = await sbAdmin
+    const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
       .select("id, nickname, profile_image")
       .in("id", userIds);
