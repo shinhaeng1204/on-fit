@@ -2,74 +2,101 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
-export const runtime = "nodejs"; // 이 라우트는 Node.js 런타임에서 돌리겠다는 의미
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  // ✅ 1. Promise unwrap
   const cookieStore = await cookies();
 
-  // ✅ 2. createServerClient 구성
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        async get(name: string) {
-          const allCookies = await cookieStore; // ✅ Promise unwrap 다시 보장
-          const value = allCookies.get(name)?.value;
-          return value;
+        get(name: string) {
+          return cookieStore.get(name)?.value;
         },
-        async set(name: string, value: string, options: any) {
-          try {
-            const allCookies = await cookieStore;
-            allCookies.set({ name, value, ...options });
-          } catch (err) {
-            console.error("쿠키 set 실패", err);
-          }
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options });
         },
-        async remove(name: string, options: any) {
-          try {
-            const allCookies = await cookieStore;
-            allCookies.delete({ name, ...options });
-          } catch (err) {
-            console.error("쿠키 remove 실패", err);
-          }
+        remove(name: string, options: any) {
+          cookieStore.delete({ name, ...options });
         },
       },
     }
   );
 
-  // ✅ 3. 인증 세션 확인
+  // 1) 인증 확인
   const {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
-
   if (userError || !user) {
-    console.error("❌ 인증 실패:", userError);
     return NextResponse.json({ error: "INVALID_USER" }, { status: 401 });
   }
 
-  // ✅ 4. 요청 파싱
+  // 2) 요청 파싱
   const body = await req.json();
-  const { nickname, location, sport_preference } = body;
+  const nickname = body?.nickname;               // string | undefined | null
+  const location = body?.location;               // string | undefined | null
+  const sport_preference = body?.sport_preference; // string[] | undefined | null
 
-  // ✅ 5. DB 업데이트
-  const { error } = await supabase
+  // 3) 현재 프로필 존재 여부
+  const { data: existing, error: existErr } = await supabase
     .from("profiles")
-    .upsert({
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (existErr) {
+    return NextResponse.json({ error: existErr.message }, { status: 500 });
+  }
+
+  // 4-A) 행이 없으면 → 최초 생성: 닉네임 필수
+  if (!existing) {
+    if (typeof nickname !== "string" || nickname.trim() === "") {
+      return NextResponse.json(
+        { error: "NICKNAME_REQUIRED" },
+        { status: 400 }
+      );
+    }
+
+    const { error } = await supabase.from("profiles").insert({
       id: user.id,
       email: user.email ?? null,
-      nickname,
-      location,
-      sport_preference,
+      nickname: nickname.trim(),
+      location: typeof location === "string" ? location : null,
+      sport_preference: Array.isArray(sport_preference) ? sport_preference : [],
+      created_at: new Date(),
       updated_at: new Date(),
     });
 
-  if (error) {
-    console.error("❌ 프로필 저장 오류:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true, created: true });
   }
 
-  return NextResponse.json({ ok: true });
+  // 4-B) 행이 있으면 → 부분 업데이트: 보낸 필드만 반영
+  const patch: Record<string, any> = { updated_at: new Date() };
+  if (typeof nickname === "string") patch.nickname = nickname.trim();
+  if (typeof location === "string") patch.location = location;
+  if (Array.isArray(sport_preference)) patch.sport_preference = sport_preference;
+
+  // 닉네임/위치/운동 아무것도 안 보냈으면 에러(선택)
+  if (Object.keys(patch).length === 1) {
+    return NextResponse.json(
+      { error: "NO_FIELDS_TO_UPDATE" },
+      { status: 400 }
+    );
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update(patch)
+    .eq("id", user.id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true, created: false });
 }
