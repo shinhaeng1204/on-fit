@@ -24,6 +24,5 @@ export default async function AuthCheckPage() {
   if (!profile?.nickname || !profile?.location) {
     redirect("/profile-setup")
   }
-
   redirect("/")
 }

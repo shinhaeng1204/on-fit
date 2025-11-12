@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
-export const runtime = "nodejs";
+export const runtime = "nodejs"; // 이 라우트는 Node.js 런타임에서 돌리겠다는 의미
 
 export async function POST(req: Request) {
   // ✅ 1. Promise unwrap
