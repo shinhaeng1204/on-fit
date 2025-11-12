@@ -5,8 +5,8 @@ import { CardContent } from '@/components/common/Card';
 import LevelBadge from '@/components/common/Badge';
 import { cn } from '@/lib/utils';
 import { Check, Edit2, X } from 'lucide-react';
-import axios from 'axios';
-import { useToast } from '@/app/mypage/components/Toast'; // 앞서 만든 ToastProvider 사용
+import { useToast } from '@/app/mypage/components/Toast';
+import { updateNicknameDirect } from '@/app/mypage/actions';
 
 type Props = {
   name: string;
@@ -20,13 +20,6 @@ type Props = {
   className?: string;
 };
 
-// 실제 백엔드에 맞춰 교체하세요.
-async function updateNicknameAPI(nextName: string) {
-  // await axios.patch('/api/me', { nickname: nextName });
-  await new Promise((r) => setTimeout(r, 500)); // 데모용 지연
-  return { nickname: nextName };
-}
-
 export default function ProfileHeader({
   name,
   avatarUrl,
@@ -35,19 +28,27 @@ export default function ProfileHeader({
   className,
 }: Props) {
   const { show } = useToast();
+
+  // ✅ 이미지 로드 실패 여부
   const [imgError, setImgError] = useState(false);
+
+  // ✅ 닉네임 편집 상태
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState(name);
   const [temp, setTemp] = useState(name);
+
+  // ✅ Transition으로 서버 액션 호출 시 UI 반응 제어
   const [isPending, startTransition] = useTransition();
+
+  // ✅ 닉네임 입력창 자동 포커스
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const initial = displayName?.[0] ?? 'U';
-
   useEffect(() => {
     if (editing) inputRef.current?.focus();
   }, [editing]);
 
+  const initial = displayName?.[0] ?? 'U';
+
+  // ✅ 닉네임 저장
   const onSave = () => {
     const next = temp.trim();
     if (!next || next === displayName) {
@@ -55,18 +56,21 @@ export default function ProfileHeader({
       setTemp(displayName);
       return;
     }
+
     startTransition(async () => {
       try {
-        await updateNicknameAPI(next);
+        await updateNicknameDirect(next); // ✅ 서버 액션으로 DB 업데이트
         setDisplayName(next);
         setEditing(false);
         show('닉네임이 변경됐습니다.');
-      } catch {
+      } catch (err) {
+        console.error(err);
         show('닉네임 변경에 실패했습니다. 잠시 후 다시 시도해주세요.');
       }
     });
   };
 
+  // ✅ 취소 시 상태 복구
   const onCancel = () => {
     setEditing(false);
     setTemp(displayName);
@@ -101,9 +105,9 @@ export default function ProfileHeader({
           </span>
         </div>
 
-        {/* 오른쪽: 닉네임 + 레벨 + 통계 */}
+        {/* 닉네임 + 레벨 + 통계 */}
         <div className="flex-1 text-center sm:text-left w-full">
-          {/* 🔹 닉네임 (골드 배지 위에 표시) */}
+          {/* 🔹 닉네임 (수정 모드 포함) */}
           <div className="flex items-center justify-center sm:justify-start gap-2">
             {!editing ? (
               <>
