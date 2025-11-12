@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../common/Card";
 import StatusBadge from "./StatusBadge";
 import Badge from "../common/Badge";
 import { Button } from "../common/Button";
+import Link from "next/link";
 
 type Level = 'bronze' | 'silver' | 'gold' | 'platinum'
 
@@ -33,6 +34,7 @@ export default function FitCard({
     level,
 }: FitCardProps){
     return (
+        <Link href={`/post/${id}`}>
         <Card className="group hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary cursor-pointer">
             <CardHeader className="relative flex-row gap-2">
                 <div className="flex items-center rounded-lg bg-primary/10 p-2">
@@ -61,9 +63,10 @@ export default function FitCard({
 
                 <div className="flex mt-2 justify-between items-center">
                     <Badge type={level} className="max-h-6"/>
-                    <Button variant="sport" size="sm" href={`/post/${id}`}>참여하기</Button>
+                    <Button variant="sport" size="sm">참여하기</Button>
                 </div>
             </CardContent>
         </Card>
+        </Link>
     )
 }

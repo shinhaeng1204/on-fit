@@ -36,4 +36,5 @@ export interface postType {
   level : BadgeVariant,
   equipment: string,
   fee : string,
+  room_id: string,
 }

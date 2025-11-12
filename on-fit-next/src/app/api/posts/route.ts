@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server'
 import { sbAdmin } from '@/lib/supabase-admin'
+import {cookies} from "next/headers";
+import {createClient} from "@supabase/supabase-js";
 
 export async function POST(req: Request) {
   // ENV 체크 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const service = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
   if (!url || !service) {
     console.error(' ENV missing:', { url, service })
@@ -59,6 +62,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: `FETCH_FAIL: ${err.message}` }, { status: 500 })
   }
 
+  // user Data 가져오기
+  const cookieStore = await cookies()
+  const accessToken = cookieStore.get("sb-access-token")?.value
+
+  if (!accessToken) {
+    return NextResponse.json({ error: "Unauthorized: token missing" }, { status: 401 })
+  }
+
+  const authClient = createClient(url, anonKey)
+  const { data: userData, error: userError } = await authClient.auth.getUser(accessToken)
+
+  if (userError || !userData?.user) {
+    console.error("Invalid user token:", userError)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const user = userData.user
+
   // Insert 데이터 구성
   const insert = {
     sport: String(b.sport),
@@ -69,9 +90,9 @@ export async function POST(req: Request) {
     status: b.status ?? '모집중',
     current_participants: Number(b.currentParticipants ?? 1),
     max_participants: Math.max(1, Number(b.maxParticipants ?? 1)),
-    author: b.author ?? '익명',
+    author_id : user.id,
     description: b.description ?? '',
-    equipment: b.equipment ?? '',
+    requirement: b.requirement ?? '',
     fee: b.fee ?? '',
   }
 
@@ -79,7 +100,7 @@ export async function POST(req: Request) {
 
   // Supabase Insert 실행
   try {
-    const { data, error } = await sbAdmin.from('Fit').insert(insert).select().single()
+    const { data, error } = await sbAdmin.from('posts').insert(insert).select().single()
 
     if (error) {
       console.error(' Supabase Insert Error:', error)
