@@ -1,129 +1,58 @@
-import { NextResponse } from 'next/server'
-import { sbAdmin } from '@/lib/supabase-admin'
-import {cookies} from "next/headers";
-import {createClient} from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
+import { createSSRClient, requireUserOr401, ok, fail, toISOFromKST } from "@/lib/route-helpers";
 
+export const runtime = "nodejs";
+
+// GET: 공개 목록( RLS에서 to public using (true) 설정했으므로 익명도 조회 가능)
+export async function GET() {
+  const supabase = await createSSRClient();
+
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) return fail(error.message, 500);
+  return ok({ items: data });
+}
+
+// POST: 로그인 필요 + RLS(with check author_id = auth.uid()) 준수
 export async function POST(req: Request) {
-  // ENV 체크 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const service = process.env.SUPABASE_SERVICE_ROLE_KEY
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  const supabase = await createSSRClient();
+  const auth = await requireUserOr401(supabase);
+  if (!auth.ok) return auth.response;
+  const user = auth.user;
 
-  if (!url || !service) {
-    console.error(' ENV missing:', { url, service })
-    return NextResponse.json(
-      {
-        ok: false,
-        error: `ENV_MISSING: url=${!!url}, service=${!!service}. 
-        Check .env.local and restart dev server.`,
-      },
-      { status: 500 }
-    )
-  }
-
-  if (!/^https:\/\/.*\.supabase\.co/.test(url)) {
-    console.error(' ENV_BAD_URL:', url)
-    return NextResponse.json(
-      { ok: false, error: `ENV_BAD_URL: ${url}` },
-      { status: 500 }
-    )
-  }
-
-  // 요청 Body 파싱
-  let b: any
+  let b: any;
   try {
-    b = await req.json()
+    b = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: 'INVALID_JSON_BODY' }, { status: 400 })
+    return fail("INVALID_JSON_BODY", 400);
   }
 
-  // 필수값 검증
-  if (!b.title || !b.sport || !b.location || !b.date || !b.time) {
-    console.error(' Missing required fields:', b)
-    return NextResponse.json({ ok: false, error: '필수값 누락' }, { status: 400 })
-  }
+  const required = ["title", "sport", "location", "date", "time"];
+  const missing = required.filter((k) => !b?.[k]);
+  if (missing.length) return fail(`필수값 누락: ${missing.join(", ")}`, 400);
 
-  // 날짜 유효성 검사
-  const dateObj = new Date(`${b.date}T${b.time}:00+09:00`)
-  if (isNaN(dateObj.getTime())) {
-    console.error(' Invalid date/time:', { date: b.date, time: b.time })
-    return NextResponse.json({ ok: false, error: '잘못된 날짜/시간 형식' }, { status: 400 })
-  }
+  const dateISO = toISOFromKST(b.date, b.time);
+  if (!dateISO) return fail("잘못된 날짜/시간 형식", 400);
 
-  // Supabase 연결 테스트 (ping)
-  try {
-    const { error: pingErr } = await sbAdmin.from('posts').select('id').limit(1)
-    if (pingErr) {
-      console.error(' Supabase Ping Fail:', pingErr)
-      return NextResponse.json({ ok: false, error: `PING_FAIL: ${pingErr.message}` }, { status: 500 })
-    }
-  } catch (err: any) {
-    console.error(' Supabase Fetch Fail:', err)
-    return NextResponse.json({ ok: false, error: `FETCH_FAIL: ${err.message}` }, { status: 500 })
-  }
-
-  // user Data 가져오기
-  const cookieStore = await cookies()
-  const accessToken = cookieStore.get("sb-access-token")?.value
-
-  if (!accessToken) {
-    return NextResponse.json({ error: "Unauthorized: token missing" }, { status: 401 })
-  }
-
-  const authClient = createClient(url, anonKey)
-  const { data: userData, error: userError } = await authClient.auth.getUser(accessToken)
-
-  if (userError || !userData?.user) {
-    console.error("Invalid user token:", userError)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  const user = userData.user
-
-  // Insert 데이터 구성
-  const insert = {
+  const payload = {
     sport: String(b.sport),
     title: String(b.title),
     location: String(b.location),
-    date_time: dateObj.toISOString(),
-    level: b.level ?? '브론즈',
-    status: b.status ?? '모집중',
+    date_time: dateISO,
+    level: b.level ?? "브론즈",
+    status: b.status ?? "모집중",
     current_participants: Number(b.currentParticipants ?? 1),
     max_participants: Math.max(1, Number(b.maxParticipants ?? 1)),
-    author_id : user.id,
-    description: b.description ?? '',
-    requirement: b.requirement ?? '',
-    fee: b.fee ?? '',
-  }
+    author_id: user.id, // RLS가 체크
+    description: b.description ?? "",
+    requirement: b.requirement ?? "",
+    fee: b.fee ?? "",
+  };
 
-  console.log(' Insert payload:', insert)
-
-  // Supabase Insert 실행
-  try {
-    const { data, error } = await sbAdmin.from('posts').insert(insert).select().single()
-
-    if (error) {
-      console.error(' Supabase Insert Error:', error)
-      return NextResponse.json({ ok: false, error: error.message }, { status: 400 })
-    }
-
-    console.log('✅ Insert Success:', data)
-    return NextResponse.json({ ok: true, item: data }, { status: 201 })
-  } catch (err: any) {
-    console.error(' Fetch failed:', err)
-    return NextResponse.json({ ok: false, error: `TypeError: ${err.message}` }, { status: 400 })
-  }
-}
-
-export async function GET() {
-  const {data, error} = await sbAdmin
-  .from('posts')
-  .select('*')
-  .order('created_at', {ascending: false})
-
-  if(error) {
-    return NextResponse.json({ok: false, error: error.message}, {status: 500})
-  }
-
-  return NextResponse.json({ok: true, items: data})
+  const { data, error } = await supabase.from("posts").insert(payload).select().single();
+  if (error) return fail(error.message, 400);
+  return ok({ item: data }, { status: 201 });
 }
