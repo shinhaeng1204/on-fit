@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import  useKakaoLoader  from '@/hooks/useKakaoLoader'
+import { api } from '@/lib/axios'
 
 type Props = {
   appKey: string
@@ -31,7 +32,8 @@ export default function LocationPicker({ appKey, open, onPick }: Props) {
   const boxRef = useRef<HTMLDivElement | null>(null)
   const [map, setMap] = useState<any>(null)
   const [marker, setMarker] = useState<any>(null)
-  const [label, setLabel] = useState<string>('')
+  const [label, setLabel] = useState<string>('없음')
+  const [saving, setSaving] = useState(false);
 
   // 모달 열림 + SDK 준비 → 지도 생성
   useEffect(() => {
@@ -105,10 +107,27 @@ export default function LocationPicker({ appKey, open, onPick }: Props) {
     )
   }
 
-  const confirm = () => {
-    if (!marker) return
+  const confirm = async () => {
+    if (!marker || !label || saving) return
     const pos = marker.getPosition()
-    onPick({ lat: pos.getLat(), lng: pos.getLng(), region: label })
+    const payload = { lat: pos.getLat(), lng: pos.getLng(), region: label }
+
+    try{
+      setSaving(true)
+
+      const {data} = await api.post('/api/profile', {location: label})
+
+      if(!data?.ok) {
+        alert(data?.error ?? '업데이트 실패')
+        return
+      }
+
+      onPick(payload)
+    } catch (e: any) {
+      alert(e?.message ?? '업데이트 실패')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -124,7 +143,7 @@ export default function LocationPicker({ appKey, open, onPick }: Props) {
           </button>
           <button
             className="h-9 rounded-md bg-primary px-3 text-primary-foreground disabled:opacity-50"
-            disabled={!label}
+            disabled={!label || saving}
             onClick={confirm}
           >
             선택
