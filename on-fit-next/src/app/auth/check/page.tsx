@@ -1,46 +1,29 @@
-'use client'
+// app/auth/check/page.tsx
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
+import { createClient } from "@supabase/supabase-js"
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { sbClient } from "@/lib/supabase-client"
+export default async function AuthCheckPage() {
+  const access = (await cookies()).get("sb-access-token")?.value
+  if (!access) redirect("/auth")
 
-export default function AuthCheckPage(){
-    const router = useRouter()
-
-    useEffect(()=>{
-        const checkProfile = async ()=>{
-            const {data:{user}} = await sbClient.auth.getUser()
-
-            if(!user){
-                router.replace("/login")
-                return
-            }
-
-            const {data:profile, error} = await sbClient
-                .from("profiles")
-                .select("*")
-                .eq("id", user.id)
-                .single()
-
-            if(error && error.code !== "PGRST116"){
-                console.error("프로필 조회 오류: ", error)
-                router.replace("/login")
-                return
-            }
-
-            if(!profile?.nickname || !profile?.location){
-                router.replace("/profile-setup")
-            } else{
-                router.replace("/")
-            }
-        }
-
-        checkProfile()
-    }, [router])
-
-    return (
-    <div className="flex items-center justify-center h-screen">
-      <p className="text-muted-foreground text-sm">프로필 정보를 확인 중...</p>
-    </div>
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+
+  const { data, error } = await supabase.auth.getUser(access)
+  if (error || !data.user) redirect("/auth")
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", data.user.id)
+    .single()
+
+  if (!profile?.nickname || !profile?.location) {
+    redirect("/profile-setup")
+  }
+
+  redirect("/")
 }

@@ -6,7 +6,7 @@ import { Input } from "@/components/common/Input"
 import { Dumbbell, MapPin, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import {useState} from "react"
-import { sbClient } from "@/lib/supabase-client"
+import { api } from "@/lib/axios"
 
 
 const ProfileSetup = ()=>{
@@ -30,37 +30,24 @@ const ProfileSetup = ()=>{
         )
     }
 
-    const handleSubmit = async (e:React.FormEvent)=>{
-        e.preventDefault()
-        setLoading(true)
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
 
-        const {data:{user}, error:useError} = await sbClient.auth.getUser()
-
-        if(useError || !user){
-            alert("로그인이 필요합니다.")
-            router.push("/login")
-            return
-        }
-
-        const {error} = await sbClient
-            .from ("profiles")
-            .update({
+        try {
+            await api.post("/api/profile", {
                 nickname,
                 location,
                 sport_preference: selectedExercises,
-                updated_at: new Date(),
-            })
-            .eq("id", user.id)
-        setLoading(false)
-
-        if(error){
-            console.error("프로필 저장 오류: ", error)
-            alert("프로필 저장 중 오류가 발생했습니다.")
-        } else {
-            alert("프로필이 저장되었습니다.")
-            router.push("/")
+            });
+            alert("프로필이 저장되었습니다.");
+            router.push("/");
+        } catch (err) {
+            alert("프로필 저장 중 오류가 발생했습니다.");
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4">
