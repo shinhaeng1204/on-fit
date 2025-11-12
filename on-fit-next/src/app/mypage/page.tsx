@@ -1,5 +1,3 @@
-'use client';
-
 import { Trophy, Calendar, Users } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import ProfileHeader from '@/app/mypage/components/ProfileHeader';
@@ -7,51 +5,51 @@ import BadgeSection from '@/app/mypage/components/BadgeSection';
 import ActivityTabs from '@/app/mypage/components/ActivityTabs';
 import RegionSection from '@/app/mypage/components/RegionSection';
 import PreferredExercisesSection from '@/app/mypage/components/PreferredExercisesSection';
+import { createSupabaseServerClient } from '@/lib/route-helpers';
 
-export default function MyPage() {
-  const user = {
-    id: 'u_1',
-    name: '운동왕',
-    avatarUrl: '',
-    level: 'gold' as const,
-    stats: { joinedCount: 23, createdCount: 8, followerCount: 45, followingCount: 32 },
-    badges: [
-      { id: 'b_bronze', name: '브론즈 뱃지', level: 'bronze' as const, description: '3회 참여' },
-      { id: 'b_silver', name: '실버 뱃지', level: 'silver' as const, description: '10회 참여' },
-      { id: 'b_gold', name: '골드 뱃지', level: 'gold' as const, description: '50회 참여' },
-    ],
+export default async function MyPage() {
+  const supabase =  await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return <div className="p-6">로그인이 필요합니다.</div>;
+  }
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('id, email, nickname, profile_image, location, sport_preference')
+    .eq('id', user.id)
+    .single();
+
+  if (error) {
+    return <div className="p-6">프로필을 불러오지 못했습니다: {error.message}</div>;
+  }
+
+  const name = profile?.nickname ?? '';
+  const avatarUrl = profile?.profile_image ?? '';
+  const level = 'gold' as const;
+  const stats = {
+    participationCount: 0,
+    followerCount: 0,
+    followingCount: 0,
   };
+  const region = profile?.location ?? '';
+  const exercises = (profile?.sport_preference ?? []) as string[];
 
-  const participated = [
-    { id: 'p_1', title: '강남 배드민턴 모임', date: '2024-10-15', status: 'close' as const },
-    { id: 'p_2', title: '분당 러닝 번개', date: '2024-10-18', status: 'close' as const },
-    { id: 'p_3', title: '신논현 요가 클래스', date: '2024-10-22', status: 'close' as const },
-  ];
-
-  const created = [
-    { id: 'c_1', title: '서초 풋살 번개', date: '2024-10-20', status: 'open' as const },
-    { id: 'c_2', title: '잠실 배구 모임', date: '2024-10-27', status: 'open' as const },
-  ];
-
-  const region = "강남구";
-  const exercises = ["배드민턴", "풋살", "농구", "테니스"];
+  const participated: { id: string; title: string; date: string; status: 'open' | 'close' }[] = [];
+  const created: { id: string; title: string; date: string; status: 'open' | 'close' }[] = [];
 
   return (
     <div className="space-y-6">
       <Card className="p-0">
         <ProfileHeader
-          name={user.name}
-          avatarUrl={user.avatarUrl}
-          level={user.level}
-          stats={{
-            participationCount: user.stats.joinedCount,
-            followerCount: user.stats.followerCount,
-            followingCount: user.stats.followingCount,
-          }}
+          name={name}
+          avatarUrl={avatarUrl}
+          level={level}
+          stats={stats}
         />
       </Card>
-      
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card className="p-0">
           <RegionSection region={region} />
         </Card>
@@ -63,11 +61,9 @@ export default function MyPage() {
       <Card className="p-0">
         <BadgeSection
           titleIcon={<Trophy className="h-5 w-5 text-primary" />}
-          badges={user.badges}
+          badges={[] /* 추후 뱃지 테이블 연동 시 교체 */}
         />
       </Card>
-      
-     
 
       <Card className="p-0">
         <ActivityTabs
