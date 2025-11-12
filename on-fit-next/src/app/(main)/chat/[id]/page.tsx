@@ -1,9 +1,59 @@
-import {Card, CardContent, CardHeader} from "@/components/common/Card";
+'use client'
+
 import {Calendar, MapPin, Send, Users} from "lucide-react";
 import {Input} from "@/components/common/Input";
 import {Button} from "@/components/common/Button";
+import {useParams} from "next/navigation";
+import {useEffect, useState} from "react";
+import {api} from "@/lib/axios";
+import {subscribeMessages} from "@/lib/realtime";
+import {toKstTime} from "@/lib/dateFormatter";
+
+interface Message {
+  id: string
+  user_id: string
+  user_name: string
+  content: string
+  created_at: string
+}
 
 export default function Page () {
+  const params = useParams()
+  const roomId = params?.id as string
+  const [messages, setMessages] = useState<Message[]>([])
+  const [content, setContent] = useState<string>("")
+
+  const sendMessage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!content.trim()) return
+
+    try {
+      await api.post("/api/message", {
+        roomId,
+        content,
+      })
+      setContent("") // 입력창 초기화
+    } catch (err) {
+      console.error("메시지 전송 실패:", err)
+    }
+  }
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    const fetchMessages = async () => {
+      const res = await api.get(`/api/message?roomId=${roomId}`);
+      setMessages(res.data.messages);
+    };
+    fetchMessages();
+
+    const unsubscribe = subscribeMessages(roomId, (msg) => {
+      console.log("Realtime msg:", msg);
+      setMessages((prev) => [...prev, msg]);
+    });
+    return unsubscribe;
+  }, [roomId]);
+
   return (
     <main className="flex flex-col h-screen">
       {/* 채팅방 정보 */}
@@ -33,29 +83,32 @@ export default function Page () {
             </span>
           </div>
           {/* 대화 */}
-          <div className="flex gap-3">
-            {/* TODO:프로필 이미지 추가 */}
-            <div className="flex flex-col items-start max-w-[70%]">
-              <p className="text-xs text-muted-foreground mb-1">운동왕</p>
-              <div className="px-4 py-2 rounded-2xl bg-card border border-border">안녕하세요!</div>
-              <p className="text-xs text-muted-foreground mt-1">오후 02:17</p>
+          {messages.map((msg) => (
+            <div key={msg.id} className="flex gap-3">
+              {/* TODO: 프로필 이미지 추가 */}
+              <div className="flex flex-col items-start max-w-[70%]">
+                <p className="text-xs text-muted-foreground mb-1">{msg.username}</p>
+                <div className="px-4 py-2 rounded-2xl bg-card border border-border">
+                  {msg.content}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {toKstTime(msg.createdAt)}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-3">
-            {/* TODO:프로필 이미지 추가 */}
-            <div className="flex flex-col items-start max-w-[70%]">
-              <p className="text-xs text-muted-foreground mb-1">배드민턴 러버</p>
-              <div className="px-4 py-2 rounded-2xl bg-card border border-border">안녕하세요!</div>
-              <p className="text-xs text-muted-foreground mt-1">오후 02:33</p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
       {/* 채팅 입력 폼 */}
       <div className="border-t border-border bg-card/80 backdrop-blur-sm container mx-auto px-4 py-4">
-        <form action="" className="flex gap-2">
-          <Input type="text" placeholder="메시지를 입력하세요..."/>
-          <Button><Send className="h-4 w-4" /></Button>
+        <form onSubmit={sendMessage} className="flex gap-2">
+          <Input
+            type="text"
+            placeholder="메시지를 입력하세요..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+          <Button type="submit"><Send className="h-4 w-4" /></Button>
         </form>
       </div>
     </main>

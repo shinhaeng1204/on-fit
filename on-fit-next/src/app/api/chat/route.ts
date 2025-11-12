@@ -22,8 +22,6 @@ export async function POST(req: Request) {
       return NextResponse.json({error: "Post not Found"}, {status : 404})
     }
 
-    console.log(post)
-
     const { data : room, error: roomError} = await supabase
     .from("rooms")
     .insert({
