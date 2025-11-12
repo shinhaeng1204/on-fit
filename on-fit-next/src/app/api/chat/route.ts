@@ -1,5 +1,5 @@
+import { createSupabaseServerClient } from "@/lib/route-helpers";
 import {NextResponse} from "next/server";
-import {sbAdmin} from "@/lib/supabase-admin";
 
 export async function POST(req: Request) {
   try {
@@ -9,7 +9,9 @@ export async function POST(req: Request) {
       return NextResponse.json({error: "Missing postId"} , {status : 400})
     }
 
-    const {data: post, error: postError} = await sbAdmin
+    const supabase = await createSupabaseServerClient();
+
+    const {data: post, error: postError} = await supabase
     .from("posts")
     .select("title, author_id")
     .eq("id", postId)
@@ -20,7 +22,7 @@ export async function POST(req: Request) {
       return NextResponse.json({error: "Post not Found"}, {status : 404})
     }
 
-    const { data : room, error: roomError} = await sbAdmin
+    const { data : room, error: roomError} = await supabase
     .from("rooms")
     .insert({
       name: post.title,
@@ -36,7 +38,7 @@ export async function POST(req: Request) {
       return NextResponse.json({error: roomError.message}, {status: 500})
     }
 
-    const {error: updateError} = await sbAdmin
+    const {error: updateError} = await supabase
     .from("posts")
     .update({room_id : room.id})
     .eq("id", postId)
