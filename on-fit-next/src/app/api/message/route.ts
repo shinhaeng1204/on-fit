@@ -63,17 +63,16 @@ export async function GET(req: Request) {
   }
 
   try {
+    // 1️⃣ 메시지 가져오기
     const { data: messages, error: messagesError } = await sbAdmin
       .from("messages")
       .select("*")
       .eq("room_id", roomId)
       .order("created_at", { ascending: true });
 
-    if (messagesError) {
-      console.error("Supabase messages error:", messagesError);
-      return NextResponse.json({ error: messagesError.message }, { status: 500 });
-    }
+    if (messagesError) throw messagesError;
 
+    // 2️⃣ 참여자 프로필 가져오기
     const userIds = Array.from(new Set(messages.map(m => m.sender_id)));
 
     const { data: profiles, error: profilesError } = await sbAdmin
@@ -81,27 +80,11 @@ export async function GET(req: Request) {
       .select("id, nickname, profile_image")
       .in("id", userIds);
 
-    if (profilesError) {
-      console.error("Supabase profiles error:", profilesError);
-      return NextResponse.json({ error: profilesError.message }, { status: 500 });
-    }
+    if (profilesError) throw profilesError;
 
-    const messagesWithUser = messages.map(msg => {
-      const user = profiles?.find(p => p.id === msg.sender_id);
-      return {
-        id: msg.id,
-        roomId: msg.room_id,
-        userId: msg.sender_id,
-        username: user?.username ?? "알 수 없음",
-        avatarUrl: user?.avatar_url ?? null,
-        content: msg.content,
-        createdAt: msg.created_at,
-      };
-    });
-
-    return NextResponse.json({ messages: messagesWithUser }, { status: 200 });
-  } catch (e) {
-    console.error("Server error:", e);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ messages, profiles }, { status: 200 });
+  } catch (e: any) {
+    console.error("GET /messages error:", e);
+    return NextResponse.json({ error: e.message ?? "Internal Server Error" }, { status: 500 });
   }
 }
