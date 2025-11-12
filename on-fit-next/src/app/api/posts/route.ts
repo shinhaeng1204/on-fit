@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { createSSRClient, requireUserOr401, ok, fail, toISOFromKST } from "@/lib/route-helpers";
+import { requireUserOr401, ok, fail, toISOFromKST, createSupabaseServerClient } from "@/lib/route-helpers";
 
 export const runtime = "nodejs";
 
 // GET: 공개 목록( RLS에서 to public using (true) 설정했으므로 익명도 조회 가능)
 export async function GET() {
-  const supabase = await createSSRClient();
+  const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase
     .from("posts")
@@ -18,7 +18,7 @@ export async function GET() {
 
 // POST: 로그인 필요 + RLS(with check author_id = auth.uid()) 준수
 export async function POST(req: Request) {
-  const supabase = await createSSRClient();
+  const supabase = await createSupabaseServerClient();
   const auth = await requireUserOr401(supabase);
   if (!auth.ok) return auth.response;
   const user = auth.user;

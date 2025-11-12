@@ -1,9 +1,9 @@
-import { createSSRClient, requireUserOr401, ok, fail } from "@/lib/route-helpers";
+import { requireUserOr401, ok, fail, createSupabaseServerClient } from "@/lib/route-helpers";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  const supabase = await createSSRClient();
+  const supabase = await createSupabaseServerClient();
   const auth = await requireUserOr401(supabase);
   if (!auth.ok) return auth.response;
   const user = auth.user;

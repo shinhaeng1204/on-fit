@@ -6,10 +6,10 @@ import HeroImage from "@/assets/hero.jpeg"
 import Filter from "@/components/main/Filter"          // (클라라면 그대로 사용 가능: 서버 → 클라 자식 OK)
 import FitCard from "@/components/main/FitCard"        // (이벤트/상태 없으면 서버 컴포넌트 유지 권장)
 import AfterAuthRefetchOnce from "./AfterAuthRefetchOnce" // (클라 컴포넌트: 그대로 OK)
-import { sbAdmin } from "@/lib/supabase-admin"       // 서버용 Supabase 클라이언트
 import { toKstDate, toKstTime } from "@/lib/dateFormatter"
 import { Button } from "@/components/common/Button"
 import { Plus } from "lucide-react"
+import { createSupabaseServerClient } from "@/lib/route-helpers"
 
 type FitRow = {
   id: string
@@ -28,7 +28,9 @@ type FitRow = {
 export const revalidate = 0 // 혹은 export const dynamic = "force-dynamic"
 
 async function getFits(): Promise<FitRow[]> {
-  const { data, error } = await sbAdmin
+  const supabase = await createSupabaseServerClient()
+
+  const { data, error } = await supabase
     .from("posts")
     .select("*")
     .order("created_at", { ascending: false })

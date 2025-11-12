@@ -1,11 +1,12 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import {sbAdmin} from "@/lib/supabase-admin";
 import {createClient} from "@supabase/supabase-js";
+import { createSupabaseServerClient } from '@/lib/route-helpers';
 
 export async function POST(req: Request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    const supabase = await createSupabaseServerClient();
 
   try {
     const cookieStore = await cookies()
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '필수 값이 존재하지 않습니다.' }, { status: 400 })
     }
 
-    const { error } = await sbAdmin.from('reports').insert({
+    const { error } = await supabase.from('reports').insert({
       reporter_id: user.id,
       post_id: postId,
       target_user_id: targetUserId,
