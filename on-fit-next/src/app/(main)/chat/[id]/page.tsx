@@ -10,17 +10,23 @@ import {subscribeMessages} from "@/lib/realtime";
 import {toKstTime} from "@/lib/dateFormatter";
 
 interface Message {
-  id: string
-  user_id: string
-  user_name: string
-  content: string
-  created_at: string
+  id: string;
+  sender_id: string;
+  content: string;
+  created_at: string;
+}
+
+interface Profile {
+  id: string;
+  nickname: string;
+  profile_image: string | null;
 }
 
 export default function Page () {
   const params = useParams()
   const roomId = params?.id as string
   const [messages, setMessages] = useState<Message[]>([])
+  const [profiles, setProfiles] = useState<Profile[]>([])
   const [content, setContent] = useState<string>("")
 
   const sendMessage = async (e: React.FormEvent) => {
@@ -44,15 +50,24 @@ export default function Page () {
     const fetchMessages = async () => {
       const res = await api.get(`/api/message?roomId=${roomId}`);
       setMessages(res.data.messages);
+      setProfiles(res.data.profiles);
     };
     fetchMessages();
 
     const unsubscribe = subscribeMessages(roomId, (msg) => {
-      console.log("Realtime msg:", msg);
       setMessages((prev) => [...prev, msg]);
     });
     return unsubscribe;
   }, [roomId]);
+
+  const messagesWithUsername = messages.map(msg => {
+    const user = profiles.find(p => p.id === msg.sender_id);
+    return {
+      ...msg,
+      nickname: user?.nickname ?? "알 수 없음",
+      profile_image: user?.profile_image ?? null
+    };
+  });
 
   return (
     <main className="flex flex-col h-screen">
@@ -83,16 +98,16 @@ export default function Page () {
             </span>
           </div>
           {/* 대화 */}
-          {messages.map((msg) => (
+          {messagesWithUsername.map((msg) => (
             <div key={msg.id} className="flex gap-3">
               {/* TODO: 프로필 이미지 추가 */}
               <div className="flex flex-col items-start max-w-[70%]">
-                <p className="text-xs text-muted-foreground mb-1">{msg.username}</p>
+                <p className="text-xs text-muted-foreground mb-1">{msg.nickname}</p>
                 <div className="px-4 py-2 rounded-2xl bg-card border border-border">
                   {msg.content}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {toKstTime(msg.createdAt)}
+                  {toKstTime(msg.created_at)}
                 </p>
               </div>
             </div>
