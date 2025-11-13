@@ -10,6 +10,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/lib/axios"
 import { mutate } from "swr"
 import { z } from "zod"
+import Link from "next/link"
 
 type Props = {
   initialTab: "login" | "signup"
@@ -182,7 +183,12 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="login-password">비밀번호</label>
+                <div className="flex items-center justify-between">
+                    <label htmlFor="login-password">비밀번호</label>
+                        <Link href="/auth/forgot" className="text-xs text-primary hover:underline">
+                                비밀번호 찾기
+                        </Link>
+                </div>
                 <Input
                   id="login-password"
                   type="password"
@@ -193,7 +199,7 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
                 />
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col gap-2">
+            <CardFooter className="flex gap-2">
               <Button type="submit" className="w-full" variant="hero" disabled={isLoading}>
                 {isLoading ? "로그인 중..." : "로그인"}
               </Button>
