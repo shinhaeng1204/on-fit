@@ -1,8 +1,7 @@
-'use client';
-
 import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
-import { Dumbbell } from 'lucide-react';
+import { Dumbbell, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import PreferredExercisesEditor from '@/app/mypage/components/_client/PreferredExercisesEditor'; // 👈 아래 파일
 
 export default function PreferredExercisesSection({
   exercises,
@@ -21,15 +20,9 @@ export default function PreferredExercisesSection({
       </CardHeader>
 
       <CardContent className={cn('pb-5', className)}>
-        <div className="flex flex-wrap gap-2">
-          {exercises.map((label) => (
-            <span
-              key={label}
-              className="rounded-full bg-secondary/30 px-3 py-1 text-sm hover:bg-secondary/50 transition-colors"
-            >
-              {label}
-            </span>
-          ))}
+        <div className="rounded-lg bg-secondary/30 p-4 transition-colors">
+          {/* 👇 작은 클라 섬: 보기/편집 모드 전환 + 저장만 담당 */}
+          <PreferredExercisesEditor initial={exercises ?? []} />
         </div>
       </CardContent>
     </>

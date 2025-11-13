@@ -1,4 +1,3 @@
-// src/app/mypage/layout.tsx
 import type { ReactNode } from 'react';
 import { ToastProvider } from '@/app/mypage/components/Toast';
 import MyPageHeader from '@/app/mypage/components/MyPageHeader';
