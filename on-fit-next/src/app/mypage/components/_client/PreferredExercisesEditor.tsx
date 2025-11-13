@@ -29,14 +29,18 @@ export default function PreferredExercisesEditor({ initial }: Props) {
   };
 
   const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      addTag(input);
-    }
-    if (e.key === 'Backspace' && input === '' && draft.length) {
-      removeTag(draft[draft.length - 1]);
-    }
-  };
+  // ✅ 한글 입력 조합 중이면 아무 것도 하지 않음
+  if (e.nativeEvent.isComposing) return;
+
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    addTag(e.currentTarget.value); // ✅ 여기서도 input 대신 현재 값 사용
+  }
+
+  if (e.key === 'Backspace' && e.currentTarget.value === '' && draft.length) {
+    removeTag(draft[draft.length - 1]);
+  }
+};
 
   const startEdit = () => {
     setDraft(tags);
