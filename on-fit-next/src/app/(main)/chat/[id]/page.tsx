@@ -7,7 +7,7 @@ import {useParams} from "next/navigation";
 import {useEffect, useState} from "react";
 import {api} from "@/lib/axios";
 import {subscribeMessages} from "@/lib/realtime";
-import {toKstTime} from "@/lib/dateFormatter";
+import {toKstDate, toKstTime} from "@/lib/dateFormatter";
 
 interface Message {
   id: string;
@@ -22,11 +22,21 @@ interface Profile {
   profile_image: string | null;
 }
 
+interface RoomInfo {
+  title: string;
+  location: string;
+  created_at: string;
+  current_participants: number;
+  max_participants: number;
+  host : Profile
+}
+
 export default function Page () {
   const params = useParams()
   const roomId = params?.id as string
   const [messages, setMessages] = useState<Message[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
+  const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [content, setContent] = useState<string>("")
 
   const sendMessage = async (e: React.FormEvent) => {
@@ -54,6 +64,17 @@ export default function Page () {
     };
     fetchMessages();
 
+    const fetchRoomInfo = async () => {
+      try {
+        const res = await api.get(`/api/chat/${roomId}`);
+        setRoomInfo(res.data.post);
+      } catch (err) {
+        console.error("방 정보 불러오기 실패:", err);
+      }
+    };
+
+    fetchRoomInfo()
+
     const unsubscribe = subscribeMessages(roomId, (msg) => {
       setMessages((prev) => [...prev, msg]);
     });
@@ -76,15 +97,15 @@ export default function Page () {
         <div className="container mx-auto px-4 py-3 flex flex-wrap gap-4 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <MapPin className="h-4 w-4" />
-            <p>강남구 역삼동 체육관</p>
+            <p>{roomInfo?.location}</p>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="h-4 w-4" />
-            <p>11월 5일 19:00</p>
+            <p>{toKstDate(roomInfo?.created_at)} {toKstTime(roomInfo?.created_at)}</p>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Users className="h-4 w-4" />
-            <p>3/6명</p>
+            <p>{roomInfo?.current_participants}/{roomInfo?.max_participants}명</p>
           </div>
         </div>
       </div>
@@ -94,7 +115,7 @@ export default function Page () {
           {/* 개설 주최자 소개 */}
           <div className="flex justify-center">
             <span className="bg-secondary/50 text-muted-foreground text-xs px-3 py-1 rounded-full">
-              운동왕님이 채팅방을 개설했습니다.
+              {roomInfo?.host.nickname ?? "알수없음"}님이 채팅방을 개설했습니다.
             </span>
           </div>
           {/* 대화 */}
