@@ -1,26 +1,34 @@
-'use client';
 
+import type { ReactNode } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/common/Tabs';
 import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
 import StatusPill from '@/app/mypage/components/StatusPill';
 import { cn } from '@/lib/utils';
 
-type ActivityItem = { id: string; title: string; date: string; status: 'open' | 'close' };
+type ActivityItem = {
+  id: string;
+  title: string;
+  date: string; 
+  status: 'open' | 'close';
+};
+
+type ActivityTabsProps = {
+  defaultTab?: string;
+  tabs: { key: string; label: ReactNode; items: ActivityItem[] }[];
+  className?: string;
+};
 
 export default function ActivityTabs({
   defaultTab = 'participated',
   tabs,
   className,
-}: {
-  defaultTab?: string;
-  tabs: { key: string; label: React.ReactNode; items: ActivityItem[] }[];
-  className?: string;
-}) {
+}: ActivityTabsProps) {
   return (
     <>
       <CardHeader>
         <CardTitle>활동 내역</CardTitle>
       </CardHeader>
+
       <CardContent className={cn('pb-5', className)}>
         <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
@@ -37,7 +45,7 @@ export default function ActivityTabs({
                 {t.items.map((a) => (
                   <div
                     key={a.id}
-                    className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg"
+                    className="flex items-center justify-between rounded-lg bg-secondary/30 p-3"
                   >
                     <div>
                       <p className="font-medium">{a.title}</p>
@@ -46,8 +54,7 @@ export default function ActivityTabs({
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <StatusPill status={a.status}/>
-                      
+                      <StatusPill status={a.status} />
                     </div>
                   </div>
                 ))}
@@ -60,11 +67,8 @@ export default function ActivityTabs({
   );
 }
 
-function formatDate(iso: string) {
-  // 간단 표기: YYYY.MM.DD
-  const d = new Date(iso);
-  const y = d.getFullYear();
-  const m = `${d.getMonth() + 1}`.padStart(2, '0');
-  const da = `${d.getDate()}`.padStart(2, '0');
-  return `${y}.${m}.${da}`;
+function formatDate(raw: string) {
+  const dateOnly = raw.split('T')[0]; 
+  const [y, m, d] = dateOnly.split('-');
+  return `${y}.${m}.${d}`;
 }
