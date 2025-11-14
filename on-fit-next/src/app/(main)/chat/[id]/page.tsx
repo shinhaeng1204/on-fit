@@ -3,7 +3,6 @@ import RoomInfo from "@/components/chat/RoomInfo";
 import ChatConversation from "@/components/chat/ChatConversation";
 
 export default function Page () {
-
   return (
     <main className="flex flex-col h-screen">
       {/* 채팅 방 정보 컴포넌트 */}

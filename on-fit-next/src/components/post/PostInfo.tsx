@@ -28,7 +28,6 @@ export default function PostInfo () {
         setError(null)
 
         const res = await api.get(`/api/posts/${id}`)
-        console.log(res)
         if(!mounted) return
         setData(res.data.item)
       } catch (e: any) {
@@ -45,20 +44,30 @@ export default function PostInfo () {
 
   const handleJoinChat = async () => {
     try {
-      if(data?.room_id) {
-        router.push(`/chat/${data.room_id}`)
-        return
+      if (!data?.room_id) {
+        // 룸이 없으면 생성 (호스트)
+        const res = await api.post("/api/chat", { postId: id });
+        const { roomId } = res.data;
+        router.push(`/chat/${roomId}`);
+        return;
       }
 
-      const res = await api.post("/api/chat", {postId: id})
-      const {roomId} = res.data
+      // 이미 참여 중인지 확인 (서버에서 확인 가능)
+      const res = await api.post("/api/chat/check-join", { roomId: data.room_id });
+      const { joined } = res.data;
+      console.log(joined)
 
-      router.push(`/chat/${roomId}`)
-    } catch (err) {
-      console.error("채팅방 생성 실패", err.response?.data || err.message)
-      alert("채팅방 생성 중 오류가 발생했습니다.")
+      if (!joined) {
+        // 아직 참여하지 않은 경우만 join API 호출
+        await api.post("/api/chat/join", { postId: id });
+      }
+
+      router.push(`/chat/${data.room_id}`);
+    } catch (err: any) {
+      console.error("채팅방 참여 실패", err.response?.data || err.message);
+      alert("채팅방 참여 중 오류가 발생했습니다.");
     }
-  }
+  };
 
   return (
     <>

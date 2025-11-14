@@ -1,11 +1,13 @@
 'use client'
 
-import {Calendar, MapPin, Users} from "lucide-react";
+import {Calendar, MapPin, Users, EllipsisVertical} from "lucide-react";
 import {toKstDate, toKstTime} from "@/lib/dateFormatter";
 import {useEffect, useState} from "react";
 import {RoomInfoData} from '@/types/chat.ts'
 import {api} from "@/lib/axios";
 import {useParams} from "next/navigation";
+import Header from "@/components/common/Header";
+import {Button} from "@/components/common/Button";
 
 export default function RoomInfo () {
   const params = useParams()
@@ -27,6 +29,14 @@ export default function RoomInfo () {
 
   return (
     <>
+      <Header
+        variant="back"
+        title="뒤로"
+        containerClassName="bg-card/80 backdrop-blur-sm border-b border-border"
+        right={<>
+          <Button variant="ghost" className="cursor-pointer"><EllipsisVertical className="w-4 h-4" /></Button>
+        </>}
+      ></Header>
       {/* 채팅방 정보 */}
       <div className="bg-card/50 border-b border-border">
         <div className="container mx-auto px-4 py-3 flex flex-wrap gap-4 text-sm">
