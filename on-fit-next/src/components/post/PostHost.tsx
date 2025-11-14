@@ -6,7 +6,7 @@ import Badge from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
 import { UserPlus } from 'lucide-react';
 import ProfileModal from '@/components/profile/ProfileModal';
-import type { Profile } from '@/types/profilemodal'; 
+import type { Profile } from '@/types/profilemodal';
 
 // TODO: 나중에 이 데이터는 API(Supabase)에서 받아오도록 변경
 const hostMock = {
@@ -55,19 +55,19 @@ export default function PostHost() {
               onClick={() => setOpen(true)}
             >
               {/* TODO: 나중에 프로필 이미지 공통 컴포넌트로 교체 */}
-             <span
-  className="
-    flex h-10 w-10 items-center justify-center rounded-full 
-    bg-primary/15 text-sm font-semibold
-    cursor-pointer                            /* 손가락 커서 */
-    transition-transform transition-shadow transition-colors duration-200
-    hover:bg-primary/30                       /* 배경 조금 더 밝게 */
-    hover:shadow-[0_0_12px_rgba(34,197,94,0.6)] /* 초록빛 글로우 느낌 (원하는 색으로 수정 가능) */
-   hover:opacity-80                        /* 살짝 확대 */
-  "
->
-  {hostProfile.nickname.slice(0, 1)}
-</span>
+              <span
+                className="
+                  flex h-10 w-10 items-center justify-center rounded-full
+                  bg-primary/15 text-sm font-semibold
+                  cursor-pointer
+                  transition-all duration-200
+                  hover:bg-primary/30
+                  hover:shadow-[0_0_12px_rgba(34,197,94,0.6)]
+                  hover:scale-105
+                "
+              >
+                {hostProfile.nickname.slice(0, 1)}
+              </span>
 
               <div>
                 <p className="font-semibold">{hostMock.name}</p>
