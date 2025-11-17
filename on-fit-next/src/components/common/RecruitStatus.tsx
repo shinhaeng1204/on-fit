@@ -1,12 +1,18 @@
-import {RecruitStatusProps} from "@/types/post";
+import { RecruitStatusProps } from "@/types/post";
 
-const StatusStyles = {
-  모집중 : 'bg-success text-success-foreground',
-  마감 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-}
+const StatusStyles: Record<string, string> = {
+  모집중: "bg-success text-success-foreground",
+  마감: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+};
 
-export default function RecruitStatus ({type, text, className = '' } : RecruitStatusProps) {
-  const colorClass = StatusStyles[type];
+export default function RecruitStatus({
+  type,
+  text,
+  className = "",
+}: RecruitStatusProps) {
+  const colorClass =
+    StatusStyles[type] ??
+    "bg-secondary text-secondary-foreground hover:bg-secondary/80";
 
   return (
     <span
@@ -15,5 +21,5 @@ export default function RecruitStatus ({type, text, className = '' } : RecruitSt
     >
       {text}
     </span>
-  )
+  );
 }
