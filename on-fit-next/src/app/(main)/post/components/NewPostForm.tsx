@@ -42,13 +42,11 @@ export default function NewPostForm({sportOption, levelOption}: {
       setLoading(true)
       const res = await api.post('/api/posts', payload)
       alert('모임이 생성되었습니다!')
-      form.reset()                 
-      setSport(sportOption[0])    
+      form.reset()
+      setSport(sportOption[0])
       setLevel(levelOption[0])
 
       router.push('/');
-      
-      
     } catch (err: any) {
       alert(`생성 실패: ${err.response?.data?.error ?? err.message}`)
     } finally {
