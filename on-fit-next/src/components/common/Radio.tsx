@@ -16,7 +16,7 @@ const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
         <input
           type="radio"
           className={
-          cn("flex items-center justify-center h-4 w-4 appearance-none rounded-full border border-primary outline-none",
+          cn("flex items-center justify-center h-4 w-4 appearance-none rounded-full border border-primary outline-none cursor-pointer",
             "checked:before:content-[''] checked:before:w-2.5 checked:before:h-2.5 checked:before:rounded-full checked:before:bg-primary",
             radioClassName,
           )}
