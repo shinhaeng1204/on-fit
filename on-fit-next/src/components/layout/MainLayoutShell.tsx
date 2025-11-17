@@ -6,20 +6,27 @@ import BottomNav from "@/components/common/BottomNav"
 import LocationModal from "@/components/header/LocationModal"
 import { MapPin, Bell, Sun } from "lucide-react"
 import AuthControls from "@/components/header/AuthControls"
-import {usePathname} from "next/navigation";
+import { usePathname } from "next/navigation";
 
 export default function MainLayoutShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
+
+  const isPost = pathname.startsWith('/post')
+  const isChatRoot = pathname === '/chat'          //  딱 /chat만
+  const isChatOther = pathname.startsWith('/chat') && !isChatRoot // /chat/... 전부
+
   return (
-    <div className={pathname.startsWith('/chat') ? "" : "mb-24"}>
-      {pathname.startsWith('/post') ? (
+    <div className={isChatOther ? "" : "mb-24"}>
+      {/* 헤더 */}
+      {isPost ? (
         <Header
           variant="back"
           title="목록으로"
           containerClassName="bg-card/80 backdrop-blur-sm border-b border-border"
-        />) : pathname.startsWith('/chat') ? (<></>) :
-        (<Header
+        />
+      ) : isChatOther ? null : ( // /chat/... 에서는 헤더 숨김, /chat 은 보임
+        <Header
           variant="main"
           title="온 핏"
           titleClassName="text-2xl text-gradient-brand font-bold"
@@ -32,14 +39,16 @@ export default function MainLayoutShell({ children }: { children: React.ReactNod
               <AuthControls />
             </div>
           }
-        />)}
+        />
+      )}
 
-      <div className="">
+      <div>
         {children}
         <LocationModal open={open} onClose={() => setOpen(false)} />
       </div>
 
-      {(pathname.startsWith('/chat') || pathname.startsWith('/post')) ? null : <BottomNav />}
+      {/* BottomNav: /post 나 /chat/... 에서는 숨김, /chat 은 보임 */}
+      {(isPost || isChatOther) ? null : <BottomNav />}
     </div>
   )
 }

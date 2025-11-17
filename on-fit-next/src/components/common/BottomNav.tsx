@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from "@/lib/utils"
-import { Calendar, Home, User } from "lucide-react"
+import { Calendar, Home, MessageCircle, User } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -11,7 +11,9 @@ export default function BottomNav() {
   const navItems = [
     { icon: Home, label: "홈", path: "/" },
     { icon: Calendar, label: "달력", path: "/calendar" },
+    {icon: MessageCircle, label: "채팅", path: "/chat"},
     { icon: User, label: "마이페이지", path: "/mypage" },
+    
   ]
 
   return (

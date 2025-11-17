@@ -6,6 +6,7 @@ import { Input } from '@/components/common/Input'
 import { TextArea } from '@/components/common/TextArea'
 import { Button } from '@/components/common/Button'
 import { api } from '@/lib/axios'
+import { useRouter } from 'next/navigation'
 
 export default function NewPostForm({sportOption, levelOption}: {
     sportOption: string[]; levelOption: string[];
@@ -13,6 +14,8 @@ export default function NewPostForm({sportOption, levelOption}: {
   const [sport, setSport] = useState(sportOption[0])
   const [level, setLevel] = useState(levelOption[0])
   const [loading, setLoading] = useState(false)
+
+  const router = useRouter();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -42,6 +45,9 @@ export default function NewPostForm({sportOption, levelOption}: {
       form.reset()                 
       setSport(sportOption[0])    
       setLevel(levelOption[0])
+
+      router.push('/');
+      
       
     } catch (err: any) {
       alert(`생성 실패: ${err.response?.data?.error ?? err.message}`)
@@ -125,7 +131,7 @@ export default function NewPostForm({sportOption, levelOption}: {
             {/* 버튼 */}
             <div className="flex gap-3 pt-4">
               <Button type="button" variant="outline" fullWidth>취소</Button>
-              <Button type="submit" variant="hero" fullWidth disabled={loading}>
+              <Button type="submit" variant="hero" fullWidth disabled={loading} >
                 {loading ? '등록 중…' : '모임 만들기'}
               </Button>
             </div>
