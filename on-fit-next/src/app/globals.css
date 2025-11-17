@@ -173,6 +173,10 @@
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--primary) / 0.5);
   }
+
+  ::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(2);
+  }
 }
 
 @utility text-gradient-brand {
