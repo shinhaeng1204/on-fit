@@ -52,19 +52,24 @@ export default function PostInfo () {
         return;
       }
 
-      // 이미 참여 중인지 확인 (서버에서 확인 가능)
-      const res = await api.post("/api/chat/check-join", { roomId: data.room_id });
-      const { joined } = res.data;
-      console.log(joined)
-
-      if (!joined) {
-        // 아직 참여하지 않은 경우만 join API 호출
-        await api.post("/api/chat/join", { postId: id });
-      }
+      await api.post("/api/chat/join", { postId: id });
 
       router.push(`/chat/${data.room_id}`);
     } catch (err: any) {
-      console.error("채팅방 참여 실패", err.response?.data || err.message);
+      const status = err?.response?.status;
+      const message =
+        err?.response?.data?.error ??
+        err?.response?.data?.message ??
+        err.message;
+      console.error("채팅방 참여 실패", message);
+
+      // 정원 초과 처리(409)
+      if (status === 409) {
+        alert("모집 인원이 이미 가득 찼습니다.");
+        return;
+      }
+
+      // 기타 에러 처리
       alert("채팅방 참여 중 오류가 발생했습니다.");
     }
   };

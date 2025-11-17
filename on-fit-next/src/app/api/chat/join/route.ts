@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   if (!postId) return fail("postId는 필수입니다.");
 
   try {
-    // posts 테이블에서 room_id, current_participants, max_participants 조회
+    // posts 테이블에서 room 정보 조회 (lock 용도로 단일 조회)
     const { data: post, error: postError } = await supabase
       .from("posts")
       .select("room_id, current_participants, max_participants")
@@ -19,44 +19,50 @@ export async function POST(req: Request) {
       .single();
 
     if (postError || !post) return fail("Post를 찾을 수 없습니다.", 404);
-
     const roomId = post.room_id;
-
     if (!roomId) return fail("해당 포스트에 연결된 방이 없습니다.", 400);
 
-    // 이미 최대 인원에 도달했는지 체크
-    if (post.current_participants >= post.max_participants) {
-      return fail("참여 인원이 최대치에 도달했습니다.", 400);
-    }
-
-    // participants 테이블에서 이미 참여 여부 확인
+    // 참가자 확인 + 정원 체크
     const { data: existing } = await supabase
       .from("participants")
-      .select("id")
-      .eq("room_id", roomId)
+      .select("room_id, user_id")
+      .filter("room_id", "eq", roomId) // UUID vs string 안전하게
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (existing) return ok({ joined: true, message: "이미 참여 중입니다." });
+    // 이미 참여 중이면 current_participants 증가 없이 바로 return
+    if (existing) {
+      return ok({ joined: true, message: "이미 참여 중입니다." });
+    }
 
-    // participants 테이블에 insert (upsert 사용으로 PK 중복 방지)
-    const { data: participant, error: participantError } = await supabase
+
+
+    // 정원 체크
+    if (post.current_participants >= post.max_participants) {
+      return fail("참여 인원이 최대치에 도달했습니다.", 409);
+    }
+
+    // 참가자 등록 (중복 방지 위해 insert 사용)
+    const { data: participant, error: insertError } = await supabase
       .from("participants")
-      .upsert(
-        {
-          room_id: roomId,
-          user_id: user.id,
-          role: "member",
-          joined_at: new Date().toISOString(),
-        },
-        { onConflict: ["room_id", "user_id"] }
-      )
+      .insert({
+        room_id: roomId,
+        user_id: user.id,
+        role: "member",
+        joined_at: new Date().toISOString(),
+      })
       .select()
       .single();
 
-    if (participantError) return fail(participantError.message, 500);
+    // UNIQUE 충돌 처리
+    if (insertError) {
+      if (insertError.code === "23505") {
+        return ok({ joined: true, message: "이미 참여 중입니다." });
+      }
+      return fail(insertError.message, 500);
+    }
 
-    // posts 테이블 current_participants 증가
+    // posts.current_participants 증가
     const { error: updateError } = await supabase
       .from("posts")
       .update({ current_participants: post.current_participants + 1 })
@@ -64,7 +70,11 @@ export async function POST(req: Request) {
 
     if (updateError) return fail(updateError.message, 500);
 
-    return ok({ joined: true, participant, current_participants: post.current_participants + 1 });
+    return ok({
+      joined: true,
+      participant,
+      current_participants: post.current_participants + 1,
+    });
 
   } catch (err: any) {
     console.error("Join API error:", err);
