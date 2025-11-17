@@ -6,6 +6,7 @@ import {subscribeMessages} from "@/lib/realtime";
 import {Message, Profile} from "@/types/chat";
 import {toKstTime} from "@/lib/dateFormatter";
 import {useParams} from "next/navigation";
+import ProfileImage from "@/components/common/ProfileImage";
 
 export default function ChatConversation () {
   const params = useParams()
@@ -46,7 +47,7 @@ export default function ChatConversation () {
           {/* 대화 */}
           {messagesWithUsername.map((msg) => (
             <div key={msg.id} className="flex gap-3">
-              {/* TODO: 프로필 이미지 추가 */}
+              <ProfileImage src={msg.profile_image ?? ''} profileName={msg.nickname}/>
               <div className="flex flex-col items-start max-w-[70%]">
                 <p className="text-xs text-muted-foreground mb-1">{msg.nickname}</p>
                 <div className="px-4 py-2 rounded-2xl bg-card border border-border">

@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Check, Edit2, X } from 'lucide-react';
 import { useToast } from '@/app/mypage/components/Toast';
 import { updateNicknameDirect } from '@/app/mypage/actions';
+import ProfileImage from "@/components/common/ProfileImage";
 
 type Props = {
   name: string;
@@ -80,31 +81,12 @@ export default function ProfileHeader({
     <CardContent className={cn('pt-6', className)}>
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
         {/* 아바타 */}
-        <div
-          className="relative inline-flex h-24 w-24 items-center justify-center rounded-full overflow-hidden bg-primary/10 text-primary"
-          aria-label={displayName}
-          role="img"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={avatarUrl || '/default-avatar.png'}
-            alt={displayName}
-            className={cn(
-              'h-full w-full object-cover transition-opacity duration-300',
-              (imgError || !avatarUrl) && 'opacity-0'
-            )}
-            onError={() => setImgError(true)}
-          />
-          <span
-            className={cn(
-              'absolute inset-0 flex items-center justify-center text-2xl font-semibold select-none transition-opacity duration-300',
-              !imgError && avatarUrl ? 'opacity-0' : 'opacity-100'
-            )}
-          >
-            {initial}
-          </span>
-        </div>
-
+        <ProfileImage src={avatarUrl}
+                      profileName={initial}
+                      containerClassName="relative inline-flex h-24 w-24 items-center justify-center rounded-full overflow-hidden bg-primary/10 text-primary"
+                      imageClassName="h-full w-full object-cover transition-opacity duration-300"
+                      alt={displayName}
+                      fakeProfileClassName="absolute inset-0 flex items-center justify-center text-2xl font-semibold select-none transition-opacity duration-300"/>
         {/* 닉네임 + 레벨 + 통계 */}
         <div className="flex-1 text-center sm:text-left w-full">
           {/* 🔹 닉네임 (수정 모드 포함) */}
