@@ -4,8 +4,8 @@ import {createClient} from "@supabase/supabase-js";
 import { createSupabaseServerClient } from '@/lib/route-helpers';
 
 export async function POST(req: Request) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
     const supabase = await createSupabaseServerClient();
 
   try {

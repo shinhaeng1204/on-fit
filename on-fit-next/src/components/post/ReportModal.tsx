@@ -21,7 +21,7 @@ export default function ReportModal ({
    postTitle,
    targetUserId
   } : ReportModalProps) {
-  const [loading, setLoading] = useState<Boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null)
   const [reason, setReason] = useState('')
   const [details, setDetails] = useState("")

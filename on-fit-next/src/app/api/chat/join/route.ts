@@ -49,7 +49,7 @@ export async function POST(req: Request) {
           role: "member",
           joined_at: new Date().toISOString(),
         },
-        { onConflict: ["room_id", "user_id"] }
+        { onConflict: "room_id,user_id" }
       )
       .select()
       .single();
