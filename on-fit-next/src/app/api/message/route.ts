@@ -65,7 +65,6 @@ export async function GET(req: Request) {
   const supabase = await createSupabaseServerClient()
 
   try {
-    // 1️⃣ 메시지 가져오기
     const { data: messages, error: messagesError } = await supabase
       .from("messages")
       .select("*")
@@ -74,7 +73,6 @@ export async function GET(req: Request) {
 
     if (messagesError) throw messagesError;
 
-    // 2️⃣ 참여자 프로필 가져오기
     const userIds = Array.from(new Set(messages.map(m => m.sender_id)));
 
     const { data: profiles, error: profilesError } = await supabase
