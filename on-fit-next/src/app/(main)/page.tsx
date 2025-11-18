@@ -1,10 +1,8 @@
 // app/(main)/page.tsx  ← 'use client' 삭제 (서버 컴포넌트)
 import Image from "next/image"
-import Link from "next/link"
 import HeroImage from "@/assets/hero.jpeg"
 
-import Filter from "@/components/main/Filter"          // (클라라면 그대로 사용 가능: 서버 → 클라 자식 OK)
-import FitCard from "@/components/main/FitCard"        // (이벤트/상태 없으면 서버 컴포넌트 유지 권장)
+import FitList from "@/components/main/FitList"
 import AfterAuthRefetchOnce from "./AfterAuthRefetchOnce" // (클라 컴포넌트: 그대로 OK)
 import { toKstDate, toKstTime } from "@/lib/dateFormatter"
 import { Button } from "@/components/common/Button"
@@ -17,11 +15,11 @@ type FitRow = {
   title: string
   location: string
   date_time: string
-  level: 'bronze' | 'silver' | 'gold' | 'platinum'
+  level: '브론즈' | '실버' | '골드' 
   status: '모집중' | '마감'
   current_participants: number
   max_participants: number
-  author?: string
+  author?: string | null
 }
 
 // 최신 목록이 항상 필요하면:
@@ -46,7 +44,7 @@ async function getFits(): Promise<FitRow[]> {
 export default async function Home() {
   const items = await getFits()
 
-  const cards = items.map((r) => ({
+ const cards = items.map((r) => ({
     id: r.id,
     sport: r.sport,
     title: r.title,
@@ -55,7 +53,7 @@ export default async function Home() {
     time: toKstTime(r.date_time),
     currentParticipants: r.current_participants,
     maxParticipants: r.max_participants,
-    level: r.level,
+    level: r.level as "브론즈" | "실버" | "골드",
     status: r.status,
     author: r.author ?? "익명",
   }))
@@ -103,25 +101,8 @@ export default async function Home() {
       </section>
 
       {/* 필터 (클라 컴포넌트여도 OK) */}
-      <Filter />
+            <FitList items={cards} />
 
-      <div className="mx-5 flex flex-col gap-6 md:grid md:grid-cols-3">
-        {cards.map((fit) => (
-          <FitCard
-            key={fit.id}
-            id={fit.id}
-            title={fit.title}
-            status={fit.status}
-            sport={fit.sport}
-            location={fit.location}
-            date={fit.date}
-            time={fit.time}
-            currentParticipants={fit.currentParticipants}
-            maxParticipants={fit.maxParticipants}
-            level={fit.level}
-          />
-        ))}
-      </div>
     </>
   )
 }
