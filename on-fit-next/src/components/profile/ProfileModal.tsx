@@ -44,15 +44,15 @@ export default function ProfileModal({
             {/* 프로필 기본 정보 */}
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-lg font-bold">
-                {profile.nickname.slice(0, 1)}
+                {profile?.nickname.slice(0, 1)}
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-base font-semibold">{profile.nickname}</p>
-                  <Badge type={profile.level} />
+                  <p className="text-base font-semibold">{profile?.nickname}</p>
+                  <Badge type={profile?.level} />
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  참여 {profile.stats.joinedCount}회 · 팔로워 {profile.stats.followerCount}명
+                  참여 {profile?.stats?.joinedCount ?? 0}회 · 팔로워 {profile?.stats?.followerCount ?? 0}명
                 </p>
               </div>
             </div>
@@ -64,7 +64,7 @@ export default function ProfileModal({
                   <Users className="h-4 w-4" />
                   팔로워
                 </div>
-                <p className="mt-1 text-sm">{profile.stats.followerCount}명</p>
+                <p className="mt-1 text-sm">{profile?.stats?.followerCount ?? 0}명</p>
               </div>
             </div>
 

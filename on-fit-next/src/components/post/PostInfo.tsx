@@ -64,7 +64,20 @@ export default function PostInfo() {
 
       router.push(`/chat/${data.room_id}`);
     } catch (err: any) {
-      console.error("채팅방 참여 실패", err.response?.data || err.message);
+      const status = err?.response?.status;
+      const message =
+        err?.response?.data?.error ??
+        err?.response?.data?.message ??
+        err.message;
+      console.error("채팅방 참여 실패", message);
+
+      // 정원 초과 처리(409)
+      if (status === 409) {
+        alert("모집 인원이 이미 가득 찼습니다.");
+        return;
+      }
+
+      // 기타 에러 처리
       alert("채팅방 참여 중 오류가 발생했습니다.");
     }
   };
