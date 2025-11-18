@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { Card, CardContent, CardHeader } from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
@@ -8,32 +8,27 @@ import { UserPlus } from 'lucide-react';
 import ProfileModal from '@/components/profile/ProfileModal';
 import type { Profile } from '@/types/profilemodal';
 import ProfileImage from "@/components/common/ProfileImage";
-
-// TODO: 나중에 이 데이터는 API(Supabase)에서 받아오도록 변경
-const hostMock = {
-  id: 'host_1',
-  name: '운동왕',
-  participationCount: 23,
-  followerCount: 0,
-};
+import {api} from "@/lib/axios";
+import {useParams} from "next/navigation";
 
 export default function PostHost() {
+  const { id } = useParams();
   // 모달 열림/닫힘 상태
   const [open, setOpen] = useState(false);
   // 임시 팔로우 상태 (나중에는 Supabase로 교체)
   const [isFollowing, setIsFollowing] = useState(false);
+  const [data, setData] = useState<Profile | null>(null)
 
-  // Profile 타입에 맞게 변환
-  const hostProfile: Profile = {
-    id: hostMock.id,
-    nickname: hostMock.name,
-    level: 'gold',
-    avatarUrl: null,
-    stats: {
-      joinedCount: hostMock.participationCount,
-      followerCount: hostMock.followerCount,
-    },
-  };
+  useEffect(() => {
+    (async() => {
+      try {
+        const res = await api.get(`/api/posts/${id}`);
+        setData(res.data.item.profiles)
+      } catch (e) {
+        console.error(e)
+      }
+    })()
+  }, [])
 
   const handleToggleFollow = async (profileId: string) => {
     // TODO: 여기서 나중에 Supabase에 팔로우 API 호출
@@ -55,13 +50,13 @@ export default function PostHost() {
               className="flex items-center gap-3 text-left"
               onClick={() => setOpen(true)}
             >
-              <ProfileImage profileName={hostProfile.nickname}/>
+              <ProfileImage profileName={data?.nickname}/>
               <div>
-                <p className="font-semibold">{hostMock.name}</p>
+                <p className="font-semibold">{data?.nickname}</p>
                 <div className="mt-1 flex items-center gap-2">
                   <Badge type="gold" />
                   <span className="text-xs text-muted-foreground">
-                    참여 {hostMock.participationCount}회
+                    참여 {data?.stats?.joinedCount ?? 0}회
                   </span>
                 </div>
               </div>
@@ -84,7 +79,7 @@ export default function PostHost() {
       <ProfileModal
         open={open}
         onClose={() => setOpen(false)}
-        profile={hostProfile}
+        profile={data}
         isFollowing={isFollowing}
         onToggleFollow={handleToggleFollow}
       />

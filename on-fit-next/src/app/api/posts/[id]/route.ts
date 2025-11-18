@@ -7,8 +7,21 @@ export async function GET(_: Request, context: Ctx) {
   const { id } = await context.params
   const supabase = await createSupabaseServerClient();
 
-  const { data, error } = await supabase.from('posts').select('*').eq('id', id).single()
-  if (error) return NextResponse.json({ ok: false, error }, { status: 404 })
+  const { data, error } = await supabase
+    .from('posts')
+    .select( `
+      *,
+        profiles:author_id(
+        *
+      )
+    `)
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    return NextResponse.json({ok: false, error}, {status: 404})
+  }
+
   return NextResponse.json({ ok: true, item: data })
 }
 
