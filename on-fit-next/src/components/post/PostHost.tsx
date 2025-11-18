@@ -17,7 +17,7 @@ export default function PostHost() {
   const [open, setOpen] = useState(false);
   // 임시 팔로우 상태 (나중에는 Supabase로 교체)
   const [isFollowing, setIsFollowing] = useState(false);
-  const [data, setData] = useState<Profile>(null)
+  const [data, setData] = useState<Profile | null>(null)
 
   useEffect(() => {
     (async() => {
