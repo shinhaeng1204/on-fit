@@ -1,14 +1,14 @@
 'use client'
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import {Button} from "@/components/common/Button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/common/Card";
 import StatusBadge from "@/components/main/StatusBadge";
 import {Calendar as CalendarIcon,ArrowLeft,ChevronLeft,ChevronRight,Sparkles, ChevronsLeftRight} from "lucide-react";
 import { cn } from "@/lib/utils";
-import BottomNav from "@/components/common/BottomNav";
+import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/common/Dialog";
 
-type EventType = "participated" | "hosting" | "following";
+type EventType = "member" | "hosting" | "following";
 
 interface CalendarEvent {
   id: string;
@@ -27,16 +27,16 @@ interface CalendarEvent {
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
 
   const typeColors: Record<EventType, string> = {
-    participated:
-      "bg-primary/10 border-primary/50 text-primary hover:bg-primary/20 hover:border-primary",
     hosting:
+      "bg-primary/10 border-primary/50 text-primary hover:bg-primary/20 hover:border-primary",
+    member:
       "bg-accent/10 border-accent/50 text-accent hover:bg-accent/20 hover:border-accent",
     following:
       "bg-warning/10 border-warning/50 text-warning hover:bg-warning/20 hover:border-warning",
   };
 
   const typeLabels: Record<EventType, string> = {
-    participated: "참여 중",
+    member: "참여 중",
     hosting: "주최",
     following: "팔로우",
   };
@@ -48,6 +48,8 @@ export default function Calendar() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -91,10 +93,10 @@ export default function Calendar() {
           setEvents([]);
           return;
         }
+        console.log(json)
         const mapped: CalendarEvent[] = (json.items ?? []).map((p: any) => {
           const d = new Date(p.date);
           const hhmm = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-          console.log(d)
           return {
             id: p.id,
             date: d,
@@ -102,7 +104,7 @@ export default function Calendar() {
             sport: p.sport ?? "기타",
             time: hhmm,
             // 지금은 모두 'hosting'으로; 필요하면 서버에서 type 내려주거나 로직 추가
-            type: "hosting",
+            type: (p.type ?? "member") as EventType
           };
         });
         setEvents(mapped);
@@ -135,12 +137,15 @@ export default function Calendar() {
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                뒤로
-              </Button>
-            </Link>
+            <Button
+              href="/"
+              variant="ghost"
+              size="sm"
+              className="-ml-2"
+              leftIcon={<ArrowLeft className="h-4 w-4" />}
+            >
+              뒤로
+            </Button>
             <h1 className="text-xl font-bold flex items-center gap-2">
               <CalendarIcon className="h-5 w-5 text-primary" />
               <span className="bg-gradient-brand bg-clip-text text-transparent">운동 달력</span>
@@ -152,6 +157,7 @@ export default function Calendar() {
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <Card className="bg-gradeient-to-r from-primary/5 to-accent/5">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
           <div className="flex items-center justify-between">
             <Button variant="outline" size="icon" onClick={previousMonth} className="hover:bg-primary/10 hover:border-primary transition-all">
               <ChevronLeft className="h-5 w-5" />
@@ -166,6 +172,7 @@ export default function Calendar() {
               <ChevronRight className="h-5 w-5" />
             </Button>
           </div>
+          </CardHeader>
 
           <CardHeader>
             {loading && (
@@ -204,6 +211,10 @@ export default function Calendar() {
                 return (
                   <div 
                     key={day}
+                    onClick={() => {
+                      setSelectedDate(day);
+                      setIsDialogOpen(true);
+                    }}
                     className={cn(
                       "aspect-square p-2 rounded-lg border-2 transition-all duration-300 cursor-pointer",
                       "hover:border-primary hover:shadow-lg hover:scale-105 hover:-translate-y-1",
@@ -224,18 +235,16 @@ export default function Calendar() {
                       </span>
                       <div className="flex-1 space-y-1 overflow-hidden">
                         {eventsForDay.slice(0,2).map((event)=>(
-                          <Link key={event.id} href={`/post/${event.id}`}>
                             <div 
+                              key={event.id ?? `${event.title}-${event.date.getTime()}`}
                               className={cn(
                                 "text-xs px-2 py-1 rounded-md border font-medium truncate transition-all duration-200",
-                                "hover:scale-110 hover:shadow-md",
                                 typeColors[event.type]
                               )}
                               title={`${event.title || event.sport} ${event.time}`}
                             >
                                 {event.sport}
                             </div>
-                          </Link>
                         ))}
                         {eventsForDay.length > 2 && (
                           <div className="text-xs text-muted-foreground font-semibold flex items-center gap-1" >
@@ -275,6 +284,57 @@ export default function Calendar() {
           </CardContent>
         </Card>
 
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-2xl">
+                <Sparkles className="h-6 w-6 text-accent" />
+                {selectedDate && `${currentDate.getFullYear()}년 ${monthNames[currentDate.getMonth()]} ${selectedDate}일 일정`}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="mt-4">
+              {selectedDate && getEventsForDay(selectedDate).length > 0 ? (
+                <div className="space-y-3">
+                  {getEventsForDay(selectedDate).map((event) => (
+                    <Link 
+                      key={event.id} 
+                      href={`/post/${event.id}`}
+                      onClick={() => setIsDialogOpen(false)}
+                    >
+                      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-accent/10 to-primary/5 rounded-lg border-2 border-transparent hover:border-accent hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+                        <div>
+                          <p className="font-semibold mb-1 text-lg">{event.title}</p>
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <CalendarIcon className="h-4 w-4" />
+                              {event.time}
+                            </span>
+                            <span className="text-primary font-medium">{event.sport}</span>
+                          </div>
+                        </div>
+                        <StatusBadge 
+                          variant={
+                            event.type === "hosting" ? "default" : 
+                            event.type === "member" ? "success" : "warning"
+                          }
+                          className="text-sm px-3 py-1"
+                        >
+                          {typeLabels[event.type]}
+                        </StatusBadge>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground text-lg">이 날짜에는 일정이 없습니다</p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+
         <Card className="border-2">
           <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
             <CardTitle className="flex items-center gap-2">
@@ -302,7 +362,7 @@ export default function Calendar() {
                           variant={
                             event.type === "hosting"
                               ? "default"
-                              :event.type === "participated"
+                              :event.type === "member"
                               ?"success"
                               : "warning"
                           }
