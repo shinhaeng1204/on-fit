@@ -20,7 +20,9 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
+        working-directory: ./on-fit-next
         run: npm install
 
       - name: Build project
+        working-directory: ./on-fit-next
         run: npm run build
