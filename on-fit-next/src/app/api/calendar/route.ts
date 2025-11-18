@@ -5,6 +5,8 @@ import { createSupabaseServerClient } from '@/lib/route-helpers'
 export async function GET(req: Request) {
   const supabase = await createSupabaseServerClient()
 
+  const {data : {user}} = await supabase.auth.getUser()
+
   // 쿼리(from, to)가 없으면 "현재 달" 기본
   const url = new URL(req.url)
   const fromQ = url.searchParams.get('from')
@@ -16,7 +18,7 @@ export async function GET(req: Request) {
 
   const { data, error } = await supabase
     .from('posts')
-    .select('id, title, sport, date_time')  
+    .select('id, title, sport, date_time, author_id')  
     .gte('date_time', fromISO)             
     .lt('date_time', toISO)                
     .order('date_time', { ascending: true })
@@ -29,6 +31,7 @@ export async function GET(req: Request) {
     title: p.title ?? '',
     sport: p.sport ?? '기타',
     date: p.date_time as string, // ISO 문자열
+    type : p.author_id === user?.id ? "hosting" : "member" as const,
   }))
 
   return NextResponse.json({ ok:true, items })
