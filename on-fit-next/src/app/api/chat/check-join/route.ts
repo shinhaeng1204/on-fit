@@ -19,5 +19,5 @@ export async function POST(req: Request) {
 
   console.log(existing)
 
-  return ok({ joined: !!existing });
+  return ok({ joined: !!existing })
 }
