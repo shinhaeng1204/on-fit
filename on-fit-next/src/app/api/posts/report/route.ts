@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     const accessToken = cookieStore.get("sb-access-token")?.value
 
     if (!accessToken) {
-      return NextResponse.json({ error: "Unauthorized: token missing" }, { status: 401 })
+      return NextResponse.json({ error: "로그인 후 이용할 수 있습니다." }, { status: 401 })
     }
 
     const authClient = createClient(url, anonKey)
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
     if (userError || !userData?.user) {
       console.error("Invalid user token:", userError)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "유저 정보를 불러올 수 없습니다." }, { status: 401 })
     }
 
     const user = userData.user

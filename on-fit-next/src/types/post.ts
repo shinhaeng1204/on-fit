@@ -1,4 +1,6 @@
 /* 모집 상태 */
+import {Profile} from "@/types/profilemodal";
+
 type StatusVariant = 'open' | 'close'
 
 export interface RecruitStatusProps {
@@ -37,4 +39,5 @@ export interface postType {
   equipment: string,
   fee : string,
   room_id: string,
+  profile : Profile
 }
