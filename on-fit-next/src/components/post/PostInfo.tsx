@@ -203,7 +203,7 @@ export default function PostInfo() {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         postId={String(id)}
-        postTitle={data?.title ?? ""} targetUserId={data?.profile?.id}      />
+        postTitle={data?.title ?? ""} targetUserId={data?.profile?.id ?? ""}      />
     </>
   );
 }
