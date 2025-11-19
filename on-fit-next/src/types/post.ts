@@ -1,4 +1,6 @@
 /* 모집 상태 */
+import {Profile} from "@/types/profilemodal";
+
 export interface RecruitStatusProps {
   type: string,
   text: string,
@@ -16,12 +18,13 @@ export interface BadgeProps {
 /* 운동 종류 */
 export interface postType {
   id: string,
-  key : string,
+  key? : string,
   title : string,
   sport : string,
   status : string,
   description? : string,
   location : string,
+  profile? : Profile,
   date_time? : string,
   date: string,
   time: string,

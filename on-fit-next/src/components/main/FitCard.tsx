@@ -6,6 +6,7 @@ import Link from "next/link";
 import RecruitStatus from "@/components/common/RecruitStatus";
 import React from "react";
 import {postType} from "@/types/post";
+import StatusBadge from "@/components/main/StatusBadge";
 
 export default function FitCard({
     id,
@@ -54,14 +55,14 @@ export default function FitCard({
           <div className="flex items-center gap-2">
             <Users className="text-muted-foreground w-4 h-4" />
             <span className="text-muted-foreground text-sm font-semibold">
-              {currentParticipants}/{maxParticipants}명
+              {current_participants}/{max_participants}명
             </span>
           </div>
 
           <div className="py-[0.1px] w-full bg-muted-foreground/40 mt-2 backdrop-blur-3xl" />
 
           <div className="flex mt-2 justify-between items-center">
-            <Badge type={levelToBadgeVariant[level]} className="max-h-6" />
+            <Badge type={level} className="max-h-6" />
             <Button variant="sport" size="sm">
               참여하기
             </Button>
