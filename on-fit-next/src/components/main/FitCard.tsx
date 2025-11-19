@@ -4,6 +4,8 @@ import StatusBadge from "./StatusBadge";
 import Badge from "../common/Badge";
 import { Button } from "../common/Button";
 import Link from "next/link";
+import RecruitStatus from "@/components/common/RecruitStatus";
+import React from "react";
 
 type Level = 'bronze' | 'silver' | 'gold' | 'platinum'
 
@@ -19,7 +21,6 @@ interface FitCardProps {
   currentParticipants: number
   maxParticipants: number
 }
-
 
 export default function FitCard({
     id,
@@ -41,7 +42,7 @@ export default function FitCard({
                     <DumbbellIcon className="h-5 text-primary"/>
                 </div>
                 <div className="flex flex-col">
-                    <StatusBadge variant="success" className="absolute right-5">{status}</StatusBadge>
+                    <RecruitStatus className="absolute right-5" type={status} text={status} />
                     <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">{title}</h3>
                     <span className="text-sm text-muted-foreground">{sport}</span>
                 </div>

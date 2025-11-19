@@ -1,8 +1,6 @@
 /* 모집 상태 */
-type StatusVariant = 'open' | 'close'
-
 export interface RecruitStatusProps {
-  type: StatusVariant,
+  type: string,
   text: string,
   className?: string, // 추가 스타일
 }

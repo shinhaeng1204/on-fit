@@ -38,7 +38,6 @@ export async function GET() {
   }
 
   // posts 정보 가져오기 (제목/종목/태그 등을 쓰고 싶으면 여기)
-  // posts 정보 가져오기 (제목/종목/태그 등을 쓰고 싶으면 여기)
   const postIds = Array.from(
     new Set((rooms ?? []).map((r) => r.post_id).filter(Boolean) as string[])
   );
