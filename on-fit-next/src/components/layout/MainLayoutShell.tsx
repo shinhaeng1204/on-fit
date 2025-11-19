@@ -33,8 +33,7 @@ export default function MainLayoutShell({ children }: { children: React.ReactNod
           titleClassName="text-2xl text-gradient-brand font-bold"
           containerClassName="bg-card/80 backdrop-blur-sm border-b border-border"
           right={
-            <div className="flex items-center gap-5">
-              <Sun className="w-5 h-5" />
+            <div className="flex items-center gap-3 md:gap-5 absolute right-3">
               <MapPin className="w-5 h-5 cursor-pointer" onClick={() => setOpen(true)} />
               <Bell className="w-5 h-5" />
               <AuthControls />
