@@ -5,6 +5,7 @@ import Image from "next/image"
 import { useAuthSession } from "@/hooks/useAuthSession"
 import LogoutButton from "../auth/LogoutButton"
 import { Button } from "../common/Button"
+import { LogOut, User } from "lucide-react"
 
 export default function AuthControls(){
     const {session, ready} = useAuthSession()
@@ -19,14 +20,23 @@ export default function AuthControls(){
     //비로그인 상태
     if(!session){
         return (
+            <>
             <div className="flex items-center gap-2">
                 <Link href="/auth">
-                    <Button size="sm" variant="outline">로그인</Button>
+                    <div className="hidden md:block">
+    <Button size="sm" variant="outline">로그인</Button>
+    
+  </div>
+                    <User className="md:hidden block"/>
                 </Link>
+                
+            </div>
+            <div className="hidden md:block">
                 <Link href="/auth?tab=signup">
-                    <Button size="sm" variant="hero">회원가입</Button>
+                <Button size="sm" variant="hero">회원가입</Button>
                 </Link>
             </div>
+            </>
         )
     }
 
@@ -42,14 +52,17 @@ export default function AuthControls(){
         ''
 
     return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center md:gap-3">
       <span
     className="flex-1 min-w-[3em] max-w-[16em] whitespace-nowrap truncate text-sm text-muted-foreground"
     title={name}
   >
     {name}
   </span>
-      <LogoutButton />
+  
+        <LogoutButton/>
+   
+      
     </div>
   )
 }

@@ -13,6 +13,7 @@ interface ChatRoomListItem {
   lastMessage: string;
   lastMessageTime: string;
   role: 'host' | 'member' | string;
+  unreadCount: number;
 }
 
 export default function ChatRoomList() {
@@ -72,6 +73,7 @@ export default function ChatRoomList() {
           time={formatTime(room.lastMessageTime)}
           chatting={room.lastMessage}
           tag={room.tag ?? room.sport ?? ''}
+          unreadCount={room.unreadCount}
         />
       ))}
     </div>
