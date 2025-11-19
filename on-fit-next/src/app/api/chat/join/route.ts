@@ -35,10 +35,15 @@ export async function POST(req: Request) {
       return ok({ joined: true, message: "이미 참여 중입니다." });
     }
 
+    // 이미 꽉 찬 상태라면
+    if (post.max_participants && post.current_participants >= post.max_participants) {
+      // 먼저 DB 상태 변경
+      await supabase
+        .from("posts")
+        .update({ status: "마감" })
+        .eq("id", postId);
 
-
-    // 정원 체크
-    if (post.current_participants >= post.max_participants) {
+      // 그 다음에 실패 반환 (API 종료)
       return fail("참여 인원이 최대치에 도달했습니다.", 409);
     }
 

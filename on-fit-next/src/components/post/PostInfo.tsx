@@ -54,13 +54,7 @@ export default function PostInfo() {
         return;
       }
 
-      // 이미 참여 중인지 확인
-      const res = await api.post("/api/chat/check-join", { roomId: data.room_id });
-      const { joined } = res.data;
-
-      if (!joined) {
-        await api.post("/api/chat/join", { postId: id });
-      }
+      await api.post("/api/chat/join", { postId: id });
 
       router.push(`/chat/${data.room_id}`);
     } catch (err: any) {

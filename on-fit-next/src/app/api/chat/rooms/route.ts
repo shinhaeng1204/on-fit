@@ -20,7 +20,6 @@ export async function GET() {
 
     if(!myParticipants || myParticipants.length === 0) {
         return ok({items: []}); // 참가한 방이 없는 경우
-
     }
 
     const roomIds = Array.from(
@@ -39,29 +38,29 @@ export async function GET() {
   }
 
   // posts 정보 가져오기 (제목/종목/태그 등을 쓰고 싶으면 여기)
-// posts 정보 가져오기 (제목/종목/태그 등을 쓰고 싶으면 여기)
-const postIds = Array.from(
-  new Set((rooms ?? []).map((r) => r.post_id).filter(Boolean) as string[])
-);
+  // posts 정보 가져오기 (제목/종목/태그 등을 쓰고 싶으면 여기)
+  const postIds = Array.from(
+    new Set((rooms ?? []).map((r) => r.post_id).filter(Boolean) as string[])
+  );
 
-let postsById: Record<string, any> = {};
+  let postsById: Record<string, any> = {};
 
-if (postIds.length > 0) {
-  const { data: posts, error: postsError } = await supabase
-    .from("posts")
-    .select("id, title, sport, location, date_time") // 실제 컬럼 이름으로 수정
-    .in("id", postIds);                              // 이 방들에 해당하는 post만
+  if (postIds.length > 0) {
+    const { data: posts, error: postsError } = await supabase
+      .from("posts")
+      .select("id, title, sport, location, date_time") // 실제 컬럼 이름으로 수정
+      .in("id", postIds);                              // 이 방들에 해당하는 post만
 
-  if (postsError) {
-    console.error("postsError:", postsError);
-    // 실패해도 리스트 자체는 보여주고 싶으면 여기서 그냥 넘어가면 됨
-  } else if (posts) {
-    postsById = posts.reduce((acc, post) => {
-      acc[post.id] = post;
-      return acc;
-    }, {} as Record<string, any>);
+    if (postsError) {
+      console.error("postsError:", postsError);
+      // 실패해도 리스트 자체는 보여주고 싶으면 여기서 그냥 넘어가면 됨
+    } else if (posts) {
+      postsById = posts.reduce((acc, post) => {
+        acc[post.id] = post;
+        return acc;
+      }, {} as Record<string, any>);
+    }
   }
-}
 
    // 각 방의 마지막 메시지 가져오기
   const { data: messages, error: messagesError } = await supabase
@@ -74,10 +73,10 @@ if (postIds.length > 0) {
     console.error("messagesError:", messagesError);
     // 실패해도 리스트는 보여주고 lastMessage는 비워둠
   }
-const lastMessageByRoom: Record<
-    string,
-    { content: string | null; created_at: string | null }
-  > = {};
+  const lastMessageByRoom: Record<
+      string,
+      { content: string | null; created_at: string | null }
+    > = {};
 
   (messages ?? []).forEach((m) => {
     const rid = m.room_id as string;
