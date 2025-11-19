@@ -26,6 +26,7 @@ export default function ProfileModal({
   const handleFollowClick = () => {
     onToggleFollow(profile.id);
   };
+  console.log(profile)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
@@ -52,7 +53,7 @@ export default function ProfileModal({
                   <Badge type={profile?.level} />
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  참여 {profile?.stats?.joinedCount ?? 0}회 · 팔로워 {profile?.stats?.followerCount ?? 0}명
+                  참여 {profile?.stats?.joinedCount ?? 0}회 · 팔로워 {profile?.followers?.length ?? 0}명
                 </p>
               </div>
             </div>
@@ -64,7 +65,7 @@ export default function ProfileModal({
                   <Users className="h-4 w-4" />
                   팔로워
                 </div>
-                <p className="mt-1 text-sm">{profile?.stats?.followerCount ?? 0}명</p>
+                <p className="mt-1 text-sm">{profile?.followers?.length ?? 0}명</p>
               </div>
             </div>
 
