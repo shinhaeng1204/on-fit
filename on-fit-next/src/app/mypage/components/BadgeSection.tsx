@@ -1,11 +1,12 @@
 import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
 import LevelBadge from '@/components/common/Badge';
 import { cn } from '@/lib/utils';
+import {BadgeType} from "@/types/post";
 
 type BadgeItem = {
   id: string;
   name: string;
-  level: 'bronze' | 'silver' | 'gold' | 'platinum';
+  level: BadgeType;
   description?: string;
 };
 

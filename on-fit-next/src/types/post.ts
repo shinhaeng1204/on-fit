@@ -1,43 +1,37 @@
 /* 모집 상태 */
 import {Profile} from "@/types/profilemodal";
 
-type StatusVariant = 'open' | 'close'
-
 export interface RecruitStatusProps {
-  type: StatusVariant,
+  type: string,
   text: string,
   className?: string, // 추가 스타일
 }
 
 /* 실력 */
-type BadgeVariant = 'bronze' | 'silver' | 'gold' | 'platinum'
+export type BadgeType = "브론즈" | "실버" | "골드" | "플레티넘";
 
 export interface BadgeProps {
-  type: BadgeVariant,
-  className?: string, // 추가 스타일
+  type: BadgeType;
+  className?: string;
 }
 
 /* 운동 종류 */
-export const sportType = {
-  1 : '배드민턴',
-  2 : '축구',
-  3 : '야구',
-}
-
-export type SportsCode = keyof typeof sportType
-
 export interface postType {
+  id: string,
+  key? : string,
   title : string,
-  sport : SportsCode,
-  status : StatusVariant,
-  description : string,
+  sport : string,
+  status : string,
+  description? : string,
   location : string,
-  date_time : string,
+  profile? : Profile,
+  date_time? : string,
+  date: string,
+  time: string,
   max_participants : number,
   current_participants : number,
-  level : BadgeVariant,
-  equipment: string,
-  fee : string,
-  room_id: string,
-  profile : Profile
+  level : BadgeType,
+  equipment?: string,
+  fee? : string,
+  room_id?: string,
 }

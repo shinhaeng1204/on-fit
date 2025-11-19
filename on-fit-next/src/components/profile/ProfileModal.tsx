@@ -50,7 +50,7 @@ export default function ProfileModal({
               <div>
                 <div className="flex items-center gap-2">
                   <p className="text-base font-semibold">{profile?.nickname}</p>
-                  <Badge type={profile?.level} />
+                  <Badge type={profile?.level ?? "브론즈"} />
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   참여 {profile?.stats?.joinedCount ?? 0}회 · 팔로워 {profile?.followers?.length ?? 0}명

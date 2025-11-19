@@ -8,11 +8,12 @@ import { Check, Edit2, X } from 'lucide-react';
 import { useToast } from '@/app/mypage/components/Toast';
 import { updateNicknameDirect } from '@/app/mypage/actions';
 import ProfileImage from "@/components/common/ProfileImage";
+import {BadgeType} from "@/types/post";
 
 type Props = {
   name: string;
   avatarUrl?: string;
-  level: 'bronze' | 'silver' | 'gold' | 'platinum';
+  level: BadgeType;
   stats: {
     participationCount: number;
     followerCount: number;
