@@ -1,51 +1,24 @@
-'use client'
-
-import { Calendar, DumbbellIcon, MapPin, Users } from "lucide-react"
-import { Card, CardContent, CardHeader } from "../common/Card"
-import StatusBadge from "./StatusBadge"
-import Badge from "../common/Badge"
-import type { BadgeProps } from "@/types/post"  
-import { Button } from "../common/Button"
-import Link from "next/link"
-
-
-export type Level = "브론즈" | "실버" | "골드"
-
-export interface FitCardProps {
-  id: string
-  title: string
-  status: string
-  sport: string
-  location: string
-  date: string
-  time: string
-  level: Level
-  currentParticipants: number
-  maxParticipants: number
-  author?: string
-}
-
-type BadgeVariant = BadgeProps["type"]
-
-
-const levelToBadgeVariant: Record<Level, BadgeVariant> = {
-  브론즈: "bronze",
-  실버: "silver",
-  골드: "gold",
-}
+import { Calendar, DumbbellIcon, MapPin, Users } from "lucide-react";
+import { Card, CardContent, CardHeader } from "../common/Card";
+import Badge from "../common/Badge";
+import { Button } from "../common/Button";
+import Link from "next/link";
+import RecruitStatus from "@/components/common/RecruitStatus";
+import React from "react";
+import {postType} from "@/types/post";
 
 export default function FitCard({
-  id,
-  title,
-  status,
-  sport,
-  location,
-  date,
-  time,
-  currentParticipants,
-  maxParticipants,
-  level,
-}: FitCardProps) {
+    id,
+    title,
+    status,
+    sport,
+    location,
+    date,
+    time,
+    current_participants,
+    max_participants,
+    level,
+}: postType) {
   return (
     <Link href={`/post/${id}`}>
       <Card className="group hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary cursor-pointer">
@@ -63,7 +36,6 @@ export default function FitCard({
             <span className="text-sm text-muted-foreground">{sport}</span>
           </div>
         </CardHeader>
-
         <CardContent className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <MapPin className="text-muted-foreground w-4 h-4" />

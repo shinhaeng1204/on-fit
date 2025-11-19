@@ -3,7 +3,7 @@ import { createSupabaseServerClient, fail, ok, requireUserOr401 } from "@/lib/ro
 export async function POST(req: Request) {
   const supabase = await createSupabaseServerClient();
 
-  // 로그인 유저 확인
+  // 로그인 확인
   const { ok: hasUser, user, response } = await requireUserOr401(supabase);
   if (!hasUser) return response;
 
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   if (!postId) return fail("postId는 필수입니다.");
 
   try {
-    // posts 테이블에서 room 정보 조회 (lock 용도로 단일 조회)
+    // posts 테이블 조회
     const { data: post, error: postError } = await supabase
       .from("posts")
       .select("room_id, current_participants, max_participants")
@@ -22,27 +22,34 @@ export async function POST(req: Request) {
     const roomId = post.room_id;
     if (!roomId) return fail("해당 포스트에 연결된 방이 없습니다.", 400);
 
-    // 참가자 확인 + 정원 체크
+    // 이미 참여 확인
     const { data: existing } = await supabase
       .from("participants")
       .select("room_id, user_id")
-      .filter("room_id", "eq", roomId) // UUID vs string 안전하게
+      .eq("room_id", roomId)
       .eq("user_id", user.id)
       .maybeSingle();
 
-    // 이미 참여 중이면 current_participants 증가 없이 바로 return
     if (existing) {
       return ok({ joined: true, message: "이미 참여 중입니다." });
     }
 
+    // 정원 체크 및 상태 업데이트
+    let newStatus = post.current_participants + 1 >= post.max_participants
+      ? "마감"
+      : "모집중";
 
+    if (post.max_participants && post.current_participants >= post.max_participants) {
+      // 상태 먼저 업데이트 후 종료
+      await supabase
+        .from("posts")
+        .update({ status: newStatus })
+        .eq("id", postId);
 
-    // 정원 체크
-    if (post.current_participants >= post.max_participants) {
       return fail("참여 인원이 최대치에 도달했습니다.", 409);
     }
 
-    // 참가자 등록 (중복 방지 위해 insert 사용)
+    // 참가자 등록
     const { data: participant, error: insertError } = await supabase
       .from("participants")
       .upsert(
@@ -55,20 +62,17 @@ export async function POST(req: Request) {
         { onConflict: "room_id,user_id" }
       )
       .select()
-      .single();
+      .maybeSingle();
 
-    // UNIQUE 충돌 처리
-    if (insertError) {
-      if (insertError.code === "23505") {
-        return ok({ joined: true, message: "이미 참여 중입니다." });
-      }
-      return fail(insertError.message, 500);
-    }
+    if (insertError) return fail(insertError.message, 500);
 
-    // posts.current_participants 증가
+    // posts 업데이트: current + status
     const { error: updateError } = await supabase
       .from("posts")
-      .update({ current_participants: post.current_participants + 1 })
+      .update({
+        current_participants: post.current_participants + 1,
+        status: newStatus
+      })
       .eq("id", postId);
 
     if (updateError) return fail(updateError.message, 500);
@@ -77,6 +81,7 @@ export async function POST(req: Request) {
       joined: true,
       participant,
       current_participants: post.current_participants + 1,
+      status: newStatus
     });
 
   } catch (err: any) {

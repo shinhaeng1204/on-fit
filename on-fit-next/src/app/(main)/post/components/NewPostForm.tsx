@@ -106,7 +106,7 @@ export default function NewPostForm({sportOption, levelOption}: {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col space-y-2">
                 <label className={labelCls}>모집 인원 *</label>
-                <Input name="maxParticipants" type="number" placeholder="예: 6" required />
+                <Input name="maxParticipants" type="number" placeholder="예: 6" required min={2} />
               </div>
               <div className="flex flex-col space-y-2">
                 <label className={labelCls}>실력 기준 *</label>

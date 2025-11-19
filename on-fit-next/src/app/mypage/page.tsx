@@ -40,7 +40,7 @@ export default async function MyPage() {
 
   const name = profile?.nickname ?? '';
   const avatarUrl = profile?.profile_image ?? '';
-  const level = 'gold' as const;
+  const level = '골드' as const;
   const stats = {
     participationCount: 0,
     followerCount: profile.followers.length,
@@ -76,9 +76,9 @@ export default async function MyPage() {
         <BadgeSection
             titleIcon={<Trophy className="h-5 w-5 text-primary" />}
             badges={[
-            { id: '1', name: '브론즈 뱃지', level: 'bronze', description: '3회 참여' },
-            { id: '2', name: '실버 뱃지', level: 'silver', description: '10회 참여' },
-            { id: '3', name: '골드 뱃지', level: 'gold', description: '30회 참여' },
+            { id: '1', name: '브론즈 뱃지', level: '브론즈', description: '3회 참여' },
+            { id: '2', name: '실버 뱃지', level: '실버', description: '10회 참여' },
+            { id: '3', name: '골드 뱃지', level: '골드', description: '30회 참여' },
   ]}
 />
       </Card>
