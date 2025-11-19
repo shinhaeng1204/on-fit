@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from "react"
 import Filter, { FilterValue } from "./Filter"
-import FitCard, { FitCardProps } from "./FitCard"
+import FitCard from "./FitCard"
+import {postType} from "@/types/post";
 
 type Props = {
-  items: FitCardProps[]
+  items: postType[]
 }
 
 const initialFilter: FilterValue = {
