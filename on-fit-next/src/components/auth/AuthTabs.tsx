@@ -1,3 +1,4 @@
+//components/auth/AuthTabs.tsx
 'use client'
 
 import { useEffect, useMemo, useState } from "react"
@@ -11,6 +12,7 @@ import { api } from "@/lib/axios"
 import { mutate } from "swr"
 import { z } from "zod"
 import Link from "next/link"
+import { sbClient } from "@/lib/supabase-client"
 
 type Props = {
   initialTab: "login" | "signup"
@@ -89,7 +91,10 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
     setError(null)
     setNotice(null)
 
-    const r = loginSchema.safeParse({ email: loginEmail.trim(), password: loginPassword })
+    const r = loginSchema.safeParse({
+      email: loginEmail.trim(),
+      password: loginPassword,
+    })
     if (!r.success) {
       setIsLoading(false)
       setError(r.error.issues[0].message)
@@ -97,14 +102,35 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
     }
 
     try {
-      await api.post('/api/auth/login', {
+      // 1) 클라이언트 Supabase 로그인
+      const { data, error } = await sbClient.auth.signInWithPassword({
         email: r.data.email,
         password: r.data.password,
       })
-      await mutate('/api/auth/me')
-      router.push('/auth/check')
-    } catch (err: any) {
-      setError(normalizeAuthError(err?.response?.data?.error))
+
+      if (error || !data.session) {
+        setError("로그인 실패")
+        return
+      }
+
+      // 2) 서버에 세션 쿠키 굽기
+      await fetch("/api/auth/cookie", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+          expires_at: data.session.expires_at,
+        }),
+      })
+      await sbClient.auth.setSession(data.session);
+
+      // 3) 상태 동기화
+      await mutate("/api/auth/me")
+
+      // 4) 체크 페이지로
+      router.push("/auth/check")
     } finally {
       setIsLoading(false)
     }

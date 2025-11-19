@@ -1,28 +1,23 @@
 // app/auth/check/page.tsx
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
+import { createSupabaseServerClient } from "@/lib/route-helpers"
 
 export default async function AuthCheckPage() {
-  const access = (await cookies()).get("sb-access-token")?.value
-  if (!access) redirect("/auth")
+  const supabase = await createSupabaseServerClient()
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect("/auth")
 
-  const { data, error } = await supabase.auth.getUser(access)
-  if (error || !data.user) redirect("/auth")
-
+  // 프로필 체크
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", data.user.id)
+    .eq("id", user.id)
     .single()
 
   if (!profile?.nickname || !profile?.location) {
     redirect("/profile-setup")
   }
+
   redirect("/")
 }
