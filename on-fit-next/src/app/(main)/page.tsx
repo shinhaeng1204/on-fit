@@ -10,24 +10,12 @@ import { toKstDate, toKstTime } from "@/lib/dateFormatter"
 import { Button } from "@/components/common/Button"
 import { Plus } from "lucide-react"
 import { createSupabaseServerClient } from "@/lib/route-helpers"
-
-type FitRow = {
-  id: string
-  sport: string
-  title: string
-  location: string
-  date_time: string
-  level: 'bronze' | 'silver' | 'gold' | 'platinum'
-  status: '모집중' | '마감'
-  current_participants: number
-  max_participants: number
-  author?: string
-}
+import {postType} from "@/types/post";
 
 // 최신 목록이 항상 필요하면:
 export const revalidate = 0 // 혹은 export const dynamic = "force-dynamic"
 
-async function getFits(): Promise<FitRow[]> {
+async function getFits(): Promise<postType[]> {
   const supabase = await createSupabaseServerClient()
 
   const { data, error } = await supabase
@@ -53,11 +41,10 @@ export default async function Home() {
     location: r.location,
     date: toKstDate(r.date_time),
     time: toKstTime(r.date_time),
-    currentParticipants: r.current_participants,
-    maxParticipants: r.max_participants,
+    current_participants: r.current_participants,
+    max_participants: r.max_participants,
     level: r.level,
     status: r.status,
-    author: r.author ?? "익명",
   }))
 
   return (
@@ -116,8 +103,8 @@ export default async function Home() {
             location={fit.location}
             date={fit.date}
             time={fit.time}
-            currentParticipants={fit.currentParticipants}
-            maxParticipants={fit.maxParticipants}
+            current_participants={fit.current_participants}
+            max_participants={fit.max_participants}
             level={fit.level}
           />
         ))}

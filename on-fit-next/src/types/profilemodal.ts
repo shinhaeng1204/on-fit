@@ -1,6 +1,4 @@
-// src/types/profilemodal.ts  (지금 네가 만든 파일 기준)
-
-export type ProfileLevel = 'bronze' | 'silver' | 'gold' | 'platinum';
+import {BadgeType} from "@/types/post";
 
 export type ProfileStats = {
   joinedCount: number;
@@ -11,6 +9,6 @@ export type Profile = {
   id: string;
   nickname: string;
   avatarUrl?: string | null;
-  level: ProfileLevel;
+  level: BadgeType;
   stats: ProfileStats;
 };

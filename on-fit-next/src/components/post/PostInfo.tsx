@@ -147,7 +147,7 @@ export default function PostInfo() {
               <div>
                 <p className="text-sm font-medium mb-1">실력</p>
                 <p className="text-sm text-muted-foreground">
-                  <Badge type={"bronze"} />
+                  <Badge type={data?.level ?? "브론즈"} />
                 </p>
               </div>
             </div>

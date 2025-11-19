@@ -5,21 +5,7 @@ import { Button } from "../common/Button";
 import Link from "next/link";
 import RecruitStatus from "@/components/common/RecruitStatus";
 import React from "react";
-
-type Level = 'bronze' | 'silver' | 'gold' | 'platinum'
-
-interface FitCardProps {
-  id: string
-  title: string
-  status: string
-  sport: string
-  location: string
-  date: string
-  time: string
-  level: Level
-  currentParticipants: number
-  maxParticipants: number
-}
+import {postType} from "@/types/post";
 
 export default function FitCard({
     id,
@@ -29,10 +15,10 @@ export default function FitCard({
     location,
     date,
     time,
-    currentParticipants,
-    maxParticipants,
+    current_participants,
+    max_participants,
     level,
-}: FitCardProps){
+}: postType){
     return (
         <Link href={`/post/${id}`}>
         <Card className="group hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary cursor-pointer">
@@ -57,7 +43,7 @@ export default function FitCard({
                 </div>
                 <div className="flex items-center gap-2">
                     <Users className="text-muted-foreground w-4 h-4"/>
-                    <span className="text-muted-foreground text-sm font-semibold">{currentParticipants}/{maxParticipants}명</span>
+                    <span className="text-muted-foreground text-sm font-semibold">{current_participants}/{max_participants}명</span>
                 </div>
                 <div className="py-[0.1px] w-full bg-muted-foreground/40 mt-2 backdrop-blur-3xl"></div>
 

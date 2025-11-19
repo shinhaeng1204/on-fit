@@ -54,7 +54,7 @@ export default function PostHost() {
               <div>
                 <p className="font-semibold">{data?.nickname}</p>
                 <div className="mt-1 flex items-center gap-2">
-                  <Badge type="gold" />
+                  <Badge type="골드" />
                   <span className="text-xs text-muted-foreground">
                     참여 {data?.stats?.joinedCount ?? 0}회
                   </span>
