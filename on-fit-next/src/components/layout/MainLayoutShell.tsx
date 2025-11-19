@@ -15,6 +15,7 @@ export default function MainLayoutShell({ children }: { children: React.ReactNod
   const isPost = pathname.startsWith('/post')
   const isChatRoot = pathname === '/chat'          //  딱 /chat만
   const isChatOther = pathname.startsWith('/chat') && !isChatRoot // /chat/... 전부
+  const isCalendar = pathname.startsWith('/calendar') 
 
   return (
     <div className={isChatOther ? "" : "mb-24"}>
@@ -25,7 +26,7 @@ export default function MainLayoutShell({ children }: { children: React.ReactNod
           title="목록으로"
           containerClassName="bg-card/80 backdrop-blur-sm border-b border-border"
         />
-      ) : isChatOther ? null : ( // /chat/... 에서는 헤더 숨김, /chat 은 보임
+      ) : (isChatOther || isCalendar) ? null : ( // /chat/... 에서는 헤더 숨김, /chat 은 보임
         <Header
           variant="main"
           title="온 핏"

@@ -1,10 +1,8 @@
 // app/(main)/page.tsx  ← 'use client' 삭제 (서버 컴포넌트)
 import Image from "next/image"
-import Link from "next/link"
 import HeroImage from "@/assets/hero.jpeg"
 
-import Filter from "@/components/main/Filter"          // (클라라면 그대로 사용 가능: 서버 → 클라 자식 OK)
-import FitCard from "@/components/main/FitCard"        // (이벤트/상태 없으면 서버 컴포넌트 유지 권장)
+import FitList from "@/components/main/FitList"
 import AfterAuthRefetchOnce from "./AfterAuthRefetchOnce" // (클라 컴포넌트: 그대로 OK)
 import { toKstDate, toKstTime } from "@/lib/dateFormatter"
 import { Button } from "@/components/common/Button"
@@ -34,7 +32,7 @@ async function getFits(): Promise<postType[]> {
 export default async function Home() {
   const items = await getFits()
 
-  const cards = items.map((r) => ({
+ const cards = items.map((r) => ({
     id: r.id,
     sport: r.sport,
     title: r.title,
@@ -90,25 +88,7 @@ export default async function Home() {
       </section>
 
       {/* 필터 (클라 컴포넌트여도 OK) */}
-      <Filter />
-
-      <div className="mx-5 flex flex-col gap-6 md:grid md:grid-cols-3">
-        {cards.map((fit) => (
-          <FitCard
-            key={fit.id}
-            id={fit.id}
-            title={fit.title}
-            status={fit.status}
-            sport={fit.sport}
-            location={fit.location}
-            date={fit.date}
-            time={fit.time}
-            current_participants={fit.current_participants}
-            max_participants={fit.max_participants}
-            level={fit.level}
-          />
-        ))}
-      </div>
+            <FitList items={cards} />
     </>
   )
 }
