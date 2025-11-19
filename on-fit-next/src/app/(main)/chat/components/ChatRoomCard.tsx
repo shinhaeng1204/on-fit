@@ -50,7 +50,7 @@ export default function ChatRoomCard({
             width={60}
             height={60}
             alt="profile"
-            className="rounded-xl"
+            className="rounded-full"
           />
 
           {/* unreadCount 뱃지 */}
@@ -69,7 +69,7 @@ export default function ChatRoomCard({
           )}
         </div>
 
-        <div className="gap-2 flex-1">
+        <div className="gap-2">
           <div className="flex flex-row gap-2">
             <h3 className="font-bold text-ellipsis md:w-full whitespace-nowrap overflow-hidden">
               {title}
