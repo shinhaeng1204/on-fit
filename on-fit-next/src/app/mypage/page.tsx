@@ -30,7 +30,7 @@ export default async function MyPage() {
 
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('id, email, nickname, profile_image, location, sport_preference')
+    .select('id, email, nickname, profile_image, followers, following, location, sport_preference')
     .eq('id', user.id)
     .single();
 
@@ -43,8 +43,8 @@ export default async function MyPage() {
   const level = 'gold' as const;
   const stats = {
     participationCount: 0,
-    followerCount: 0,
-    followingCount: 0,
+    followerCount: profile.followers.length,
+    followingCount: profile.following.length,
   };
   const region = profile?.location ?? '';
   const exercises = (profile?.sport_preference ?? []) as string[];

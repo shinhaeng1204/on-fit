@@ -12,5 +12,7 @@ export type Profile = {
   nickname: string;
   avatarUrl?: string | null;
   level: ProfileLevel;
+  followers?: string[];
+  following?: string[];
   stats: ProfileStats;
 };

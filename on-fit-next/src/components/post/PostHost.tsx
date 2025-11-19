@@ -10,6 +10,7 @@ import type { Profile } from '@/types/profilemodal';
 import ProfileImage from "@/components/common/ProfileImage";
 import {api} from "@/lib/axios";
 import {useParams} from "next/navigation";
+import { sbClient } from '@/lib/supabase-client';
 
 export default function PostHost() {
   const { id } = useParams();
@@ -18,6 +19,8 @@ export default function PostHost() {
   // 임시 팔로우 상태 (나중에는 Supabase로 교체)
   const [isFollowing, setIsFollowing] = useState(false);
   const [data, setData] = useState<Profile | null>(null)
+
+  const [myId, setMyId] = useState<string | null>(null)
 
   useEffect(() => {
     (async() => {
@@ -28,12 +31,63 @@ export default function PostHost() {
         console.error(e)
       }
     })()
+  }, [id])
+
+  //내 유저 정보 가져오기
+  useEffect(()=>{
+    (async ()=>{
+      const {data:{user}} = await sbClient.auth.getUser()
+      setMyId(user?.id ?? null)
+    })()
   }, [])
 
+  //초기 팔로우 상태 계산
+  //내 profiles.folowing 배열에 주최자 Id가 있는지 확인
+  useEffect(()=>{
+    (async ()=>{
+      if(!myId || !data?.id) return
+      const {data:me, error} = await sbClient
+        .from('profiles')
+        .select('following')
+        .eq('id', myId)
+        .single()
+      
+      if(!error){
+        const following = (me?.following ?? []) as string[]
+        setIsFollowing(following.includes(data.id))
+      }
+    })()
+  }, [myId, data?.id])
+
   const handleToggleFollow = async (profileId: string) => {
-    // TODO: 여기서 나중에 Supabase에 팔로우 API 호출
-    // ex) await supabase.from('follows').upsert({ follower_id: myId, following_id: profileId })
-    setIsFollowing((prev) => !prev);
+    if(!myId){
+      alert("로그인이 필요합니다.")
+      return
+    }
+
+    const prev = isFollowing
+    setIsFollowing(!prev)
+
+    const fn = prev ? 'unfollow_user' : 'follow_user'
+    const { data, error } = await sbClient.rpc(fn, { p_target: profileId })
+    console.log(data)
+    const nextCount = data?.[0]?.follower_count ?? null
+    if(error){
+      console.error(error)
+      setIsFollowing(prev)
+      alert(prev ? '언팔로우에 실패했습니다.' : '팔로우에 실패했습니다.')
+      return
+    }
+    setData(d =>
+      d
+        ? {
+            ...d,
+            followers: isFollowing
+              ? (d.followers ?? []).filter(uid => uid !== myId)
+              : [...(d.followers ?? []), myId],
+          }
+        : d
+    );
   };
 
   return (
