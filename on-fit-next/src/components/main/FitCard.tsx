@@ -1,6 +1,5 @@
-import { Calendar, Dumbbell, DumbbellIcon, MapPin, Users } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../common/Card";
-import StatusBadge from "./StatusBadge";
+import { Calendar, DumbbellIcon, MapPin, Users } from "lucide-react";
+import { Card, CardContent, CardHeader } from "../common/Card";
 import Badge from "../common/Badge";
 import { Button } from "../common/Button";
 import Link from "next/link";

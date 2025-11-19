@@ -25,7 +25,7 @@ export type SportsCode = keyof typeof sportType
 export interface postType {
   title : string,
   sport : SportsCode,
-  status : StatusVariant,
+  status : string,
   description : string,
   location : string,
   date_time : string,
