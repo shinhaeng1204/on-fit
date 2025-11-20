@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar, MapPin, Users, EllipsisVertical } from "lucide-react";
+import {Calendar, MapPin, Users, EllipsisVertical, UserMinus} from "lucide-react";
 import { toKstDate, toKstTime } from "@/lib/dateFormatter";
 import { useEffect, useState } from "react";
 import { RoomInfoData } from "@/types/chat";
@@ -13,6 +13,7 @@ export default function RoomInfo() {
   const params = useParams();
   const roomId = params?.id as string;
   const [roomInfo, setRoomInfo] = useState<RoomInfoData | null>(null);
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     if (!roomId) return;
@@ -29,6 +30,17 @@ export default function RoomInfo() {
     fetchRoomInfo();
   }, [roomId]);
 
+  const MenuList = (
+    <div className="z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2">
+      <div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent focus:text-accent-foreground">
+        참여자보기
+      </div>
+      <div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent focus:text-accent-foreground">
+        나가기
+      </div>
+    </div>
+  )
+
   return (
     <>
       <Header
@@ -37,9 +49,30 @@ export default function RoomInfo() {
         containerClassName="bg-card/80 backdrop-blur-sm border-b border-border"
         right={
           <>
-            <Button variant="ghost" className="cursor-pointer">
+            <Button onClick={() => setOpen((v) => !v)} variant="ghost" className="cursor-pointer">
               <EllipsisVertical className="w-4 h-4" />
             </Button>
+
+            {open && (
+              <div
+                className="absolute flex flex-col right-10 top-15 z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
+                <Button
+                  variant="ghost"
+                  size="inherit"
+                  leftIcon={(<Users />)}
+                  className="block flex justify-start px-2 py-1 cursor-pointer">
+                  참여자 보기
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="inherit"
+                  leftIcon={(<UserMinus/>)}
+                  className="block flex justify-start text-destructive px-2 py-1 mt-1 cursor-pointer">
+                   나가기
+                </Button>
+              </div>
+            )}
           </>
         }
       />
@@ -48,12 +81,12 @@ export default function RoomInfo() {
       <div className="bg-card/50 border-b border-border">
         <div className="container mx-auto px-4 py-3 flex flex-wrap gap-4 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin className="h-4 w-4" />
+            <MapPin className="h-4 w-4"/>
             <p>{roomInfo?.location}</p>
           </div>
 
           <div className="flex items-center gap-2 text-muted-foreground">
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-4 w-4"/>
             {roomInfo?.created_at && (
               <p>
                 {toKstDate(roomInfo.created_at)}{" "}
