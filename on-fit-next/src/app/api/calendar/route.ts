@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/route-helpers'
 
-type ItemType = 'hosting' | 'following' | 'member'
+type ItemType = 'hosting' | 'following' | 'member' | 'none'
 
 export async function GET(req: Request) {
   const supabase = await createSupabaseServerClient()
@@ -32,19 +32,40 @@ export async function GET(req: Request) {
     }
     }
 
-    let joinedPostIds = new Set<string>();
-    if (user?.id) {
-    const { data: myJoins } = await supabase
-        .from('participants')
-        .select('post_id')
-        .eq('user_id', user.id);
+  let joinedPostIds = new Set<string>();
 
-    if (Array.isArray(myJoins)) {
-        // ✅ 문자열로 정규화
-        joinedPostIds = new Set(myJoins.map(r => String(r.post_id)));
-    }
-    }
-  
+  if (user?.id) {
+    // 1) posts에서 room_id + id 둘 다 가져온다
+    const { data: postRows } = await supabase
+      .from('posts')
+      .select('id, room_id');
+
+    const postsMap = new Map<string, string>(); 
+    // key: room_id, value: post.id
+
+    postRows?.forEach((p) => {
+      postsMap.set(p.room_id, p.id);
+    });
+
+    const roomIds = Array.from(postsMap.keys());
+
+    // 2) participants에서 “member + 내 user_id + room_id 목록” 필터링
+    const { data: myJoins } = await supabase
+      .from('participants')
+      .select('room_id')
+      .eq('role', 'member')
+      .eq('user_id', user.id)
+      .in('room_id', roomIds);
+
+    // 3) 참가한 방의 posts.id 를 Set에 추가
+    myJoins?.forEach((row) => {
+      const postId = postsMap.get(row.room_id);
+      if (postId) {
+        joinedPostIds.add(postId);
+      }
+    });
+  }
+
   const { data, error } = await supabase
     .from('posts')
     .select('id, title, sport, date_time, author_id')  
@@ -55,27 +76,26 @@ export async function GET(req: Request) {
   if (error) return NextResponse.json({ ok:false, code:'LIST_FAILED', message:error.message }, { status:500 })
     
     const items = (data ?? []).map((p: any) => {
-    const pid = String(p.id);
-    const authorId = String(p.author_id);
-    const isAuthor = authorId === String(user?.id);
-    const hasJoined = joinedPostIds.has(pid);
-    const isFollowing = followingSet.has(authorId);
+      const pid = String(p.id);
+      const authorId = String(p.author_id);
+      const isAuthor = authorId === String(user?.id);
+      const hasJoined = joinedPostIds.has(pid);
+      const isFollowing = followingSet.has(authorId);
 
-    // ✅ 우선순위: hosting > member > following > (기본) member
-    const type: ItemType = isAuthor
+      const type:ItemType = isAuthor
         ? 'hosting'
         : hasJoined
         ? 'member'
         : isFollowing
         ? 'following'
-        : 'member';
-    return {
-        id: p.id as string,
-        title: p.title ?? '',
-        sport: p.sport ?? '기타',
-        date: p.date_time as string, // ISO 문자열
-        type,
-    }
+        : 'none'
+      return {
+          id: p.id as string,
+          title: p.title ?? '',
+          sport: p.sport ?? '기타',
+          date: p.date_time as string, // ISO 문자열
+          type,
+      }
   })
 
   return NextResponse.json({ ok:true, items })
