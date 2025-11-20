@@ -1,3 +1,4 @@
+//components/post/posthost
 'use client';
 
 import {useEffect, useState} from 'react';
@@ -37,6 +38,7 @@ export default function PostHost() {
   useEffect(()=>{
     (async ()=>{
       const {data:{user}} = await sbClient.auth.getUser()
+      console.log(user)
       setMyId(user?.id ?? null)
     })()
   }, [])
@@ -70,7 +72,6 @@ export default function PostHost() {
 
     const fn = prev ? 'unfollow_user' : 'follow_user'
     const { data, error } = await sbClient.rpc(fn, { p_target: profileId })
-    console.log(data)
     const nextCount = data?.[0]?.follower_count ?? null
     if(error){
       console.error(error)
@@ -88,6 +89,27 @@ export default function PostHost() {
           }
         : d
     );
+
+    // 1) actor의 프로필 정보 가져오기
+    const { data: actorProfile } = await sbClient
+      .from("profiles")
+      .select("nickname")
+      .eq("id", myId)
+      .single()
+
+    const actorNickname = actorProfile?.nickname ?? "알 수 없음"
+    console.log(actorNickname)
+
+      // 🔥 알림 INSERT: 팔로우한 경우에만 알림 보내기
+    if (!prev) {      // prev=false → 팔로우하기였던 경우
+      await sbClient.from("notifications").insert({
+        user_id: profileId,      // 알림 받을 사람
+        actor_id: myId,          // 행동한 사람
+        actor_nickname: actorNickname,   // ⭐ 추가 ⭐
+        type: "follow",
+        message: `${actorNickname}님이 당신을 팔로우했습니다!`
+      })
+    }
   };
 
   return (

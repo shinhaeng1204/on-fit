@@ -8,7 +8,7 @@ import {Calendar as CalendarIcon,ArrowLeft,ChevronLeft,ChevronRight,Sparkles, Ch
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/common/Dialog";
 
-type EventType = "member" | "hosting" | "following";
+type EventType = "member" | "hosting" | "following" | "none";
 
 interface CalendarEvent {
   id: string;
@@ -33,12 +33,14 @@ interface CalendarEvent {
       "bg-accent/10 border-accent/50 text-accent hover:bg-accent/20 hover:border-accent",
     following:
       "bg-warning/10 border-warning/50 text-warning hover:bg-warning/20 hover:border-warning",
+    none: ""
   };
 
   const typeLabels: Record<EventType, string> = {
     member: "참여 중",
     hosting: "주최",
     following: "팔로우",
+    none: ""
   };
 
   const today = new Date();
@@ -118,7 +120,7 @@ export default function Calendar() {
   }, [currentDate]);
 
   const getEventsForDay = (day: number) => {
-    return events.filter((event) => {
+    return events.filter((event) => event.type !== "none").filter((event) => {
       return (
         event.date.getDate() === day &&
         event.date.getMonth() === currentDate.getMonth() &&
@@ -345,6 +347,7 @@ export default function Calendar() {
           <CardContent className="pt-6">
             <div className="space-y-3">
               {events
+                .filter((event) => event.type !== "none")
                 .filter((event)=> event.date >=new Date())
                 .sort((a,b)=>a.date.getTime() - b.date.getTime())
                 .map((event)=>(
