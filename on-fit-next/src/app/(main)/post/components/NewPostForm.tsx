@@ -34,7 +34,7 @@ export default function NewPostForm({sportOption, levelOption}: {
       currentParticipants: 1,
       status: '모집중',
       author: '테스트유저',
-      equipment: fd.get('equipment') || '',
+      requirement: fd.get('requirement') || '',
       fee: fd.get('fee') || '',
     }
 
@@ -117,7 +117,7 @@ export default function NewPostForm({sportOption, levelOption}: {
             {/* 준비물 */}
             <div className="flex flex-col space-y-2">
               <label className={labelCls}>준비물</label>
-              <Input name="equipment" type="text" placeholder="예: 라켓(대여 가능), 운동화" />
+              <Input name="requirement" type="text" placeholder="예: 라켓(대여 가능), 운동화" />
             </div>
 
             {/* 참가비 */}

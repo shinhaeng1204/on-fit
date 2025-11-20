@@ -31,7 +31,7 @@ export interface postType {
   max_participants : number,
   current_participants : number,
   level : BadgeType,
-  equipment?: string,
+  requirement?: string,
   fee? : string,
   room_id?: string,
 }
