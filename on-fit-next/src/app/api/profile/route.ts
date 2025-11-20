@@ -1,6 +1,61 @@
 import { requireUserOr401, ok, fail, createSupabaseServerClient } from "@/lib/route-helpers";
+import {cookies} from "next/headers";
+import {NextResponse} from "next/server";
+import {createClient} from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
+
+export async function GET(req: Request) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+  const supabase = await createSupabaseServerClient();
+
+  try {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("sb-access-token")?.value;
+
+    if (!accessToken) {
+      return NextResponse.json({ error: "로그인 후 이용할 수 있습니다." }, { status: 401 });
+    }
+
+    // auth로 user 조회
+    const authClient = createClient(url, anonKey);
+    const { data: userData, error: userError } = await authClient.auth.getUser(accessToken);
+
+    if (userError || !userData?.user) {
+      console.error("Invalid user token:", userError);
+      return NextResponse.json(
+        { error: "유저 정보를 불러올 수 없습니다." },
+        { status: 401 }
+      );
+    }
+
+    const user = userData.user;
+
+    // 프로필 조회
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError) {
+      return NextResponse.json(
+        { error: profileError.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ profile });
+
+  } catch (e: any) {
+    console.error("GET /messages error:", e);
+    return NextResponse.json(
+      { error: e.message ?? "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(req: Request) {
   const supabase = await createSupabaseServerClient();
