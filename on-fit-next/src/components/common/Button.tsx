@@ -54,6 +54,7 @@ type ButtonBaseProps = {
   disabled?: boolean;
   children?: ReactNode;
   'data-testid'?: string;
+  title?: string;
 };
 
 const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonBaseProps>(
