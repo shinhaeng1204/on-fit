@@ -13,6 +13,7 @@ export default function ChatConversation() {
   const roomId = params?.id as string;
   const [messages, setMessages] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [userId, setUserId] = useState<string>('')
 
   useEffect(() => {
     if (!roomId) return;
@@ -24,6 +25,13 @@ export default function ChatConversation() {
     };
 
     fetchMessages();
+
+    const fetchUser = async () => {
+      const res = await api.get(`/api/auth/me`);
+      setUserId(res.data.user.id)
+    }
+
+    fetchUser()
 
     const unsubscribe = subscribeMessages(roomId, (msg) => {
       setMessages((prev) => [...prev, msg]);
@@ -40,11 +48,11 @@ export default function ChatConversation() {
   }, [roomId]);
 
   const messagesWithUsername = messages.map((msg) => {
-    const user = profiles.find((p) => p.id === msg.sender_id);
+    const profile = profiles.find((p) => p.id === msg.sender_id);
     return {
       ...msg,
-      nickname: user?.nickname ?? "알 수 없음",
-      profile_image: user?.profile_image ?? null,
+      nickname: profile?.nickname ?? "알 수 없음",
+      profile_image: profile?.profile_image ?? null,
     };
   });
 
@@ -54,20 +62,42 @@ export default function ChatConversation() {
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-4 space-y-4">
           {/* 대화 */}
-          {messagesWithUsername.map((msg) => (
-            <div key={msg.id} className="flex gap-3">
-              <ProfileImage src={msg.profile_image ?? ""} profileName={msg.nickname} />
-              <div className="flex flex-col items-start max-w-[70%]">
-                <p className="text-xs text-muted-foreground mb-1">{msg.nickname}</p>
-                <div className="px-4 py-2 rounded-2xl bg-card border border-border">
-                  {msg.content}
+          {messagesWithUsername.map((msg) => {
+            const isMine = msg.sender_id === userId
+
+            return (
+              <div
+                key={msg.id}
+                className={`flex gap-3 ${isMine ? "flex-row-reverse" : "flex-row"}`}
+              >
+                {!isMine && (
+                  <ProfileImage src={msg.profile_image ?? ""} profileName={msg.nickname} />
+                )}
+
+                <div
+                  className={`flex flex-col max-w-[70%] ${
+                    isMine ? "items-end text-right" : "items-start"
+                  }`}
+                >
+                  {!isMine && (
+                    <p className="text-xs text-muted-foreground mb-1">{msg.nickname}</p>
+                  )}
+
+                  <div
+                    className={`px-4 py-2 rounded-2xl border border-border ${
+                      isMine ? "bg-primary text-primary-foreground" : "bg-card"
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {toKstTime(msg.created_at)}
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {toKstTime(msg.created_at)}
-                </p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </>

@@ -28,9 +28,7 @@ export default function FitCard({
             <DumbbellIcon className="h-5 text-primary" />
           </div>
           <div className="flex flex-col">
-            <StatusBadge variant="success" className="absolute right-5">
-              {status}
-            </StatusBadge>
+            <RecruitStatus type={status} text={status} className="absolute right-5" />
             <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
               {title}
             </h3>
