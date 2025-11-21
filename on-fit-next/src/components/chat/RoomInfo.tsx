@@ -8,13 +8,15 @@ import { api } from "@/lib/axios";
 import {useParams, useRouter} from "next/navigation";
 import Header from "@/components/common/Header";
 import { Button } from "@/components/common/Button";
+import ChatParticipants from "@/app/(main)/chat/components/ChatParticipants";
+import {AnimatePresence} from "framer-motion";
 
 export default function RoomInfo() {
   const params = useParams();
   const router = useRouter();
   const roomId = params?.id as string;
   const [roomInfo, setRoomInfo] = useState<RoomInfoData | null>(null);
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (!roomId) return;
@@ -50,34 +52,32 @@ export default function RoomInfo() {
         containerClassName="bg-card/80 backdrop-blur-sm border-b border-border"
         right={
           <>
-            <Button onClick={() => setOpen((v) => !v)} variant="ghost" className="cursor-pointer">
-              <EllipsisVertical className="w-4 h-4" />
+            <Button
+              variant="ghost"
+              size="inherit"
+              leftIcon={(<Users />)}
+              onClick={() => setOpen(prev => !prev)}
+              className="block flex justify-start px-2 py-1 cursor-pointer">
+              참여자 보기
             </Button>
 
-            {open && (
-              <div
-                className="absolute flex flex-col right-10 top-15 z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
-                <Button
-                  variant="ghost"
-                  size="inherit"
-                  leftIcon={(<Users />)}
-                  className="block flex justify-start px-2 py-1 cursor-pointer">
-                  참여자 보기
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="inherit"
-                  leftIcon={(<UserMinus/>)}
-                  onClick={() => handleLeave()}
-                  className="block flex justify-start text-destructive px-2 py-1 mt-1 cursor-pointer">
-                   나가기
-                </Button>
-              </div>
-            )}
+            <Button
+              variant="ghost"
+              size="inherit"
+              leftIcon={(<UserMinus/>)}
+              onClick={() => handleLeave()}
+              className="block flex justify-start text-destructive px-2 py-1 mt-1 cursor-pointer">
+               나가기
+            </Button>
           </>
         }
       />
+
+      <AnimatePresence>
+        {open && (
+          <ChatParticipants roomId={roomId} onClose={() => setOpen(false)} />
+        )}
+      </AnimatePresence>
 
       {/* 채팅방 정보 */}
       <div className="bg-card/50 border-b border-border">
