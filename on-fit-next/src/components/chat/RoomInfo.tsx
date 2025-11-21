@@ -5,12 +5,13 @@ import { toKstDate, toKstTime } from "@/lib/dateFormatter";
 import { useEffect, useState } from "react";
 import { RoomInfoData } from "@/types/chat";
 import { api } from "@/lib/axios";
-import { useParams } from "next/navigation";
+import {useParams, useRouter} from "next/navigation";
 import Header from "@/components/common/Header";
 import { Button } from "@/components/common/Button";
 
 export default function RoomInfo() {
   const params = useParams();
+  const router = useRouter();
   const roomId = params?.id as string;
   const [roomInfo, setRoomInfo] = useState<RoomInfoData | null>(null);
   const [open, setOpen] = useState(false)
@@ -30,16 +31,16 @@ export default function RoomInfo() {
     fetchRoomInfo();
   }, [roomId]);
 
-  const MenuList = (
-    <div className="z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2">
-      <div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent focus:text-accent-foreground">
-        참여자보기
-      </div>
-      <div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent focus:text-accent-foreground">
-        나가기
-      </div>
-    </div>
-  )
+  const handleLeave = async () => {
+    const ok = confirm("정말 채팅방을 나가시겠습니까?")
+    if(!ok) return
+    try {
+      await api.delete(`/api/chat/${roomId}/leave`);
+      router.push('/');
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   return (
     <>
@@ -68,6 +69,7 @@ export default function RoomInfo() {
                   variant="ghost"
                   size="inherit"
                   leftIcon={(<UserMinus/>)}
+                  onClick={() => handleLeave()}
                   className="block flex justify-start text-destructive px-2 py-1 mt-1 cursor-pointer">
                    나가기
                 </Button>
