@@ -1,14 +1,14 @@
 import { createSupabaseServerClient, requireUserOr401, fail, ok } from "@/lib/route-helpers";
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-  const roomId = (await params).id;
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const {id: roomId} = await params;
   const supabase = await createSupabaseServerClient();
 
   // 로그인 검사
   const { ok: hasUser, user, response } = await requireUserOr401(supabase);
   if (!hasUser) return response;
 
-  console.log(user.id)
+  console.log(roomId)
 
   // 참가 여부 확인
   const { data: participant, error: participantErr } = await supabase
