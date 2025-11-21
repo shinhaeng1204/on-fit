@@ -30,7 +30,7 @@ const TROPHY_BG_BY_LEVEL: Record<BadgeType, string> = {
     'bg-gradient-to-br from-cyan-500/90 via-sky-300/90 to-slate-100/90 text-slate-900',
 };
 
-export default function BadgeSection({
+export default function TrophySection({
   titleIcon,
   title = '나의 트로피',
   badges,
