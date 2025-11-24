@@ -16,6 +16,7 @@ export interface Notification {
   read: boolean;
   type: string;
   post_id?:string;
+  room_id?:string;
 }
 
 interface Props {
@@ -33,6 +34,7 @@ export const NotificationDropdown = ({
 }: Props) => {
     console.log("notifications", notifications)
   const unreadCount = notifications.filter((n) => !n.read).length;
+  
 
   return (
     <Popover>
@@ -83,59 +85,66 @@ export const NotificationDropdown = ({
             </div>
           ) : (
             <div className="divide-y divide-border">
-              {notifications.map((notification) => (
-                <Link
-                    key={notification.id}
-                    href={
-                    notification.type === "post" && notification.post_id
-                        ? `/post/${notification.post_id}`
-                        : "#"
-                    }
-                    onClick={() => onMarkOneRead(notification.id)}
-                    className="block"
-                >
-                    <div
-                    className={`p-4 hover:bg-accent/50 cursor-pointer transition-colors ${
-                        !notification.read ? "bg-accent/20" : ""
-                    }`}
-                    >
-                    <div className="flex items-start gap-3">
-                        <div
-                        className={`flex-shrink-0 w-2 h-2 rounded-full mt-2 ${
-                            !notification.read ? "bg-primary" : "bg-transparent"
-                        }`}
-                        />
+              {notifications.map((notification) => {
+                const href =
+                  notification.type === "chat" && (notification as any).room_id
+                    ? `/chat/${(notification as any).room_id}`
+                    : notification.type === "post" && (notification as any).post_id
+                    ? `/post/${(notification as any).post_id}`
+                    : "#";
 
-                        <div className="flex-1 min-w-0">
+                return (
+                  <Link
+                    key={notification.id}
+                    href={href}
+                    onClick={() => onMarkOneRead(notification.id)}
+                    className={`block p-4 hover:bg-accent/50 transition-colors ${
+                      !notification.read ? "bg-accent/20" : ""
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+
+                      {/* 읽음 표시 점 */}
+                      <div
+                        className={`flex-shrink-0 w-2 h-2 rounded-full mt-2 ${
+                          !notification.read ? "bg-primary" : "bg-transparent"
+                        }`}
+                      />
+
+                      {/* 텍스트 영역 */}
+                      <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm mb-1">
-                            {notification.title}
+                          {notification.title}
                         </p>
 
                         <p className="text-sm text-muted-foreground line-clamp-2">
-                            {notification.message}
+                          {notification.message}
                         </p>
 
                         <p className="text-xs text-muted-foreground mt-1">
-                            {notification.time}
+                          {notification.time}
                         </p>
-                        </div>
+                      </div>
 
-                        <Button
+                      {/* 삭제 버튼 (Link 이벤트 방해하지 않도록 stopPropagation) */}
+                      <Button
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6 flex-shrink-0"
                         title="삭제"
                         onClick={(e) => {
-                            e.preventDefault(); // 링크 이동 방지
-                            onDelete(notification.id);
+                          e.preventDefault();      // 링크 이동 막기
+                          e.stopPropagation();     // 상위 Link 클릭 막기
+                          onDelete(notification.id);
                         }}
-                        >
+                      >
                         <X className="h-4 w-4" />
-                        </Button>
+                      </Button>
+
                     </div>
-                    </div>
-                </Link>
-                ))}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </ScrollArea>
