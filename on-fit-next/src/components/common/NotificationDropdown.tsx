@@ -5,6 +5,7 @@ import { Button } from "./Button";
 import { Popover, PopoverContent, PopoverTrigger } from "./PopOver";
 import { ScrollArea } from "./ScrollArea";
 import StatusBadge from "../main/StatusBadge";
+import Link from "next/link";
 
 // 알림 타입 정의
 export interface Notification {
@@ -14,6 +15,7 @@ export interface Notification {
   time: string;       // "5분 전" 같은 문자열
   read: boolean;
   type: string;
+  post_id?:string;
 }
 
 interface Props {
@@ -82,47 +84,58 @@ export const NotificationDropdown = ({
           ) : (
             <div className="divide-y divide-border">
               {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  onClick={() => onMarkOneRead(notification.id)}
-                  className={`p-4 hover:bg-accent/50 cursor-pointer transition-colors ${
-                    !notification.read ? "bg-accent/20" : ""
-                  }`}
+                <Link
+                    key={notification.id}
+                    href={
+                    notification.type === "post" && notification.post_id
+                        ? `/post/${notification.post_id}`
+                        : "#"
+                    }
+                    onClick={() => onMarkOneRead(notification.id)}
+                    className="block"
                 >
-                  <div className="flex items-start gap-3">
                     <div
-                      className={`flex-shrink-0 w-2 h-2 rounded-full mt-2 ${
-                        !notification.read ? "bg-primary" : "bg-transparent"
-                      }`}
-                    />
-
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm mb-1">
-                        {notification.title}
-                      </p>
-
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {notification.message}
-                      </p>
-
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {notification.time}
-                      </p>
-                    </div>
-
-                    {/* 삭제 버튼 */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 flex-shrink-0"
-                      title="삭제"
-                      onClick={() => onDelete(notification.id)}
+                    className={`p-4 hover:bg-accent/50 cursor-pointer transition-colors ${
+                        !notification.read ? "bg-accent/20" : ""
+                    }`}
                     >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                    <div className="flex items-start gap-3">
+                        <div
+                        className={`flex-shrink-0 w-2 h-2 rounded-full mt-2 ${
+                            !notification.read ? "bg-primary" : "bg-transparent"
+                        }`}
+                        />
+
+                        <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm mb-1">
+                            {notification.title}
+                        </p>
+
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                            {notification.message}
+                        </p>
+
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {notification.time}
+                        </p>
+                        </div>
+
+                        <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 flex-shrink-0"
+                        title="삭제"
+                        onClick={(e) => {
+                            e.preventDefault(); // 링크 이동 방지
+                            onDelete(notification.id);
+                        }}
+                        >
+                        <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    </div>
+                </Link>
+                ))}
             </div>
           )}
         </ScrollArea>

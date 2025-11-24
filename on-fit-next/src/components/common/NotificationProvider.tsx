@@ -10,6 +10,7 @@ export type Notification = {
   time: string;
   read: boolean;
   type: string;
+  post_id?:string;
 };
 
 type NotificationContextValue = {
@@ -37,11 +38,7 @@ function convertTypeToTitle(type: string) {
 // ⭐ DB row → Notification 타입으로 변환하는 통합 함수
 function mapRowToNotification(raw: any): Notification {
   let msg = raw.message;
-
-  if (raw.type === "post") {
-    msg = `새 게시글이 등록되었습니다: ${raw.post_title}`;
-  }
-
+  
   if (raw.type === "comment") {
     msg = `새 댓글: ${raw.comment_text}`;
   }
@@ -53,6 +50,7 @@ function mapRowToNotification(raw: any): Notification {
     type: raw.type,
     time: new Date(raw.created_at).toLocaleString(),
     title: convertTypeToTitle(raw.type),
+    post_id: raw.post_id ?? null,
   };
 }
 
