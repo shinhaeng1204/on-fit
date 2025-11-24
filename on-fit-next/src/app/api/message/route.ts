@@ -51,6 +51,35 @@ export async function POST(req: Request) {
 
   if(error) return NextResponse.json({error: error.message}, {status: 500})
 
+  if(data && data.length >0){
+    // 1) 방의 참여자 목록 가져오기
+    const {data:participants, error:participantsError} = await supabase
+      .from("participants")
+      .select("user_id")
+      .eq("room_id", roomId)
+
+    if(participantsError){
+      console.error("participants error", participantsError)
+    } else{
+      // 2)sender 제외
+      const receivers = participants
+        .map((p)=>p.user_id)
+        .filter((id)=>id !==user.id)
+
+      // 3) 각 유저에게 알림 생성
+      for(const receiverId of receivers){
+        await supabase.from("notifications").insert({
+          user_id:receiverId,
+          actor_id: user.id,
+          type:"chat",
+          room_id:roomId,
+          message: "새로운 메시지가 도착했습니다.",
+          read:false,
+        })
+      }
+    }
+  }
+
   return NextResponse.json({message: data}, {status: 201})
 }
 
