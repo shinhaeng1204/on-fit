@@ -1,18 +1,22 @@
 'use client'
 
-import { Calendar, MapPin, Users, EllipsisVertical } from "lucide-react";
+import {Calendar, MapPin, Users, EllipsisVertical, UserMinus} from "lucide-react";
 import { toKstDate, toKstTime } from "@/lib/dateFormatter";
 import { useEffect, useState } from "react";
 import { RoomInfoData } from "@/types/chat";
 import { api } from "@/lib/axios";
-import { useParams } from "next/navigation";
+import {useParams, useRouter} from "next/navigation";
 import Header from "@/components/common/Header";
 import { Button } from "@/components/common/Button";
+import ChatParticipants from "@/app/(main)/chat/components/ChatParticipants";
+import {AnimatePresence} from "framer-motion";
 
 export default function RoomInfo() {
   const params = useParams();
+  const router = useRouter();
   const roomId = params?.id as string;
   const [roomInfo, setRoomInfo] = useState<RoomInfoData | null>(null);
+  const [open, setOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (!roomId) return;
@@ -29,6 +33,17 @@ export default function RoomInfo() {
     fetchRoomInfo();
   }, [roomId]);
 
+  const handleLeave = async () => {
+    const ok = confirm("정말 채팅방을 나가시겠습니까?")
+    if(!ok) return
+    try {
+      await api.delete(`/api/chat/${roomId}/leave`);
+      router.push('/');
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   return (
     <>
       <Header
@@ -37,23 +52,43 @@ export default function RoomInfo() {
         containerClassName="bg-card/80 backdrop-blur-sm border-b border-border"
         right={
           <>
-            <Button variant="ghost" className="cursor-pointer">
-              <EllipsisVertical className="w-4 h-4" />
+            <Button
+              variant="ghost"
+              size="inherit"
+              leftIcon={(<Users />)}
+              onClick={() => setOpen(prev => !prev)}
+              className="block flex justify-start px-2 py-1 cursor-pointer">
+              참여자 보기
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="inherit"
+              leftIcon={(<UserMinus/>)}
+              onClick={() => handleLeave()}
+              className="block flex justify-start text-destructive px-2 py-1 mt-1 cursor-pointer">
+               나가기
             </Button>
           </>
         }
       />
 
+      <AnimatePresence>
+        {open && (
+          <ChatParticipants roomId={roomId} onClose={() => setOpen(false)} />
+        )}
+      </AnimatePresence>
+
       {/* 채팅방 정보 */}
       <div className="bg-card/50 border-b border-border">
         <div className="container mx-auto px-4 py-3 flex flex-wrap gap-4 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin className="h-4 w-4" />
+            <MapPin className="h-4 w-4"/>
             <p>{roomInfo?.location}</p>
           </div>
 
           <div className="flex items-center gap-2 text-muted-foreground">
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-4 w-4"/>
             {roomInfo?.created_at && (
               <p>
                 {toKstDate(roomInfo.created_at)}{" "}
