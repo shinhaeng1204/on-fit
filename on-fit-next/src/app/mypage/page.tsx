@@ -3,13 +3,13 @@ import { Trophy, Calendar, Users, LogIn } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import ProfileHeader from '@/app/mypage/components/ProfileHeader';
-import BadgeSection from '@/app/mypage/components/BadgeSection';
 import ActivityTabs from '@/app/mypage/components/ActivityTabs';
 import RegionSection from '@/app/mypage/components/RegionSection';
 import PreferredExercisesSection from '@/app/mypage/components/PreferredExercisesSection';
 
 import { createSupabaseServerClient } from '@/lib/route-helpers';
 import { getMyPageData } from '@/app/mypage/_api/getMyPageData';
+import TrophySection from './components/TrophySection';
 
 type ActivityItem = {
   id: string;
@@ -123,7 +123,7 @@ export default async function MyPage() {
           🔥 실제 참여 횟수 기반 뱃지 표시
       =============================== */}
       <Card className="p-0">
-        <BadgeSection
+        <TrophySection
           titleIcon={<Trophy className="h-5 w-5 text-primary" />}
           badges={badges} // ← 여기 핵심!!!
         />
