@@ -11,6 +11,7 @@ export type Notification = {
   read: boolean;
   type: string;
   post_id?:string;
+  room_id?:string;
 };
 
 type NotificationContextValue = {
@@ -28,8 +29,8 @@ function convertTypeToTitle(type: string) {
       return "새 팔로워";
     case "post":
       return "새 게시글";
-    case "comment":
-      return "새 댓글";
+    case "chat":
+      return "새 채팅";
     default:
       return "알림";
   }
@@ -38,10 +39,6 @@ function convertTypeToTitle(type: string) {
 // ⭐ DB row → Notification 타입으로 변환하는 통합 함수
 function mapRowToNotification(raw: any): Notification {
   let msg = raw.message;
-  
-  if (raw.type === "comment") {
-    msg = `새 댓글: ${raw.comment_text}`;
-  }
 
   return {
     id: String(raw.id),
@@ -51,6 +48,7 @@ function mapRowToNotification(raw: any): Notification {
     time: new Date(raw.created_at).toLocaleString(),
     title: convertTypeToTitle(raw.type),
     post_id: raw.post_id ?? null,
+    room_id:raw.room_id ?? null,
   };
 }
 
@@ -62,6 +60,19 @@ export function NotificationProvider({
   userId: string;
 }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [myRooms, setMyRooms] = useState<string[]>([])
+
+  //참여한 room 목록 불러오기
+  useEffect(()=>{
+    if(!userId) return
+    (async ()=>{
+      const {data} = await sbClient
+        .from("participants")
+        .select("room_id")
+        .eq("user_id", userId)
+      setMyRooms((data??[]).map((r)=>r.room_id))
+    })()
+  }, [userId])
 
   // 📌 1) 최초 알림 불러오기
   useEffect(() => {
@@ -105,6 +116,52 @@ export function NotificationProvider({
       sbClient.removeChannel(channel);
     };
   }, [userId]);
+
+
+  // 새 메시지 실시간 listen
+useEffect(() => {
+  if (!userId) return;
+  if (myRooms.length === 0) return;
+
+  const channel = sbClient
+    .channel(`messages-listener-${userId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+      },
+      async (payload) => {
+        const msg = payload.new;
+
+        // 1) 내가 쓴 메시지면 무시
+        if (msg.sender_id === userId) return;
+
+        // 2) 이 메시지의 방이 내가 참여중인 방인지 체크
+        if (!myRooms.includes(msg.room_id)) return;
+
+        // 4) 클라이언트 상태 즉시 업데이트
+        setNotifications((prev) => [
+          {
+            id: "temp-" + Date.now(),
+            title: "새 메시지",
+            message: `새로운 메시지가 도착했습니다.`,
+            time: new Date().toLocaleTimeString(),
+            read: false,
+            type: "chat",
+            room_id: msg.room_id,
+          },
+          ...prev,
+        ]);
+      }
+    )
+    .subscribe();
+
+  return () => {
+    sbClient.removeChannel(channel);
+  };
+}, [userId, myRooms]);
 
   // 📌 3) 모두 읽음 처리
   const markAllRead = async () => {
