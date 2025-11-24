@@ -54,5 +54,39 @@ export async function POST(req: Request) {
 
   const { data, error } = await supabase.from("posts").insert(payload).select().single();
   if (error) return fail(error.message, 400);
+
+  //팔로워들에게 알림 생성
+  await notifyFollowers(supabase, user.id, data);
+
   return ok({ item: data }, { status: 201 });
+}
+
+//알림 생성 함수
+async function notifyFollowers(supabase:any, author_id:string, data:any){
+  //author 프로필 읽기
+  const {data:authorProfile} = await supabase
+    .from("profiles")
+    .select("followers, nickname")
+    .eq("id", author_id)
+    .single()
+
+  if(!authorProfile) return
+
+  const followerIds: string[] = authorProfile.followers ?? []
+  if(followerIds.length === 0) return
+
+  const authorNickname = authorProfile.nickname ?? "알 수 없음"
+
+  const alerts = followerIds.map((targetUserId)=>({
+    user_id: targetUserId,
+    actor_id: author_id,
+    actor_nickname:authorNickname,
+    type: "post",
+    message: `${authorNickname}님이 새로운 ${data.sport} 게시글을 등록했습니다.`,
+    post_title: data.title,
+    post_id: data.id,
+    read:false,
+  }))
+
+  await supabase.from("notifications").insert(alerts)
 }
