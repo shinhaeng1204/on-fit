@@ -1,80 +1,23 @@
-'use client'
-
 import { Card, CardContent, CardHeader } from "@/components/common/Card";
-import { Calendar, Dumbbell, Flag, MapPin, MessageCircle, Users } from "lucide-react";
+import { Calendar, Dumbbell, MapPin, Users } from "lucide-react";
 import RecruitStatus from "@/components/common/RecruitStatus";
 import Badge from "@/components/common/Badge";
-import { Button } from "@/components/common/Button";
-import React, { useEffect, useState } from "react";
-import { postType } from "@/types/post";
-import ReportModal from "@/components/post/ReportModal";
-import { useParams, useRouter } from "next/navigation";
-import { api } from "@/lib/axios";
+import React from "react";
 import { toKstDate, toKstTime } from "@/lib/dateFormatter";
+import {createSupabaseServerClient} from "@/lib/route-helpers";
+import {postType} from "@/types/post";
+import PostInfoClient from "@/app/(main)/post/components/PostInfoClient";
 
-export default function PostInfo() {
-  const { id } = useParams();
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<postType | null>(null);
+export default async function PostInfo({id} : {id:string}) {
+  const supabase = await createSupabaseServerClient();
 
-  useEffect(() => {
-    let mounted = true;
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*, profile:profiles(id, nickname)")
+    .eq("id", id)
+    .single();
 
-    (async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await api.get(`/api/posts/${id}`);
-        if (!mounted) return;
-        setData(res.data.item);
-      } catch (e: any) {
-        if (!mounted) return;
-        setError(e?.response?.data?.error ?? e.message ?? "알 수 없는 오류");
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, [id]);
-
-  const handleJoinChat = async () => {
-    try {
-      if (!data?.room_id) {
-        // 룸이 없으면 생성
-        const res = await api.post("/api/chat", { postId: id });
-        const { roomId } = res.data;
-        router.push(`/chat/${roomId}`);
-        return;
-      }
-
-      await api.post("/api/chat/join", { postId: id });
-
-      router.push(`/chat/${data.room_id}`);
-    } catch (err: any) {
-      const status = err?.response?.status;
-      const message =
-        err?.response?.data?.error ??
-        err?.response?.data?.message ??
-        err.message;
-      console.error("채팅방 참여 실패", message);
-
-      // 정원 초과 처리(409)
-      if (status === 409) {
-        alert("모집 인원이 이미 가득 찼습니다.");
-        return;
-      }
-
-      // 기타 에러 처리
-      alert("채팅방 참여 중 오류가 발생했습니다.");
-    }
-  };
+  if (error) return <div>오류: {error.message}</div>;
 
   return (
     <>
@@ -170,34 +113,9 @@ export default function PostInfo() {
           </div>
 
           {/* 참여, 신고 */}
-          <div className="flex gap-3 pt-4">
-            <Button
-              size="lg"
-              onClick={handleJoinChat}
-              fullWidth
-              leftIcon={<MessageCircle />}
-              className="cursor-pointer"
-            >
-              참여하기
-            </Button>
-
-            <Button
-              variant="sport"
-              size="lg"
-              className="cursor-pointer"
-              onClick={() => setIsOpen(true)}
-            >
-              <Flag />
-            </Button>
-          </div>
+          <PostInfoClient postId={id} roomId={data.room_id} title={data.title} targetUserId={data.profile?.id}/>
         </CardContent>
       </Card>
-
-      <ReportModal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        postId={String(id)}
-        postTitle={data?.title ?? ""} targetUserId={data?.profile?.id ?? ""}      />
     </>
   );
 }
