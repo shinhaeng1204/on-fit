@@ -76,14 +76,14 @@ export default async function Home() {
 
           {/* onClick으로 router.push를 쓰지 말고 Link로 교체 → 페이지가 클라로 격상되는 걸 방지 */}
           <Button
-  href="/post/create"
-  variant="hero"
-  size="default"
-  leftIcon={<Plus />}
-  className="mt-3 md:mt-10"
->
-  번개 만들기
-</Button>
+            href="/post/create"
+            variant="hero"
+            size="default"
+            leftIcon={<Plus />}
+            className="mt-3 md:mt-10"
+          >
+            번개 만들기
+          </Button>
         </div>
       </section>
 
