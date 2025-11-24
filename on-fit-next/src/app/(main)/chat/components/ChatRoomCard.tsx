@@ -1,9 +1,11 @@
 'use client'
+
 import { Card, CardHeader } from "@/components/common/Card";
 import Image from "next/image";
 import StatusBadge from "@/components/main/StatusBadge";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/axios"; // 🔹 추가
+import { api } from "@/lib/axios";
+import { Button } from "@/components/common/Button"; // ✅ 추가
 
 type ChatRoomCardProps = {
   title: string;
@@ -26,8 +28,8 @@ export default function ChatRoomCard({
 }: ChatRoomCardProps) {
   const router = useRouter();
 
+  // 카드 전체 클릭 → 채팅방 입장 + 읽음 처리
   const handleChatRoomCard = () => {
-    // 🔹 방 입장 순간 읽음 처리 호출
     api
       .post("/api/chat/read", { roomId })
       .catch((err) => {
@@ -35,6 +37,12 @@ export default function ChatRoomCard({
       });
 
     router.push(`/chat/${roomId}`);
+  };
+
+  // 리뷰하러 가기 버튼 클릭 → 리뷰 페이지 이동
+  const handleReviewClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // ✅ 카드 onClick 안 타게 막기
+    router.push(`/review/${roomId}`);
   };
 
   return (
@@ -69,17 +77,29 @@ export default function ChatRoomCard({
           )}
         </div>
 
-        <div className="gap-2">
-          <div className="flex flex-row gap-2">
+        <div className=" gap-2">
+          <div className="flex flex-row gap-2 ">
             <h3 className="font-bold text-ellipsis md:w-full whitespace-nowrap overflow-hidden">
               {title}
             </h3>
             <StatusBadge variant="outline">{member}</StatusBadge>
-            <span className="text-xs absolute right-3">{time}</span>
+
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-xs absolute right-3">{time}</span>
+              
+            </div>
           </div>
 
           <h3 className="text-sm font-semibold mb-2 mt-2">{chatting}</h3>
           <StatusBadge variant="outline">{tag}</StatusBadge>
+          <Button
+                variant="default"
+                size="sm" 
+                className="text-xs px-2 py-1 absolute right-2"
+                onClick={handleReviewClick}
+              >
+                리뷰하러가기
+              </Button>
         </div>
       </CardHeader>
     </Card>
