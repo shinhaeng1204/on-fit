@@ -9,15 +9,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const supabase = await createSupabaseServerClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  const userId = user?.id ?? "";
-
   return (
     <html lang="ko">
       <body>
-        <NotificationProvider userId={userId}>
+        <NotificationProvider>
           {children}
         </NotificationProvider>
 

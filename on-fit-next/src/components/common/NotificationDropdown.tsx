@@ -2,7 +2,7 @@
 
 import { Bell, X } from "lucide-react";
 import { Button } from "./Button";
-import { Popover, PopoverContent, PopoverTrigger } from "./PopOver";
+import { Popover, PopoverContent, PopoverTrigger } from "./PopOver"
 import { ScrollArea } from "./ScrollArea";
 import StatusBadge from "../main/StatusBadge";
 import Link from "next/link";
@@ -32,7 +32,6 @@ export const NotificationDropdown = ({
   onDelete,
   onMarkOneRead
 }: Props) => {
-    console.log("notifications", notifications)
   const unreadCount = notifications.filter((n) => !n.read).length;
   
 

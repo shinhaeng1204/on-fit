@@ -21,21 +21,19 @@ export default function AuthControls(){
     if(!session){
         return (
             <>
-            <div className="flex items-center gap-2">
-                <Link href="/auth">
-                    <div className="hidden md:block">
-    <Button size="sm" variant="outline">로그인</Button>
-    
-  </div>
-                    <User className="md:hidden block"/>
-                </Link>
-                
-            </div>
-            <div className="hidden md:block">
-                <Link href="/auth?tab=signup">
-                <Button size="sm" variant="hero">회원가입</Button>
-                </Link>
-            </div>
+                <div className="flex items-center gap-2">
+                    <Link href="/auth">
+                        <div className="hidden md:block">
+                            <Button size="sm" variant="outline">로그인</Button>
+                        </div>
+                        <User className="md:hidden block"/>
+                    </Link>
+                </div>
+                <div className="hidden md:block">
+                    <Link href="/auth?tab=signup">
+                        <Button size="sm" variant="hero">회원가입</Button>
+                    </Link>
+                </div>
             </>
         )
     }

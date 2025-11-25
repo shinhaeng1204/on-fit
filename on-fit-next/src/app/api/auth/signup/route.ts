@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { sbClient } from "@/lib/supabase-client";
+import { createSupabaseServerClient } from "@/lib/route-helpers";
 
 export async function POST(req:Request){
+    const supabase = await createSupabaseServerClient();
     let b:any
     try {
         b = await req.json()
@@ -20,7 +21,7 @@ export async function POST(req:Request){
     const origin = new URL(req.url).origin
     const emailRedirectTo = `${origin}/auth/confirm`
 
-    const {data, error} = await sbClient.auth.signUp({
+    const {data, error} = await supabase.auth.signUp({
         email, password, 
         options: {data:metadata, emailRedirectTo}
     })
