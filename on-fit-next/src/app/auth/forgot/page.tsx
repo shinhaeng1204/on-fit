@@ -1,5 +1,5 @@
 // app/auth/forgot/page.tsx (변경된 부분 위주)
-import { sbClient } from '@/lib/supabase-client'
+import { createSupabaseServerClient } from "@/lib/route-helpers";
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
@@ -25,6 +25,9 @@ export default async function ForgotPage({ searchParams }: Props) {
 
   async function sendReset(formData: FormData) {
     'use server'
+
+    const supabase = await createSupabaseServerClient()
+
     const email = String(formData.get('email') ?? '').trim()
     const parsed = emailSchema.safeParse({ email })
     if (!parsed.success) redirect(`/auth/forgot?error=invalid_email`)
@@ -35,10 +38,9 @@ export default async function ForgotPage({ searchParams }: Props) {
     const origin = `${proto}://${host}`
     const redirectTo = `${origin}/auth/reset?next=/auth/new-password`
 
-    const { error } = await sbClient.auth.resetPasswordForEmail(email, { redirectTo })
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
     if (error) redirect(`/auth/forgot?error=send_failed`)
 
-    // ✅ 성공 배너 노출
     redirect(`/auth/forgot?sent=1&email=${encodeURIComponent(email)}`)
   }
 

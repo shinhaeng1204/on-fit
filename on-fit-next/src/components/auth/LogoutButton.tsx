@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { sbClient } from "@/lib/supabase-client"
 import { Button } from "../common/Button"
 import { LogOut } from "lucide-react"
+import { mutate } from "swr"
 
 export default function LogoutButton(){
     const router = useRouter()
@@ -23,6 +24,7 @@ export default function LogoutButton(){
       if (!res.ok) throw new Error('logout failed')
 
         await sbClient.auth.signOut().catch(()=>{})
+        await mutate("/api/auth/me");
         router.replace('/')
         router.refresh
     } catch (e) {

@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     // posts 테이블 조회
     const { data: post, error: postError } = await supabase
       .from("posts")
-      .select("room_id, current_participants, max_participants")
+      .select("room_id, current_participants, max_participants, author_id, title")
       .eq("id", postId)
       .single();
 
@@ -34,22 +34,15 @@ export async function POST(req: Request) {
       return ok({ joined: true, message: "이미 참여 중입니다." });
     }
 
-    // 정원 체크 및 상태 업데이트
-    let newStatus = post.current_participants + 1 >= post.max_participants
-      ? "마감"
-      : "모집중";
+    // --- 정원 체크 ---
+    const isAlreadyFull = post.current_participants >= post.max_participants;
+    const willBeFull = post.current_participants + 1 === post.max_participants;
 
-    if (post.max_participants && post.current_participants >= post.max_participants) {
-      // 상태 먼저 업데이트 후 종료
-      await supabase
-        .from("posts")
-        .update({ status: newStatus })
-        .eq("id", postId);
-
+    if (isAlreadyFull) {
       return fail("참여 인원이 최대치에 도달했습니다.", 409);
     }
 
-    // 참가자 등록
+    // --- 참가자 등록 ---
     const { data: participant, error: insertError } = await supabase
       .from("participants")
       .upsert(
@@ -66,22 +59,39 @@ export async function POST(req: Request) {
 
     if (insertError) return fail(insertError.message, 500);
 
-    // posts 업데이트: current + status
-    const { error: updateError } = await supabase
+    let newStatus = willBeFull ? "마감" : "모집중";
+
+    // --- posts 업데이트 ---
+    await supabase
       .from("posts")
       .update({
         current_participants: post.current_participants + 1,
-        status: newStatus
+        status: newStatus,
       })
       .eq("id", postId);
 
-    if (updateError) return fail(updateError.message, 500);
+    // --- 🔥 정원이 딱 찬 순간에만 알림 추가 ---
+
+    if (willBeFull) {
+      const { data: notifData, error: notifError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: post.author_id,
+          type: "room_full",
+          message: `모임 "${post.title}"의 모집 인원이 모두 찼어요.`,
+          actor_id:user.id,
+          post_id: postId,
+          room_id: roomId,
+          read: false,
+        })
+        .select("*");
+    }
 
     return ok({
       joined: true,
       participant,
       current_participants: post.current_participants + 1,
-      status: newStatus
+      status: newStatus,
     });
 
   } catch (err: any) {

@@ -31,6 +31,8 @@ function convertTypeToTitle(type: string) {
       return "새 게시글";
     case "chat":
       return "새 채팅";
+    case "room_full":
+      return "인원 마감";
     default:
       return "알림";
   }
@@ -54,13 +56,39 @@ function mapRowToNotification(raw: any): Notification {
 
 export function NotificationProvider({
   children,
-  userId,
 }: {
   children: React.ReactNode;
-  userId: string;
 }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [myRooms, setMyRooms] = useState<string[]>([])
+  const [userId, setUserId] = useState<string>("");
+
+  useEffect(() => {
+  const { data: sub } = sbClient.auth.onAuthStateChange(async (event, session) => {
+    if (!session) {
+      // 🔥 로그아웃 감지 → 즉시 초기화
+      setUserId("");
+      setNotifications([]);
+      setMyRooms([]);
+
+      // 모든 채널 정리
+      sbClient.getChannels().forEach((ch) => sbClient.removeChannel(ch));
+    } else {
+      // 로그인 감지 → 유저 갱신
+      setUserId(session.user.id);
+    }
+  });
+
+  return () => sub.subscription.unsubscribe();
+}, []);
+
+  useEffect(() => {
+    (async () => {
+      const res = await fetch("/api/auth/me", { credentials: "include" });
+      const json = await res.json();
+      setUserId(json.user?.id ?? "");
+    })();
+  }, []);
 
   //참여한 room 목록 불러오기
   useEffect(()=>{
