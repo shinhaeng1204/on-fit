@@ -1,15 +1,15 @@
-import Link from 'next/link';
-import { Trophy, Calendar, Users, LogIn } from 'lucide-react';
+import { Trophy, Calendar, Users} from 'lucide-react';
 import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
 import ProfileHeader from '@/app/mypage/components/ProfileHeader';
+import TrophySection from '@/app/mypage/components/TrophySection';
 import ActivityTabs from '@/app/mypage/components/ActivityTabs';
 import RegionSection from '@/app/mypage/components/RegionSection';
 import PreferredExercisesSection from '@/app/mypage/components/PreferredExercisesSection';
+import ReviewSection from '@/app/mypage/components/ReviewSection';
+import { redirect } from 'next/navigation';
 
 import { createSupabaseServerClient } from '@/lib/route-helpers';
 import { getMyPageData } from '@/app/mypage/_api/getMyPageData';
-import TrophySection from './components/TrophySection';
 
 type ActivityItem = {
   id: string;
@@ -24,19 +24,9 @@ export default async function MyPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // 🔥 비로그인 → 로그인 페이지로 강제 이동
   if (!user) {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 py-10">
-        <p className="text-sm text-muted-foreground">로그인이 필요합니다.</p>
-
-        <Link href="/auth?next=/mypage">
-          <Button size="sm">
-            <LogIn className="mr-2 h-4 w-4" />
-            로그인 하러가기
-          </Button>
-        </Link>
-      </div>
-    );
+    redirect('/auth?next=/mypage');
   }
 
   /** ===========================================
@@ -100,6 +90,32 @@ export default async function MyPage() {
       })) ?? [];
   }
 
+   // 참여 수를 실제 데이터 기준으로 쓰고 싶으면 여기서 업데이트
+  stats.participationCount = participated.length;
+  const mockReviews = [
+    {
+      id: '1',
+      reviewerName: '김철수',
+      rating: 5,
+      content: '정말 친절하시고 운동도 잘 알려주셨어요! 다음에 또 같이 운동하고 싶습니다.',
+      createdAt: '2023-10-25T10:00:00',
+    },
+    {
+      id: '2',
+      reviewerName: '이영희',
+      rating: 4,
+      content: '시간 약속을 잘 지키십니다. 즐거운 시간이었습니다.',
+      createdAt: '2023-11-02T14:30:00',
+    },
+    {
+      id: '3',
+      reviewerName: '박지민',
+      rating: 5,
+      content: '에너지가 넘치시는 분이에요! 덕분에 동기부여가 많이 되었습니다.',
+      createdAt: '2023-11-15T09:15:00',
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <Card className="p-0">
@@ -155,6 +171,9 @@ export default async function MyPage() {
             },
           ]}
         />
+      </Card>
+      <Card className="p-0">
+        <ReviewSection reviews={mockReviews} />
       </Card>
     </div>
   );
