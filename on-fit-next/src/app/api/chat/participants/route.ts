@@ -25,7 +25,8 @@ export async function GET(req: Request) {
   const { data: participants, error: participantError } = await supabase
     .from("participants")
     .select("user_id, role")
-    .eq("room_id", roomId);
+    .eq("room_id", roomId)
+    .neq("user_id", user.id);
 
   if (participantError) {
     console.error("participants error:", participantError);
@@ -65,7 +66,6 @@ export async function GET(req: Request) {
 
   const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
 
-  // ✅ 프론트에서 쓰기 편하게 평평한 구조로 응답
   const items = participants.map((p) => {
     const profile = profileMap.get(p.user_id);
 

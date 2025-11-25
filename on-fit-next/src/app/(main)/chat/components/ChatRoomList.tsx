@@ -14,6 +14,8 @@ interface ChatRoomListItem {
   lastMessageTime: string;
   role: 'host' | 'member' | string;
   unreadCount: number;
+  recruitEndAt?: string | null;
+  canReview: boolean;
 }
 
 export default function ChatRoomList() {
@@ -74,6 +76,10 @@ export default function ChatRoomList() {
           chatting={room.lastMessage}
           tag={room.tag ?? room.sport ?? ''}
           unreadCount={room.unreadCount}
+          canReview={room.canReview}
+          onLeave={(id) => {
+            setRooms((prev) => prev.filter((r) => r.roomId !== id))
+          }}
         />
       ))}
     </div>
