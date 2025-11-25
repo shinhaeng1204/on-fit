@@ -1,6 +1,6 @@
 import { Star } from 'lucide-react';
 import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
-import { Review } from '@/app/mypage/review';
+import { Review } from '@/types/review';
 import { cn } from '@/lib/utils';
 
 interface ReviewSectionProps {
