@@ -1,8 +1,19 @@
-export interface Review {
+export type Review = {
   id: string;
-  reviewerName: string;
-  reviewerImage?: string;
-  rating: number;
+  reviewer_id: string;
+  target_user_id: string;
+  room_id: string;
   content: string;
-  createdAt: string;
-}
+  created_at: string;
+
+  reviewer?: {
+    id: string;
+    nickname: string;
+    profile_image?: string | null;
+  };
+
+  room?: {
+    id: string;
+    name?: string | null;
+  };
+};

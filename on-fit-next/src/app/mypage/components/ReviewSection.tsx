@@ -1,6 +1,5 @@
-import { Star } from 'lucide-react';
 import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
-import { Review } from '@/app/mypage/review';
+import { Review } from '@/types/review';
 import { cn } from '@/lib/utils';
 
 interface ReviewSectionProps {
@@ -14,9 +13,10 @@ export default function ReviewSection({ reviews, className }: ReviewSectionProps
       <CardHeader>
         <CardTitle>받은 후기</CardTitle>
       </CardHeader>
+
       <CardContent className={cn('pb-5', className)}>
         {reviews.length === 0 ? (
-          <div className="flex min-h-[80px] items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-3 py-6">
+          <div className="flex min-h-20 items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-3 py-6">
             <p className="text-sm text-muted-foreground">아직 받은 후기가 없습니다.</p>
           </div>
         ) : (
@@ -27,27 +27,40 @@ export default function ReviewSection({ reviews, className }: ReviewSectionProps
                 className="flex flex-col gap-2 rounded-lg bg-secondary/30 p-4"
               >
                 <div className="flex items-center justify-between">
+                  {/* 작성자 + 모임명 */}
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={cn(
-                            'h-4 w-4',
-                            i < review.rating
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'fill-muted text-muted-foreground/20'
-                          )}
+                    <div className="h-8 w-8 overflow-hidden rounded-full bg-muted">
+                      {review.reviewer?.profile_image ? (
+                        <img
+                          src={review.reviewer.profile_image}
+                          alt=""
+                          className="h-full w-full object-cover"
                         />
-                      ))}
+                      ) : null}
                     </div>
-                    <span className="text-sm font-medium">{review.reviewerName}</span>
+
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">
+                        {review.reviewer?.nickname ?? '익명'}
+                      </span>
+
+                      {/* ✅ room name 표시 (없으면 기본 텍스트) */}
+                      <span className="text-xs text-muted-foreground">
+                        {review.room?.name ? `모임명: ${review.room.name}` : '모임 정보 없음'}
+                      </span>
+                    </div>
                   </div>
+
+                  {/* 날짜 */}
                   <span className="text-xs text-muted-foreground">
-                    {formatDate(review.createdAt)}
+                    {formatDate(review.created_at)}
                   </span>
                 </div>
-                <p className="text-sm text-foreground/90">{review.content}</p>
+
+                {/* 후기 내용 */}
+                <p className="text-sm text-foreground/90 whitespace-pre-wrap">
+                  {review.content}
+                </p>
               </div>
             ))}
           </div>

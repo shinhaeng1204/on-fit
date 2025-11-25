@@ -1,4 +1,4 @@
-import { Trophy, Calendar, Users} from 'lucide-react';
+import { Trophy, Calendar, Users } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import ProfileHeader from '@/app/mypage/components/ProfileHeader';
 import TrophySection from '@/app/mypage/components/TrophySection';
@@ -10,6 +10,7 @@ import { redirect } from 'next/navigation';
 
 import { createSupabaseServerClient } from '@/lib/route-helpers';
 import { getMyPageData } from '@/app/mypage/_api/getMyPageData';
+import { getMyReviews } from '@/lib/reviews'; 
 
 type ActivityItem = {
   id: string;
@@ -90,40 +91,18 @@ export default async function MyPage() {
       })) ?? [];
   }
 
-   // 참여 수를 실제 데이터 기준으로 쓰고 싶으면 여기서 업데이트
+  // 참여 수를 실제 데이터 기준으로 쓰고 싶으면 여기서 업데이트
   stats.participationCount = participated.length;
-  const mockReviews = [
-    {
-      id: '1',
-      reviewerName: '김철수',
-      rating: 5,
-      content: '정말 친절하시고 운동도 잘 알려주셨어요! 다음에 또 같이 운동하고 싶습니다.',
-      createdAt: '2023-10-25T10:00:00',
-    },
-    {
-      id: '2',
-      reviewerName: '이영희',
-      rating: 4,
-      content: '시간 약속을 잘 지키십니다. 즐거운 시간이었습니다.',
-      createdAt: '2023-11-02T14:30:00',
-    },
-    {
-      id: '3',
-      reviewerName: '박지민',
-      rating: 5,
-      content: '에너지가 넘치시는 분이에요! 덕분에 동기부여가 많이 되었습니다.',
-      createdAt: '2023-11-15T09:15:00',
-    },
-  ];
+
+  /** ===========================================
+   * 4) ✅ 내가 받은 리뷰 Supabase에서 가져오기
+   * =========================================== */
+  const reviews = await getMyReviews(user.id);
 
   return (
     <div className="space-y-6">
       <Card className="p-0">
-        <ProfileHeader
-          name={name}
-          avatarUrl={avatarUrl}
-          stats={stats}
-        />
+        <ProfileHeader name={name} avatarUrl={avatarUrl} stats={stats} />
       </Card>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -141,7 +120,7 @@ export default async function MyPage() {
       <Card className="p-0">
         <TrophySection
           titleIcon={<Trophy className="h-5 w-5 text-primary" />}
-          badges={badges} // ← 여기 핵심!!!
+          badges={badges}
         />
       </Card>
 
@@ -172,8 +151,10 @@ export default async function MyPage() {
           ]}
         />
       </Card>
+
+      {/* ✅ mockReviews 제거하고 실제 reviews 전달 */}
       <Card className="p-0">
-        <ReviewSection reviews={mockReviews} />
+        <ReviewSection reviews={reviews} />
       </Card>
     </div>
   );
