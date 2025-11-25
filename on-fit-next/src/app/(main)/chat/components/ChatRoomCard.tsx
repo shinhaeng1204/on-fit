@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardHeader } from "@/components/common/Card";
+import { Card, CardContent, CardHeader } from "@/components/common/Card";
 import Image from "next/image";
 import StatusBadge from "@/components/main/StatusBadge";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,8 @@ type ChatRoomCardProps = {
   tag: string;
   roomId: string;
   unreadCount: number;
+  canReview: boolean;
+  onLeave: (roomId: string) => void;
 };
 
 export default function ChatRoomCard({
@@ -25,6 +27,8 @@ export default function ChatRoomCard({
   chatting,
   tag,
   unreadCount,
+  canReview,
+  onLeave
 }: ChatRoomCardProps) {
   const router = useRouter();
 
@@ -44,6 +48,18 @@ export default function ChatRoomCard({
     e.stopPropagation(); // ✅ 카드 onClick 안 타게 막기
     router.push(`/review/${roomId}`);
   };
+
+    const handleLeave = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+    const ok = confirm("정말 채팅방을 나가시겠습니까?")
+    if(!ok) return
+    try {
+      await api.delete(`/api/chat/${roomId}/leave`);
+      onLeave?.(roomId)
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   return (
     <Card
@@ -92,16 +108,31 @@ export default function ChatRoomCard({
 
           <h3 className="text-sm font-semibold mb-2 mt-2">{chatting}</h3>
           <StatusBadge variant="outline">{tag}</StatusBadge>
-          <Button
+          
+        </div>
+      </CardHeader>
+      <CardContent>
+        {canReview && (
+            <div className="mt-3 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLeave}
+                className="w-full"
+              >
+                나가기
+              </Button>
+              <Button
                 variant="default"
-                size="sm" 
-                className="text-xs px-2 py-1 absolute right-2"
+                size="sm"
+                className="w-full"
                 onClick={handleReviewClick}
               >
                 리뷰하러가기
               </Button>
-        </div>
-      </CardHeader>
+            </div>
+          )}
+      </CardContent>
     </Card>
   );
 }

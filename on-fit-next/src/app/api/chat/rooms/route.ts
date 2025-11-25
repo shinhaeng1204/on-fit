@@ -121,11 +121,17 @@ export async function GET() {
     myRoleByRoom[rid] = p.role;
   });
 
+  const now = new Date();
+
   //  최종 응답 형태로 가공
   const items = (rooms ?? []).map((room) => {
     const rid = room.id as string;
     const post = room.post_id ? postsById[room.post_id] : null;
     const lastMessage = lastMessageByRoom[rid];
+
+    const recruitEndAt: string | null = post?.date_time ?? null;
+
+    const canReview = recruitEndAt !== null ? new Date(recruitEndAt) <= now : false
 
     return {
       roomId: rid,
@@ -143,6 +149,10 @@ export async function GET() {
       role: myRoleByRoom[rid] ?? "member",
       // 안 읽은 메시지 수
       unreadCount: unreadCountByRoom[rid] ?? 0,
+
+      recruitEndAt,
+
+      canReview
     };
   });
 
