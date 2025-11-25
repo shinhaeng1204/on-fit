@@ -95,7 +95,6 @@ export default function Calendar() {
           setEvents([]);
           return;
         }
-        console.log(json)
         const mapped: CalendarEvent[] = (json.items ?? []).map((p: any) => {
           const d = new Date(p.date);
           const hhmm = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });

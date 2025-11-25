@@ -1,3 +1,4 @@
+//서버에서, 현재 로그인한 사용자가 누구인지 확인하는 API
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from '@supabase/supabase-js'
