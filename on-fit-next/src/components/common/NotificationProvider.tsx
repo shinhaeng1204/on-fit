@@ -63,24 +63,24 @@ export function NotificationProvider({
   const [myRooms, setMyRooms] = useState<string[]>([])
   const [userId, setUserId] = useState<string>("");
 
-  useEffect(() => {
-  const { data: sub } = sbClient.auth.onAuthStateChange(async (event, session) => {
-    if (!session) {
-      // 🔥 로그아웃 감지 → 즉시 초기화
-      setUserId("");
-      setNotifications([]);
-      setMyRooms([]);
+//   useEffect(() => {
+//   const { data: sub } = sbClient.auth.onAuthStateChange(async (event, session) => {
+//     if (!session) {
+//       // 🔥 로그아웃 감지 → 즉시 초기화
+//       setUserId("");
+//       setNotifications([]);
+//       setMyRooms([]);
 
-      // 모든 채널 정리
-      sbClient.getChannels().forEach((ch) => sbClient.removeChannel(ch));
-    } else {
-      // 로그인 감지 → 유저 갱신
-      setUserId(session.user.id);
-    }
-  });
+//       // 모든 채널 정리
+//       sbClient.getChannels().forEach((ch) => sbClient.removeChannel(ch));
+//     } else {
+//       // 로그인 감지 → 유저 갱신
+//       setUserId(session.user.id);
+//     }
+//   });
 
-  return () => sub.subscription.unsubscribe();
-}, []);
+//   return () => sub.subscription.unsubscribe();
+// }, []);
 
   useEffect(() => {
     (async () => {
@@ -144,52 +144,6 @@ export function NotificationProvider({
       sbClient.removeChannel(channel);
     };
   }, [userId]);
-
-
-  // 새 메시지 실시간 listen
-useEffect(() => {
-  if (!userId) return;
-  if (myRooms.length === 0) return;
-
-  const channel = sbClient
-    .channel(`messages-listener-${userId}`)
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "messages",
-      },
-      async (payload) => {
-        const msg = payload.new;
-
-        // 1) 내가 쓴 메시지면 무시
-        if (msg.sender_id === userId) return;
-
-        // 2) 이 메시지의 방이 내가 참여중인 방인지 체크
-        if (!myRooms.includes(msg.room_id)) return;
-
-        // 4) 클라이언트 상태 즉시 업데이트
-        setNotifications((prev) => [
-          {
-            id: "temp-" + Date.now(),
-            title: "새 메시지",
-            message: `새로운 메시지가 도착했습니다.`,
-            time: new Date().toLocaleTimeString(),
-            read: false,
-            type: "chat",
-            room_id: msg.room_id,
-          },
-          ...prev,
-        ]);
-      }
-    )
-    .subscribe();
-
-  return () => {
-    sbClient.removeChannel(channel);
-  };
-}, [userId, myRooms]);
 
   // 📌 3) 모두 읽음 처리
   const markAllRead = async () => {
