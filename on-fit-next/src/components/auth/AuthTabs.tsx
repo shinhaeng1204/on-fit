@@ -130,7 +130,8 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
       await mutate("/api/auth/me")
 
       // 4) 체크 페이지로
-      router.push("/auth/check")
+      const next = sp.get("next") || "/"
+      router.push(`/auth/check?next=${encodeURIComponent(next)}`)
     } finally {
       setIsLoading(false)
     }
@@ -227,7 +228,7 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
             </CardContent>
             <CardFooter className="flex gap-2">
               <Button type="submit" className="w-full" variant="hero" disabled={isLoading}>
-                {isLoading ? "로그인 중..." : "로그인"}
+                {isLoading ? "로딩중" : "로그인"}
               </Button>
               <KakaoLoginButton />
               <GoogleLoginButton />
