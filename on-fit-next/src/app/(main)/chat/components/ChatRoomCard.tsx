@@ -45,7 +45,7 @@ export default function ChatRoomCard({
 
   // 리뷰하러 가기 버튼 클릭 → 리뷰 페이지 이동
   const handleReviewClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // ✅ 카드 onClick 안 타게 막기
+    e.stopPropagation(); 
     router.push(`/review/${roomId}`);
   };
 
@@ -101,7 +101,7 @@ export default function ChatRoomCard({
             <StatusBadge variant="outline">{member}</StatusBadge>
 
             <div className="ml-auto flex items-center gap-2">
-              <span className="text-xs absolute right-3">{time}</span>
+              <span className="text-xs absolute right-5">{time}</span>
               
             </div>
           </div>
