@@ -1,9 +1,10 @@
-'use client'
+"use client"
 
 import { useMemo, useState } from "react"
 import Filter, { FilterValue } from "./Filter"
 import FitCard from "./FitCard"
-import {postType} from "@/types/post";
+import { postType } from "@/types/post"
+import { SIDO_OPTIONS, getSigunguOptions } from "@/constants/korea-regions"
 
 type Props = {
   items: postType[]
@@ -11,7 +12,8 @@ type Props = {
 
 const initialFilter: FilterValue = {
   sport: "전체",
-  location: "전체",
+  sido: "전체",
+  sigungu: "전체",
   level: "전체",
 }
 
@@ -26,34 +28,33 @@ export default function FitList({ items }: Props) {
     return ["전체", ...Array.from(set)]
   }, [items])
 
-  const locationOptions = useMemo(() => {
-    const set = new Set<string>()
-    items.forEach((item) => {
-      if (item.location) set.add(item.location)
-    })
-    return ["전체", ...Array.from(set)]
-  }, [items])
+  const sidoOptions = ["전체", ...SIDO_OPTIONS]
+
+  const sigunguOptions = useMemo(() => {
+    if (filter.sido === "전체") return ["전체"]
+    return ["전체", ...getSigunguOptions(filter.sido)]
+  }, [filter.sido])
 
   const levelOptions = ["전체", "브론즈", "실버", "골드"]
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      const sportOk =
-        !filter.sport ||
-        filter.sport === "전체" ||
-        item.sport === filter.sport
+      // location: "서울특별시 강남구 ○○체육관"
+      const [itemSido, itemSigungu] = item.location.split(" ")
 
-      const locationOk =
-        !filter.location ||
-        filter.location === "전체" ||
-        item.location.includes(filter.location)
+      const sportOk =
+        filter.sport === "전체" || item.sport === filter.sport
+
+      const sidoOk =
+        filter.sido === "전체" || itemSido === filter.sido
+
+      const sigunguOk =
+        filter.sigungu === "전체" || itemSigungu === filter.sigungu
 
       const levelOk =
-        !filter.level ||
-        filter.level === "전체" ||
-        item.level === filter.level
+        filter.level === "전체" || item.level === filter.level
 
-      return sportOk && locationOk && levelOk
+      return sportOk && sidoOk && sigunguOk && levelOk
     })
   }, [items, filter])
 
@@ -68,7 +69,8 @@ export default function FitList({ items }: Props) {
         onChange={setFilter}
         onReset={handleReset}
         sportsOptions={sportsOptions}
-        locationOptions={locationOptions}
+        sidoOptions={sidoOptions}
+        sigunguOptions={sigunguOptions}
         levelOptions={levelOptions}
       />
 
