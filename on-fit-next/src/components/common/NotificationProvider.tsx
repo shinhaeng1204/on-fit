@@ -19,6 +19,7 @@ type NotificationContextValue = {
   markAllRead: () => void;
   deleteOne: (id: string) => void;
   markOneRead: (id: string) => void;
+  clearAll : ()=>void
 };
 
 const NotificationCtx = createContext<NotificationContextValue | null>(null);
@@ -63,33 +64,24 @@ export function NotificationProvider({
   const [myRooms, setMyRooms] = useState<string[]>([])
   const [userId, setUserId] = useState<string>("");
 
-//   useEffect(() => {
-//   const { data: sub } = sbClient.auth.onAuthStateChange(async (event, session) => {
-//     if (!session) {
-//       // 🔥 로그아웃 감지 → 즉시 초기화
-//       setUserId("");
-//       setNotifications([]);
-//       setMyRooms([]);
-
-//       // 모든 채널 정리
-//       sbClient.getChannels().forEach((ch) => sbClient.removeChannel(ch));
-//     } else {
-//       // 로그인 감지 → 유저 갱신
-//       setUserId(session.user.id);
-//     }
-//   });
-
-//   return () => sub.subscription.unsubscribe();
-// }, []);
+  const clearAll = ()=>{
+    setUserId("")
+    setNotifications([])
+    setMyRooms([])
+    sbClient.getChannels().forEach((ch)=>sbClient.removeChannel(ch))
+  }
 
   useEffect(() => {
-    (async () => {
-      const res = await fetch("/api/auth/me", { credentials: "include" });
-      const json = await res.json();
-      setUserId(json.user?.id ?? "");
-    })();
-  }, []);
+    const { data: sub } = sbClient.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        clearAll()
+      } else {
+        setUserId(session.user.id)
+      }
+    })
 
+    return () => sub.subscription.unsubscribe()
+  }, [])
   //참여한 room 목록 불러오기
   useEffect(()=>{
     if(!userId) return
@@ -188,7 +180,7 @@ export function NotificationProvider({
 
   return (
     <NotificationCtx.Provider
-      value={{ notifications, markAllRead, deleteOne, markOneRead }}
+      value={{ notifications, markAllRead, deleteOne, markOneRead, clearAll }}
     >
       {children}
     </NotificationCtx.Provider>

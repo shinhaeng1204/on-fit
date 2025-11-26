@@ -8,28 +8,20 @@ import { Button } from "@/components/common/Button";
 import ProfileModal from "@/components/profile/ProfileModal";
 import { Card, CardContent, CardHeader } from "@/components/common/Card";
 import ProfileImage from "@/components/common/ProfileImage";
+import { User } from "@supabase/supabase-js";
 
 interface PostHostClientProps {
   host: Profile;
   hostId: string;
+  user?: User | null | undefined
 }
 
-export default function PostHostClient({ host, hostId }: PostHostClientProps) {
+export default function PostHostClient({ host, hostId, user }: PostHostClientProps) {
   const [open, setOpen] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
-  const [myId, setMyId] = useState<string | null>(null);
+  const [myId, setMyId] = useState<string | null>(user?.id ?? null);
 
   const [profile, setProfile] = useState<Profile>(host); // ⭐ host → local state로 관리
-
-  // 내 유저 ID 가져오기
-  useEffect(() => {
-    (async () => {
-      const {
-        data: { user },
-      } = await sbClient.auth.getUser();
-      setMyId(user?.id ?? null);
-    })();
-  }, []);
 
   // 초기 팔로우 상태 계산
   useEffect(() => {
@@ -143,6 +135,7 @@ export default function PostHostClient({ host, hostId }: PostHostClientProps) {
         profile={profile}
         isFollowing={isFollowing}
         onToggleFollow={handleToggleFollow}
+        user={myId}
       />
     </>
   );

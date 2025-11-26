@@ -13,6 +13,10 @@ export default function ConfirmPageClient() {
 
   useEffect(() => {
     ;(async () => {
+      const hash = window.location.hash.substring(1) // '#' 제거
+      const params = new URLSearchParams(hash)
+
+      const next = params.get("next") || "/"
       try {
         if (code) {
           const { error } = await sbClient.auth.exchangeCodeForSession(code)
@@ -34,7 +38,7 @@ export default function ConfirmPageClient() {
           await mutate('/api/auth/me')
         }
       } finally {
-        router.replace('/auth/check')
+        router.replace(`/auth/check?next=${encodeURIComponent(next)}`)
       }
     })()
   }, [code])

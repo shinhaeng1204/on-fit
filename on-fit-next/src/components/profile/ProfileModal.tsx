@@ -12,6 +12,7 @@ type ProfileModalProps = {
   profile: Profile | null;
   isFollowing: boolean;
   onToggleFollow: (profileId: string) => Promise<void> | void;
+  user:string | null;
 };
 
 export default function ProfileModal({
@@ -20,6 +21,7 @@ export default function ProfileModal({
   profile,
   isFollowing,
   onToggleFollow,
+  user
 }: ProfileModalProps) {
   if (!open || !profile) return null;
 
@@ -68,16 +70,20 @@ export default function ProfileModal({
               </div>
             </div>
 
+            
+
             {/* 팔로우 버튼 */}
-            <div className="flex justify-end pt-2">
-              <Button
-                variant={isFollowing ? 'outline' : 'sport'}
-                size="sm"
-                onClick={handleFollowClick}
-              >
-                {isFollowing ? '팔로우 취소' : '팔로우'}
-              </Button>
-            </div>
+            {user && user !== profile.id && (
+              <div className="flex justify-end pt-2">
+                <Button
+                  variant={isFollowing ? 'outline' : 'sport'}
+                  size="sm"
+                  onClick={handleFollowClick}
+                >
+                  {isFollowing ? '팔로우 취소' : '팔로우'}
+                </Button>
+              </div>
+            )}
           </div>
         </Card>
       </div>

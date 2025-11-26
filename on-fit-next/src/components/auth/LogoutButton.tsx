@@ -5,18 +5,11 @@ import { sbClient } from "@/lib/supabase-client"
 import { Button } from "../common/Button"
 import { LogOut } from "lucide-react"
 import { mutate } from "swr"
+import { useNotifications } from "../common/NotificationProvider"
 
 export default function LogoutButton(){
     const router = useRouter()
-
-    // const onLogout = async () =>{
-    //     const {error} = await sbClient.auth.signOut()
-    //     if(error){
-    //         console.error('[logout] failed: ', error)
-    //         return
-    //     }
-    //     router.replace('/')
-    // }
+    const {clearAll} = useNotifications()
     const onLogout = async () => {
     try {
       // 서버가 Supabase signOut + HttpOnly 쿠키 제거
@@ -24,6 +17,7 @@ export default function LogoutButton(){
       if (!res.ok) throw new Error('logout failed')
 
         await sbClient.auth.signOut().catch(()=>{})
+        clearAll()
         await mutate("/api/auth/me");
         router.replace('/')
         router.refresh

@@ -5,20 +5,26 @@ import {Flag, MessageCircle} from "lucide-react";
 import React, {useState} from "react";
 import {api} from "@/lib/axios";
 import ReportModal from "@/app/(main)/post/components/ReportModal";
-import {useRouter} from "next/navigation";
+import {redirect, useRouter} from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/route-helpers";
+import type { User } from '@supabase/supabase-js'
 
 interface PostInfoClientType {
   postId : string,
   roomId : string,
   title : string,
   targetUserId : string
+  user?: User | null
 }
 
-export default function PostInfoClient ({postId, roomId, title, targetUserId} : PostInfoClientType) {
+export default function PostInfoClient ({postId, roomId, title, targetUserId, user} : PostInfoClientType) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
 
   const handleJoinChat = async () => {
+    if(!user){
+      redirect(`/auth?next=/post/${postId}`);
+    }
     try {
       if (!roomId) {
         // 룸이 없으면 생성
