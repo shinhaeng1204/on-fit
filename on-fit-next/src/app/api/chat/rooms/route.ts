@@ -36,6 +36,7 @@ export async function GET() {
     .from("rooms")
     .select("id, name, post_id, created_at")
     .in("id", roomIds);
+    
 
   if (roomsError) {
     console.error("roomsError:", roomsError);
@@ -157,6 +158,12 @@ export async function GET() {
   });
 
   // joined_at 기준 정렬 필요하면 여기서 items.sort(...) 가능
+  items.sort((a, b) => {
+    const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+    const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+    return timeB - timeA; // 최신(큰 시간)이 위로
+  });
+
 
   return ok({ items });
 }
