@@ -48,6 +48,7 @@ export async function GET(req: Request) {
     });
 
     const roomIds = Array.from(postsMap.keys());
+    const cleanedRoomIds = roomIds.filter((id) => id !== null);
 
     // 2) participants에서 “member + 내 user_id + room_id 목록” 필터링
     const { data: myJoins } = await supabase
@@ -55,12 +56,13 @@ export async function GET(req: Request) {
       .select('room_id')
       .eq('role', 'member')
       .eq('user_id', user.id)
-      .in('room_id', roomIds);
+      .in('room_id', cleanedRoomIds);
 
     // 3) 참가한 방의 posts.id 를 Set에 추가
     myJoins?.forEach((row) => {
       const postId = postsMap.get(row.room_id);
       if (postId) {
+        console.log("joined", postId)
         joinedPostIds.add(postId);
       }
     });
