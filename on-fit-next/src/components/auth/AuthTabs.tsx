@@ -52,6 +52,7 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const sp = useSearchParams()
+  const next = sp.get("next") || "/"
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -130,7 +131,6 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
       await mutate("/api/auth/me")
 
       // 4) 체크 페이지로
-      const next = sp.get("next") || "/"
       router.push(`/auth/check?next=${encodeURIComponent(next)}`)
     } finally {
       setIsLoading(false)
@@ -230,8 +230,8 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
               <Button type="submit" className="w-full" variant="hero" disabled={isLoading}>
                 {isLoading ? "로딩중" : "로그인"}
               </Button>
-              <KakaoLoginButton />
-              <GoogleLoginButton />
+              <KakaoLoginButton next={next} />
+              <GoogleLoginButton next={next} />
             </CardFooter>
           </form>
         </Card>
