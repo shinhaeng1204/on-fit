@@ -10,6 +10,9 @@ import PostInfoClient from "@/app/(main)/post/components/PostInfoClient";
 
 export default async function PostInfo({id} : {id:string}) {
   const supabase = await createSupabaseServerClient();
+  const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
   const { data, error } = await supabase
     .from("posts")
@@ -113,7 +116,7 @@ export default async function PostInfo({id} : {id:string}) {
           </div>
 
           {/* 참여, 신고 */}
-          <PostInfoClient postId={id} roomId={data.room_id} title={data.title} targetUserId={data.profile?.id}/>
+          <PostInfoClient postId={id} roomId={data.room_id} title={data.title} targetUserId={data.profile?.id} user={user}/>
         </CardContent>
       </Card>
     </>
