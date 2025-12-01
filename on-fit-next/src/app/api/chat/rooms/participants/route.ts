@@ -20,7 +20,9 @@ export async function GET(req: Request) {
       profiles (
         id,
         nickname,
-        profile_image
+        profile_image,
+        following,
+        followers
       )
     `)
     .eq("room_id", roomId);

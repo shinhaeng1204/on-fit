@@ -1,4 +1,3 @@
-'use client'
 
 import {Calendar, MapPin, Users, EllipsisVertical, UserMinus} from "lucide-react";
 import { toKstDate, toKstTime } from "@/lib/dateFormatter";
@@ -11,10 +10,8 @@ import { Button } from "@/components/common/Button";
 import ChatParticipants from "@/app/(main)/chat/components/ChatParticipants";
 import {AnimatePresence} from "framer-motion";
 
-export default function RoomInfo() {
-  const params = useParams();
+export default function RoomInfo({roomId}) {
   const router = useRouter();
-  const roomId = params?.id as string;
   const [roomInfo, setRoomInfo] = useState<RoomInfoData | null>(null);
   const [open, setOpen] = useState<boolean>(false);
 

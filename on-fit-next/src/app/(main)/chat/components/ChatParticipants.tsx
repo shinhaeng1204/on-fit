@@ -8,6 +8,7 @@ import {Profile} from "@/types/profilemodal";
 import ProfileImage from "@/components/common/ProfileImage";
 import Badge from "@/components/common/Badge";
 import {Button} from "@/components/common/Button";
+import ProfileModal from "@/components/profile/ProfileModal";
 
 type ChatParticipantsProps = {
   roomId: string;
@@ -21,6 +22,8 @@ interface Participants {
 
 export default function ChatParticipants({ roomId, onClose }: ChatParticipantsProps) {
   const [participants, setParticipants] = useState<Participants[]>([])
+  const [open, setOpen] = useState<boolean>(false)
+  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     const fetchParticipants = async () => {
@@ -51,19 +54,31 @@ export default function ChatParticipants({ roomId, onClose }: ChatParticipantsPr
 
         <div className="flex flex-col gap-4">
           {participants.map(p => (
-            <div key={p.profiles.id} className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:bg-accent/50 transition-colors cursor-pointer">
-              <ProfileImage src={p.profiles?.profile_image} profileName={p.profiles?.nickname}/>
-              <div className="flex-1">
-                <div className="font-medium">{p.profiles?.nickname ?? "알 수 없음"}</div>
-                <div className="text-xs text-muted-foreground">
-                  {p.role === "host" ? "방장" : "참여자"}
+            <button type="button"
+                    key={p.profiles.id}
+                    className="flex justify-start items-center gap-3 p-3 rounded-lg bg-card border border-border hover:bg-accent/50 transition-colors cursor-pointer"
+                    onClick={() => {
+                      setSelectedProfile(p.profiles);
+                      setOpen(true)
+                    }}>
+                <ProfileImage src={p.profiles?.profile_image} profileName={p.profiles?.nickname}/>
+                <div className="flex-1">
+                  <div className="font-medium">{p.profiles?.nickname ?? "알 수 없음"}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {p.role === "host" ? "방장" : "참여자"}
+                  </div>
                 </div>
-              </div>
-              {/* TODO: 추후 profiles에 추가되면 실제 데이터 필요 */}
-              <Badge type="브론즈" />
-            </div>
+                {/* TODO: 추후 profiles에 추가되면 실제 데이터 필요 */}
+                <Badge type="브론즈" />
+            </button>
           ))}
         </div>
+        <ProfileModal
+          open={open}
+          onClose={() => setOpen(false)}
+          profile={selectedProfile}
+          setProfile={setSelectedProfile}
+        />
       </motion.div>
     </>
   );

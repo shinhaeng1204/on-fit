@@ -1,94 +1,20 @@
 'use client';
 
-import { sbClient } from "@/lib/supabase-client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Profile } from "@/types/profilemodal";
 import { UserPlus } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import ProfileModal from "@/components/profile/ProfileModal";
 import { Card, CardContent, CardHeader } from "@/components/common/Card";
 import ProfileImage from "@/components/common/ProfileImage";
-import { User } from "@supabase/supabase-js";
 
 interface PostHostClientProps {
   host: Profile;
-  hostId: string;
-  user?: User | null | undefined
 }
 
-export default function PostHostClient({ host, hostId, user }: PostHostClientProps) {
+export default function PostHostClient({ host, user }: PostHostClientProps) {
   const [open, setOpen] = useState(false);
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [myId, setMyId] = useState<string | null>(user?.id ?? null);
-
-  const [profile, setProfile] = useState<Profile>(host); // ⭐ host → local state로 관리
-
-  // 초기 팔로우 상태 계산
-  useEffect(() => {
-    (async () => {
-      if (!myId || !hostId) return;
-      const { data: me, error } = await sbClient
-        .from("profiles")
-        .select("following")
-        .eq("id", myId)
-        .single();
-
-      if (!error) {
-        const following = (me?.following ?? []) as string[];
-        setIsFollowing(following.includes(hostId));
-      }
-    })();
-  }, [myId, hostId]);
-
-  // 팔로우 토글
-  const handleToggleFollow = async (profileId: string) => {
-    if (!myId) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-
-    const prev = isFollowing;
-    setIsFollowing(!prev); // UI 즉시 변경
-
-    const fn = prev ? "unfollow_user" : "follow_user";
-    const { error } = await sbClient.rpc(fn, { p_target: profileId });
-
-    if (error) {
-      console.error(error);
-      setIsFollowing(prev); // rollback
-      alert(prev ? "언팔로우 실패" : "팔로우 실패");
-      return;
-    }
-
-    setProfile((old) =>
-      old
-        ? {
-          ...old,
-          followers: prev
-            ? (old.followers ?? []).filter((uid) => uid !== myId) // 언팔로우
-            : [...(old.followers ?? []), myId], // 팔로우
-        }
-        : old
-    );
-
-    const { data: actorProfile } = await sbClient
-      .from("profiles")
-      .select("nickname")
-      .eq("id", myId)
-      .single();
-
-    const actorNickname = actorProfile?.nickname ?? "알 수 없음";
-
-    if (!prev) {
-      await sbClient.from("notifications").insert({
-        user_id: profileId,
-        actor_id: myId,
-        actor_nickname: actorNickname,
-        type: "follow",
-        message: `${actorNickname}님이 당신을 팔로우했습니다!`,
-      });
-    }
-  };
+  const [profile, setProfile] = useState<Profile>(host);
 
   return (
     <>
@@ -133,9 +59,7 @@ export default function PostHostClient({ host, hostId, user }: PostHostClientPro
         open={open}
         onClose={() => setOpen(false)}
         profile={profile}
-        isFollowing={isFollowing}
-        onToggleFollow={handleToggleFollow}
-        user={myId}
+        setProfile={setProfile}
       />
     </>
   );
