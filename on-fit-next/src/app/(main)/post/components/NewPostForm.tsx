@@ -169,11 +169,11 @@ export default function NewPostForm({ sportOption, levelOption }: {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col space-y-2">
                 <label className={labelCls}>날짜 *</label>
-                <Input name="date" type="date" required />
+                <Input name="date" type="date" min={new Date().toISOString().split("T")[0]} required />
               </div>
               <div className="flex flex-col space-y-2">
                 <label className={labelCls}>시간 *</label>
-                <Input name="time" type="time" required />
+                <Input name="time" type="time" defaultValue={'12:00'} required />
               </div>
             </div>
 
