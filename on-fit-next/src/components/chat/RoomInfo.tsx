@@ -1,16 +1,21 @@
+'use client'
 
-import {Calendar, MapPin, Users, EllipsisVertical, UserMinus} from "lucide-react";
+import {Calendar, MapPin, Users, UserMinus} from "lucide-react";
 import { toKstDate, toKstTime } from "@/lib/dateFormatter";
 import { useEffect, useState } from "react";
 import { RoomInfoData } from "@/types/chat";
 import { api } from "@/lib/axios";
-import {useParams, useRouter} from "next/navigation";
+import {useRouter} from "next/navigation";
 import Header from "@/components/common/Header";
 import { Button } from "@/components/common/Button";
 import ChatParticipants from "@/app/(main)/chat/components/ChatParticipants";
 import {AnimatePresence} from "framer-motion";
 
-export default function RoomInfo({roomId}) {
+interface RoomInfoProps {
+  roomId : string
+}
+
+export default function RoomInfo({roomId} : RoomInfoProps) {
   const router = useRouter();
   const [roomInfo, setRoomInfo] = useState<RoomInfoData | null>(null);
   const [open, setOpen] = useState<boolean>(false);

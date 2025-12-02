@@ -5,11 +5,12 @@ import {Button} from "@/components/common/Button";
 import {Send} from "lucide-react";
 import {useState} from "react";
 import {api} from "@/lib/axios";
-import {useParams} from "next/navigation";
 
-export default function ChatInput() {
-  const params = useParams()
-  const roomId = params?.id as string
+interface ChatInputProps {
+  roomId : string
+}
+
+export default function ChatInput({roomId} : ChatInputProps) {
   const [content, setContent] = useState<string>("")
 
   const sendMessage = async (e: React.FormEvent) => {
