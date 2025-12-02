@@ -3,53 +3,43 @@
 import { useState } from 'react';
 import { Button } from '@/components/common/Button';
 import { updatePreferencesArray } from '@/app/mypage/actions';
-import { Plus, X, Pencil, Check } from 'lucide-react'; // ✅ RotateCcw 제거
+import { Plus, X, Pencil, Check } from 'lucide-react';
 import { useToast } from '@/app/mypage/components/Toast';
 
-type Props = { initial: string[] };
+type Props = {
+  initial: string[];
+  options: string[]; // 👈 Supabase에서 내려준 운동 리스트
+};
 
-export default function PreferredExercisesEditor({ initial }: Props) {
+export default function PreferredExercisesEditor({ initial, options }: Props) {
   const { show } = useToast?.() ?? { show: () => {} };
   const [editing, setEditing] = useState(false);
   const [tags, setTags] = useState<string[]>(initial);
   const [draft, setDraft] = useState<string[]>(initial);
-  const [input, setInput] = useState('');
+  const [selected, setSelected] = useState<string>(''); // 👈 셀렉트 박스에서 선택된 값
   const [saving, setSaving] = useState(false);
 
   const addTag = (raw: string) => {
     const v = raw.trim();
     if (!v) return;
-    if (draft.includes(v)) return;
+    if (draft.includes(v)) return; // 중복 방지
     setDraft((d) => [...d, v]);
-    setInput('');
+    setSelected('');
   };
 
   const removeTag = (v: string) => {
     setDraft((d) => d.filter((x) => x !== v));
   };
 
-  const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
-  // ✅ 한글 입력 조합 중이면 아무 것도 하지 않음
-  if (e.nativeEvent.isComposing) return;
-
-  if (e.key === 'Enter' || e.key === ',') {
-    e.preventDefault();
-    addTag(e.currentTarget.value); // ✅ 여기서도 input 대신 현재 값 사용
-  }
-
-  if (e.key === 'Backspace' && e.currentTarget.value === '' && draft.length) {
-    removeTag(draft[draft.length - 1]);
-  }
-};
-
   const startEdit = () => {
     setDraft(tags);
+    setSelected('');
     setEditing(true);
   };
 
   const cancelEdit = () => {
     setDraft(tags);
-    setInput('');
+    setSelected('');
     setEditing(false);
   };
 
@@ -68,7 +58,7 @@ export default function PreferredExercisesEditor({ initial }: Props) {
     }
   };
 
-  // 공통 뱃지 톤에 맞춘 pill
+  // pill UI 공통
   const Pill = ({ children, onRemove }: { children: React.ReactNode; onRemove?: () => void }) => (
     <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card/50 px-3 py-1 text-sm">
       {children}
@@ -85,8 +75,13 @@ export default function PreferredExercisesEditor({ initial }: Props) {
     </span>
   );
 
+  // 이미 선택된 태그는 드롭다운에서 숨기기
+  const availableOptions = options.filter((opt) => !draft.includes(opt));
+
+  // =======================
+  // 보기 모드
+  // =======================
   if (!editing) {
-    // 보기 모드
     return (
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
@@ -96,71 +91,77 @@ export default function PreferredExercisesEditor({ initial }: Props) {
             <span className="text-sm text-muted-foreground">선호 운동 정보 없음</span>
           )}
         </div>
-      <Button
-  type="button"
-  variant="ghost"
-  onClick={startEdit}
-  className="p-1.5 gap-0"
->
-  <Pencil className="h-4 w-4" />
-</Button>
-
+        <Button type="button" variant="ghost" onClick={startEdit} className="p-1.5 gap-0">
+          <Pencil className="h-4 w-4" />
+        </Button>
       </div>
     );
   }
 
+  // =======================
   // 편집 모드
-return (
-  <div className="space-y-3">
-    <div className="flex flex-wrap gap-2">
-      {draft.map((t) => (
-        <Pill key={t} onRemove={() => removeTag(t)}>
-          {t}
-        </Pill>
-      ))}
-    </div>
+  // =======================
+  return (
+    <div className="space-y-3">
+      {/* 선택된 태그들 */}
+      <div className="flex flex-wrap gap-2">
+        {draft.map((t) => (
+          <Pill key={t} onRemove={() => removeTag(t)}>
+            {t}
+          </Pill>
+        ))}
+      </div>
 
-    {/* ✅ 한 줄에 정렬 + Card 밖으로 안 튀어나가게 */}
-    <div className="flex items-center gap-2">
-      <input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={onKeyDown}
-        placeholder="입력해주세요"
-        className="flex-1 min-w-0 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
-        aria-label="선호 운동 추가"
-        maxLength={20}
-      />
-      <Button
-        type="button"
-        size="sm"
-        onClick={() => addTag(input)}
-        className="shrink-0"
-      >
-        <Plus className="h-4 w-4 mr-1" />
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        variant="default"
-        onClick={save}
-        disabled={saving}
-        className="shrink-0"
-      >
-        <Check className="h-4 w-4 mr-1" />
-        {saving ? '저장중…' : ''}
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        variant="ghost"
-        onClick={cancelEdit}
-        className="shrink-0"
-      >
-        <X className="h-4 w-4 mr-1" />
-      </Button>
-    </div>
-  </div>
-);
+      {/* 드롭다운 + 버튼들 */}
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          className="flex-1 min-w-0 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+        >
+          <option value="">운동을 선택해주세요</option>
+          {availableOptions.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
 
+        {/* 태그 추가 버튼 */}
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => selected && addTag(selected)}
+          disabled={!selected}
+          className="shrink-0"
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          
+        </Button>
+
+        {/* 저장 버튼 */}
+        <Button
+          type="button"
+          size="sm"
+          variant="default"
+          onClick={save}
+          disabled={saving}
+          className="shrink-0"
+        >
+          <Check className="h-4 w-4 mr-1" />
+        </Button>
+
+        {/* 취소 버튼 */}
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={cancelEdit}
+          className="shrink-0"
+        >
+          <X className="h-4 w-4 mr-1" />
+        </Button>
+      </div>
+    </div>
+  );
 }
