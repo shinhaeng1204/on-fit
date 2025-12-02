@@ -1,10 +1,11 @@
+// src/app/mypage/components/ActivityTabs.tsx
 import type { ReactNode } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/common/Tabs';
 import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
 import StatusPill from '@/app/mypage/components/StatusPill';
 import { cn } from '@/lib/utils';
 
-type ActivityItem = {
+export type ActivityItem = {
   id: string;
   title: string;
   date: string;
@@ -15,12 +16,14 @@ type ActivityTabsProps = {
   defaultTab?: string;
   tabs: { key: string; label: ReactNode; items: ActivityItem[] }[];
   className?: string;
+  onDeleteCreated?: (id: string) => void;
 };
 
 export default function ActivityTabs({
   defaultTab = 'participated',
   tabs,
   className,
+  onDeleteCreated,
 }: ActivityTabsProps) {
   return (
     <>
@@ -65,6 +68,17 @@ export default function ActivityTabs({
                       </div>
                       <div className="flex items-center gap-2">
                         <StatusPill status={a.status} />
+
+                        {/* 🔹 '만든 모임' 탭에서만 삭제 버튼 표시 */}
+                        {t.key === 'created' && onDeleteCreated && (
+                          <button
+                            type="button"
+                            className="text-xs rounded-full border border-destructive/40 px-2 py-1 text-destructive hover:bg-destructive/10 transition-colors"
+                            onClick={() => onDeleteCreated(a.id)}
+                          >
+                            삭제
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -79,7 +93,7 @@ export default function ActivityTabs({
 }
 
 function formatDate(raw: string) {
-  const dateOnly = raw.split('T')[0]; // 'YYYY-MM-DD'
+  const dateOnly = raw.split('T')[0];
   const [y, m, d] = dateOnly.split('-');
   return `${y}.${m}.${d}`;
 }
