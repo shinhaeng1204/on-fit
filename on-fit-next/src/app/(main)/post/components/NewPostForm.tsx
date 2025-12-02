@@ -223,10 +223,10 @@ export default function NewPostForm({ sportOption, levelOption }: {
 
             {/* 버튼 */}
             <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" fullWidth>
+              <Button type="button" variant="outline" className="cursor-pointer" fullWidth onClick={() => router.back()}>
                 취소
               </Button>
-              <Button type="submit" variant="hero" fullWidth disabled={loading}>
+              <Button type="submit" variant="hero" className="cursor-pointer" fullWidth disabled={loading}>
                 {loading ? '등록 중…' : '모임 만들기'}
               </Button>
             </div>
