@@ -90,7 +90,7 @@ const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonBaseProps
           </svg>
         )}
         {leftIcon && !isLoading ? leftIcon : null}
-        <span className={cx(isLoading && 'opacity-90')}>{children}</span>
+        {children}
         {rightIcon}
       </>
     );

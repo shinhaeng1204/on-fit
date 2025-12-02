@@ -62,7 +62,6 @@ export async function GET(req: Request) {
     myJoins?.forEach((row) => {
       const postId = postsMap.get(row.room_id);
       if (postId) {
-        console.log("joined", postId)
         joinedPostIds.add(postId);
       }
     });
