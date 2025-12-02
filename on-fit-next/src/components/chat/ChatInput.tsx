@@ -38,7 +38,7 @@ export default function ChatInput({roomId} : ChatInputProps) {
           className="w-full"
           onChange={(e) => setContent(e.target.value)}
         />
-        <Button type="submit"><Send className="h-4 w-4"/></Button>
+        <Button type="submit" className="cursor-pointer"><Send className="h-4 w-4"/></Button>
       </form>
     </div>
   )
