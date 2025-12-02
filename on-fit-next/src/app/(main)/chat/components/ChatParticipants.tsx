@@ -35,11 +35,6 @@ export default function ChatParticipants({ roomId, onClose }: ChatParticipantsPr
 
   return (
     <>
-      <div 
-        onClick={onClose}
-        className="fixed inset-0 bg-black/30 z-40"
-      />
-
       <motion.div
         initial={{ x: 300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
