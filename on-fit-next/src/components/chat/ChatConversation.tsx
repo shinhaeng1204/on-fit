@@ -5,12 +5,13 @@ import { api } from "@/lib/axios";
 import { subscribeMessages } from "@/lib/realtime";
 import { Message, Profile } from "@/types/chat";
 import { toKstTime } from "@/lib/dateFormatter";
-import { useParams } from "next/navigation";
 import ProfileImage from "@/components/common/ProfileImage";
 
-export default function ChatConversation() {
-  const params = useParams();
-  const roomId = params?.id as string;
+interface ChatConversationProps {
+  roomId : string
+}
+
+export default function ChatConversation({roomId} : ChatConversationProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [userId, setUserId] = useState<string>('')
