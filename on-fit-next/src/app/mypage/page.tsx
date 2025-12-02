@@ -2,7 +2,6 @@ import { Trophy, Calendar, Users } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import ProfileHeader from '@/app/mypage/components/ProfileHeader';
 import TrophySection from '@/app/mypage/components/TrophySection';
-import ActivityTabs from '@/app/mypage/components/ActivityTabs';
 import RegionSection from '@/app/mypage/components/RegionSection';
 import PreferredExercisesSection from '@/app/mypage/components/PreferredExercisesSection';
 import ReviewSection from '@/app/mypage/components/ReviewSection';
@@ -10,14 +9,12 @@ import { redirect } from 'next/navigation';
 
 import { createSupabaseServerClient } from '@/lib/route-helpers';
 import { getMyPageData } from '@/app/mypage/_api/getMyPageData';
-import { getMyReviews } from '@/lib/reviews'; 
+import { getMyReviews } from '@/lib/reviews';
 
-type ActivityItem = {
-  id: string;
-  title: string;
-  date: string;
-  status: 'open' | 'close';
-};
+// 🔹 탭 UI + 삭제 버튼이 들어간 클라이언트 컨테이너
+import ActivityTabsContainer from '@/app/mypage/components/ActivityTabsContainer';
+// 🔹 ActivityTabs에서 사용하는 타입 재사용
+import type { ActivityItem } from '@/app/mypage/components/ActivityTabs';
 
 export default async function MyPage() {
   const supabase = await createSupabaseServerClient();
@@ -47,12 +44,13 @@ export default async function MyPage() {
   };
 
   /** ===========================================
-   * 2) 만든 모임
+   * 2) 만든 모임 (삭제된 글은 제외)
    * =========================================== */
   const { data: createdPosts } = await supabase
     .from('posts')
-    .select('id, title, date_time, status')
+    .select('id, title, date_time, status, is_deleted')
     .eq('author_id', user.id)
+    .eq('is_deleted', false) // 🔹 소프트 삭제된 글은 제외
     .order('date_time', { ascending: false });
 
   const created: ActivityItem[] =
@@ -124,31 +122,11 @@ export default async function MyPage() {
         />
       </Card>
 
+      {/* 🔥 여기가 핵심: ActivityTabs 대신 ActivityTabsContainer 사용 */}
       <Card className="p-0">
-        <ActivityTabs
-          defaultTab="participated"
-          tabs={[
-            {
-              key: 'participated',
-              label: (
-                <>
-                  <Calendar className="h-4 w-4 mr-2" />
-                  참여한 모임
-                </>
-              ),
-              items: participated,
-            },
-            {
-              key: 'created',
-              label: (
-                <>
-                  <Users className="h-4 w-4 mr-2" />
-                  만든 모임
-                </>
-              ),
-              items: created,
-            },
-          ]}
+        <ActivityTabsContainer
+          participated={participated}
+          created={created}
         />
       </Card>
 
