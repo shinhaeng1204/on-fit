@@ -31,8 +31,6 @@ export default function ReviewPage() {
           params: { roomId },
         });
 
-        console.log("participants api res:", res.data);
-
         const members: ReviewMember[] = res.data.items ?? [];
         setMembers(members);
       } catch (e) {

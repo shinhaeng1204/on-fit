@@ -109,9 +109,24 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
         password: r.data.password,
       })
 
-      if (error || !data.session) {
-        setError("로그인 실패")
-        return
+      if (error) {
+        if (error.code === "email_not_confirmed") {
+          setError("이메일 인증이 완료되지 않았습니다. 메일을 확인해주세요.");
+          return;
+        }
+
+        if (error.code === "invalid_credentials") {
+          setError("이메일 또는 비밀번호가 잘못되었습니다.");
+          return;
+        }
+
+        setError("로그인 실패");
+        return;
+      }
+
+      if (!data.session) {
+        setError("로그인 세션 생성에 실패했습니다. (인증 문제 가능)");
+        return;
       }
 
       // 2) 서버에 세션 쿠키 굽기
@@ -158,13 +173,19 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
     try {
       await api.post('/api/auth/signup', { email: r.data.email, password: r.data.password })
       setTab('login')
-      setNotice('회원가입이 완료됐어요. 이메일을 열고 인증 버튼을 눌러주세요.')
+      setNotice(`회원가입이 완료됐어요. ${r.data.email}을 열고 인증 버튼을 눌러주세요.`)
       const q = new URLSearchParams(sp.toString())
       q.set('tab', 'login')
       q.set('notice', 'verify')
       router.replace(`${pathname}?${q.toString()}`)
     } catch (err: any) {
-      setSignupError(normalizeAuthError(err?.response?.data?.error))
+        const code = err?.response?.data?.error
+
+        if (code === "EMAIL_ALREADY_REGISTERED") {
+          setSignupError("이미 가입된 이메일입니다.")
+        } else {
+          setSignupError(normalizeAuthError(code))
+        }
     } finally {
       setIsLoading(false)
     }
@@ -196,13 +217,13 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
             </div>
           )}
 
-          <form onSubmit={handleLogin}>
+          <form onSubmit={handleLogin} noValidate>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="login-email">이메일</label>
                 <Input
                   id="login-email"
-                  type="email"
+                  type="text" inputMode="email"
                   placeholder="name@example.com"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
@@ -212,8 +233,8 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                     <label htmlFor="login-password">비밀번호</label>
-                        <Link href="/auth/forgot" className="text-xs text-primary hover:underline">
-                                비밀번호 찾기
+                        <Link href="/auth/forgot" className="text-xs text-primary hover:underline cursor-pointer">
+                                비밀번호 재설정
                         </Link>
                 </div>
                 <Input
@@ -226,12 +247,12 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
                 />
               </div>
             </CardContent>
-            <CardFooter className="flex gap-2">
-              <Button type="submit" className="w-full" variant="hero" disabled={isLoading}>
+            <CardFooter className="flex flex-col sm:flex-row gap-2">
+              <Button type="submit" className="w-full sm:w-auto flex-1" variant="hero" disabled={isLoading}>
                 {isLoading ? "로딩중" : "로그인"}
               </Button>
-              <KakaoLoginButton next={next} />
-              <GoogleLoginButton next={next} />
+              <KakaoLoginButton next={next} className="w-full sm:w-auto flex-1" />
+              <GoogleLoginButton next={next} className="w-full sm:w-auto flex-1" />
             </CardFooter>
           </form>
         </Card>
@@ -250,13 +271,13 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
             </div>
           )}
 
-          <form onSubmit={handleSignup}>
+          <form onSubmit={handleSignup} noValidate>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="signup-email">이메일</label>
                 <Input
                   id="signup-email"
-                  type="email"
+                  type="text" inputMode="email"
                   placeholder="name@example.com"
                   value={signupEmail}
                   onChange={(e) => setSignupEmail(e.target.value)}

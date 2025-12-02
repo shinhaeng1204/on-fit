@@ -32,6 +32,16 @@ export default async function ForgotPage({ searchParams }: Props) {
     const parsed = emailSchema.safeParse({ email })
     if (!parsed.success) redirect(`/auth/forgot?error=invalid_email`)
 
+    const { data: userInProfile, error: profileErr } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle()
+
+    if (!userInProfile) {
+      redirect(`/auth/forgot?error=not_found&email=${encodeURIComponent(email)}`)
+    }
+
     const h = headers()
     const proto = (await h).get('x-forwarded-proto') ?? 'http'
     const host = ((await h).get('x-forwarded-host') ?? (await h).get('host'))!
@@ -48,15 +58,14 @@ export default async function ForgotPage({ searchParams }: Props) {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md border-border/50 shadow-lg">
         <CardHeader className="space-y-2">
-          <Link href="/auth">
+          <Link href="/auth" className="inline-flex w-fit">
             <Button
-              type="button"
               variant="ghost"
               size="sm"
-              className="w-fit -ml-2 mb-2 inline-flex items-center gap-2"
+              className="!px-2 cursor-pointer"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span>로그인으로 돌아가기</span>
+              로그인으로 돌아가기
             </Button>
           </Link>
 
@@ -87,6 +96,8 @@ export default async function ForgotPage({ searchParams }: Props) {
                 </div>
               ) : error === 'invalid_email' ? (
                 '이메일 형식이 올바르지 않습니다.'
+              ) : error === 'not_found' ? (
+                '가입되어 있지 않은 이메일입니다.'
               ) : (
                 '메일 발송에 실패했어요. 잠시 후 다시 시도해 주세요.'
               )}
@@ -112,7 +123,7 @@ export default async function ForgotPage({ searchParams }: Props) {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-brand hover:opacity-90 text-white font-semibold"
+              className="w-full bg-gradient-brand hover:opacity-90 text-white font-semibold cursor-pointer"
               disabled={sent} // ✅ 전송 후 버튼 비활성화(원하면 제거)
             >
               {sent ? '재설정 링크 전송됨' : '재설정 링크 보내기'}

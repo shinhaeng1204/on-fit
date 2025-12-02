@@ -90,7 +90,6 @@ export default function CalendarClientPage() {
           credentials: "include", //같은 오리진의 HttpOnly 쿠키(로그인 토큰 등)를 함께 보낸다.
         });
         const json = await res.json();
-        console.log(json)
         if (!json?.ok) {
           setErrMsg(json?.message || "일정을 불러오지 못했습니다.");
           setEvents([]);
@@ -298,6 +297,7 @@ export default function CalendarClientPage() {
               {selectedDate && getEventsForDay(selectedDate).length > 0 ? (
                 <div className="space-y-3">
                   {getEventsForDay(selectedDate).map((event) => (
+                    <div key={event.id}>
                     <Link 
                       key={event.id} 
                       href={`/post/${event.id}`}
@@ -325,6 +325,7 @@ export default function CalendarClientPage() {
                         </StatusBadge>
                       </div>
                     </Link>
+                    </div>
                   ))}
                 </div>
               ) : (

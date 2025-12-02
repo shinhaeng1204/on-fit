@@ -65,17 +65,34 @@ export async function POST(req: Request) {
       const receivers = participants
         .map((p)=>p.user_id)
         .filter((id)=>id !==user.id)
+      // 3) 각 유저에게 알림 생성 (중복 알림 방지)
+      for (const receiverId of receivers) {
 
-      // 3) 각 유저에게 알림 생성
-      for(const receiverId of receivers){
+        // 🔥 3-1 기존에 읽지 않은 알림이 있는지 확인
+        const { data: existing, error: existsError } = await supabase
+          .from("notifications")
+          .select("id")
+          .eq("user_id", receiverId)
+          .eq("room_id", roomId)
+          .eq("type", "chat")
+          .eq("read", false)
+          .limit(1);
+
+        // 에러 무시하고(알림 막지는 않음) 기존 알림이 이미 있다면 새로 만들지 않음
+        if (!existsError && existing && existing.length > 0) {
+          console.log(`🔔 기존 알림이 있어 새 알림을 생성하지 않음: user=${receiverId} room=${roomId}`);
+          continue;
+        }
+
+        // 🔥 3-2 새로운 알림 생성
         await supabase.from("notifications").insert({
-          user_id:receiverId,
+          user_id: receiverId,
           actor_id: user.id,
-          type:"chat",
-          room_id:roomId,
+          type: "chat",
+          room_id: roomId,
           message: "새로운 메시지가 도착했습니다.",
-          read:false,
-        })
+          read: false,
+        });
       }
     }
   }

@@ -21,7 +21,7 @@ export default function MainLayoutShell({ children }: { children: React.ReactNod
   const isChatOther = pathname.startsWith('/chat') && !isChatRoot // /chat/... 전부
   const isCalendar = pathname.startsWith('/calendar') 
    // ⬇️ Notification Provider에서 알림 정보 가져오기
-  const { notifications, markAllRead, deleteOne, markOneRead } = useNotifications()
+  const { notifications, markAllRead, deleteOne, markOneRead, deleteAll } = useNotifications()
 
 
   return (
@@ -50,6 +50,7 @@ export default function MainLayoutShell({ children }: { children: React.ReactNod
                 onMarkAllRead={markAllRead}
                 onDelete={deleteOne}
                 onMarkOneRead={markOneRead}
+                deleteAll={deleteAll}
               />
               <AuthControls />
             </div>
