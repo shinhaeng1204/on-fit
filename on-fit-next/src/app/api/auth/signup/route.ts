@@ -18,6 +18,19 @@ export async function POST(req:Request){
         return NextResponse.json({ok:false, error:'EMAIL_OR_PASSWORD_MISSING'}, {status:400})
     }
 
+    const { data: existing, error: queryError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", email)
+        .maybeSingle();
+
+    if (existing) {
+        return NextResponse.json(
+        { ok: false, error: "EMAIL_ALREADY_REGISTERED" },
+        { status: 400 }
+        );
+    }
+
     const origin = new URL(req.url).origin
     const emailRedirectTo = `${origin}/auth/confirm`
 
@@ -25,7 +38,8 @@ export async function POST(req:Request){
         email, password, 
         options: {data:metadata, emailRedirectTo}
     })
-    if(error) return NextResponse.json({ok:false, error:error.message}, {status:400})
-
+    if(error) {
+        return NextResponse.json({ok:false, error:error.message}, {status:400})
+    }
     return NextResponse.json({ok:true, user:data.user})
 }
