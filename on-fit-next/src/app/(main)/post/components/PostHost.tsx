@@ -3,7 +3,6 @@ import PostHostClient from "@/app/(main)/post/components/PostHostClient";
 
 export default async function PostHost({id} : {id:string}) {
   const supabase = await createSupabaseServerClient();
-  const {data:{user}} = await supabase.auth.getUser()
 
   const { data: post } = await supabase
     .from('posts')
@@ -22,7 +21,7 @@ export default async function PostHost({id} : {id:string}) {
 
   return (
     <>
-      <PostHostClient host={host} hostId={host?.id ?? ''} user={user}/>
+      <PostHostClient host={host}/>
     </>
   );
 }
