@@ -19,7 +19,8 @@ type NotificationContextValue = {
   markAllRead: () => void;
   deleteOne: (id: string) => void;
   markOneRead: (id: string) => void;
-  clearAll : ()=>void
+  clearAll : ()=>void;
+  deleteAll: ()=>void;
 };
 
 const NotificationCtx = createContext<NotificationContextValue | null>(null);
@@ -165,8 +166,6 @@ export function NotificationProvider({
       .from("notifications")
       .update({ read: true })
       .eq("id", id);
-
-    console.log("UPDATE RESULT", { data, error });
   };
 
   // 📌 4) 개별 삭제
@@ -177,10 +176,27 @@ export function NotificationProvider({
       .delete()
       .eq("id", id);
   };
+  // 📌 5) 알림 전체 삭제 (DELETE all)
+  const deleteAll = async () => {
+    if (!userId) return;
+
+    // 1) UI 즉시 반영
+    setNotifications([]);
+
+    // 2) DB 삭제
+    const { error } = await sbClient
+      .from("notifications")
+      .delete()
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("전체 삭제 실패:", error);
+    }
+  };
 
   return (
     <NotificationCtx.Provider
-      value={{ notifications, markAllRead, deleteOne, markOneRead, clearAll }}
+      value={{ notifications, markAllRead, deleteOne, markOneRead, clearAll, deleteAll }}
     >
       {children}
     </NotificationCtx.Provider>
