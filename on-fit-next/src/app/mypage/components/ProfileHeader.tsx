@@ -6,13 +6,14 @@ import { cn } from '@/lib/utils';
 import { Check, Edit2, X } from 'lucide-react';
 import { useToast } from '@/app/mypage/components/Toast';
 import { updateNicknameDirect } from '@/app/mypage/actions';
-import ProfileImage from "@/components/common/ProfileImage";
+import ProfileImage from '@/components/common/ProfileImage';
 
 type Props = {
   name: string;
   avatarUrl?: string;
   stats: {
-    participationCount: number;
+    activeCount: number;     // 진행중
+    completedCount: number;  // 완료
     followerCount: number;
     followingCount: number;
   };
@@ -126,7 +127,7 @@ export default function ProfileHeader({
                   onClick={onCancel}
                   aria-label="취소"
                   disabled={isPending}
-                  className="inline-flex h-9 w-9 items:center justify-center rounded-md hover:bg-foreground/5"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-foreground/5"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -134,10 +135,10 @@ export default function ProfileHeader({
             )}
           </div>
 
-          {/* 🔹 레벨 기능 삭제됨 */}
-
-          <div className="grid grid-cols-3 gap-4 mt-4">
-            <StatBox label="참여" value={stats.participationCount} />
+          {/* 통계: 진행중 / 완료 / 팔로워 / 팔로잉 */}
+          <div className="grid grid-cols-4 gap-4 mt-4">
+            <StatBox label="진행중" value={stats.activeCount} />
+            <StatBox label="완료" value={stats.completedCount} />
             <StatBox label="팔로워" value={stats.followerCount} />
             <StatBox label="팔로잉" value={stats.followingCount} />
           </div>
