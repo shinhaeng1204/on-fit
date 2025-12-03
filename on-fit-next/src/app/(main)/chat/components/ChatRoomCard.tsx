@@ -61,6 +61,8 @@ export default function ChatRoomCard({
     }
   }
 
+  const firstTitle = title?.slice(0, 1) ?? "?";
+
   return (
     <Card
       className="m-4 md:my-10 md:mx-40 relative cursor-pointer"
@@ -69,13 +71,9 @@ export default function ChatRoomCard({
       <CardHeader className="flex-row gap-3 items-start">
         {/* 이미지 + 뱃지 오버레이 컨테이너 */}
         <div className="relative">
-          <Image
-            src="/onfit.png"
-            width={60}
-            height={60}
-            alt="profile"
-            className="rounded-full"
-          />
+          <div className="w-14 h-14 bg-gradient-brand flex items-center justify-center shadow-md rounded-full">
+            <span className="text-white font-bold text-lg">{firstTitle}</span>
+          </div>
 
           {/* unreadCount 뱃지 */}
           {unreadCount > 0 && (
