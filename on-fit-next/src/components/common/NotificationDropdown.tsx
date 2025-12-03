@@ -39,7 +39,7 @@ export const NotificationDropdown = ({
     <Popover>
       {/* 알림 버튼 */}
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" title="알림" className="relative">
+        <Button variant="ghost" size="icon" title="알림" className="relative cursor-pointer">
           <Bell className="h-5 w-5" />
 
           {unreadCount > 0 && (
