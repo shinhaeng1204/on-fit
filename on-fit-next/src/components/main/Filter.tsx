@@ -1,10 +1,10 @@
 // components/main/Filter.tsx
 'use client'
 
-import { Card, CardContent, CardHeader } from "../common/Card"
-import {Funnel, X } from "lucide-react"
-import DropBox from "../common/DropBox"
-import { Button } from "../common/Button"
+import { Card, CardContent, CardHeader } from '../common/Card'
+import { Funnel, X } from 'lucide-react'
+import DropBox from '../common/DropBox'
+import { Button } from '../common/Button'
 
 export type FilterValue = {
   sport: string
@@ -39,8 +39,7 @@ export default function Filter({
   }
 
   const handleSidoChange = (next: string) => {
-    // 시/도가 바뀌면 구/군은 전체로 초기화
-    onChange({ ...value, sido: next, sigungu: "전체" })
+    onChange({ ...value, sido: next, sigungu: '' })
   }
 
   const handleSigunguChange = (next: string) => {
@@ -63,68 +62,64 @@ export default function Filter({
             <Funnel className="text-primary w-4 h-4" />
             <h1 className="text-sm font-semibold">필터</h1>
           </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="max-h-0 text-xs"
-            onClick={handleReset}
-          >
-            <div className="flex">
-              <X/>
-            <h3>초기화</h3>
-            </div>
-          </Button>
         </div>
       </CardHeader>
 
       <CardContent className="pb-3 md:py-4">
-        <div className="grid grid-cols-2 gap-3 md:flex md:gap-4">
+        <div className="grid grid-cols-2 gap-3 md:flex md:items-end md:gap-4">
           {/* 종목 */}
           <div className="flex flex-col gap-1 min-w-[120px]">
-            <span className="text-xs text-muted-foreground">종목</span>
             <DropBox
-              defaultValue="전체"
               options={sportsOptions}
               value={sport}
               onChange={handleSportChange}
+              placeholder="종목 선택"
             />
           </div>
 
-          {/* 실력 */}
+          {/* 지역(시/도) */}
           <div className="flex flex-col gap-1 min-w-[120px]">
-            <span className="text-xs text-muted-foreground">실력</span>
             <DropBox
-              defaultValue="전체"
-              options={levelOptions}
-              value={level}
-              onChange={handleLevelChange}
-            />
-          </div>
-
-          {/* 시/도 */}
-          <div className="flex flex-col gap-1 min-w-[120px]">
-            <span className="text-xs text-muted-foreground">시 / 도</span>
-            <DropBox
-              defaultValue="전체"
               options={sidoOptions}
               value={sido}
               onChange={handleSidoChange}
+              placeholder="지역 선택"
             />
           </div>
 
           {/* 시·군·구 */}
           <div className="flex flex-col gap-1 min-w-[120px]">
-            <span className="text-xs text-muted-foreground">시·군·구</span>
             <DropBox
-              defaultValue="전체"
               options={sigunguOptions}
               value={sigungu}
               onChange={handleSigunguChange}
+              placeholder="시·군·구 선택"
             />
           </div>
 
-          
+          {/* 실력 */}
+          <div className="flex flex-col gap-1 min-w-[120px]">
+            <DropBox
+              options={levelOptions}
+              value={level}
+              onChange={handleLevelChange}
+              placeholder="실력 선택"
+            />
+          </div>
+
+          {/* 초기화 버튼 */}
+          <div>
+            <Button
+              type="button"
+              onClick={handleReset}
+              leftIcon={<X />}
+              variant="outline"
+              className="w-full md:w-auto h-10"
+              size="default"
+            >
+              초기화
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
