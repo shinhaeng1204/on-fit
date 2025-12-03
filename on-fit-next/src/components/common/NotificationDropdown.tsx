@@ -6,6 +6,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "./PopOver"
 import { ScrollArea } from "./ScrollArea";
 import StatusBadge from "../main/StatusBadge";
 import Link from "next/link";
+import { User } from "@supabase/supabase-js";
+import { sbClient } from "@/lib/supabase-client";
+import { useRouter } from "next/navigation";
 
 // 알림 타입 정의
 export interface Notification {
@@ -25,6 +28,7 @@ interface Props {
   onDelete: (id: string) => void;
   onMarkOneRead: (id: string) => void;
   deleteAll: ()=>void;
+  user:User|null;
 }
 
 export const NotificationDropdown = ({
@@ -32,10 +36,11 @@ export const NotificationDropdown = ({
   onMarkAllRead,
   onDelete,
   onMarkOneRead,
-  deleteAll
+  deleteAll,
+  user
 }: Props) => {
   const unreadCount = notifications.filter((n) => !n.read).length;
-  
+  const router = useRouter();
 
   return (
     <Popover>
@@ -113,7 +118,45 @@ export const NotificationDropdown = ({
                   <Link
                     key={notification.id}
                     href={href}
-                    onClick={() => onMarkOneRead(notification.id)}
+                    onClick={async (e) => {
+                      e.preventDefault();
+
+                      // 1) 클릭 시 읽음 처리 (프론트)
+                      onMarkOneRead(notification.id);
+
+                      // 2) 채팅 알림이면 Supabase messages.read_by 업데이트
+                      if (notification.type === "chat" && notification.room_id) {
+                        const userId = user?.id;
+                        if (!userId) return;
+
+                        // 1) 메시지 목록 가져오기
+                        const { data: messages, error } = await sbClient
+                          .from("messages")
+                          .select("id, read_by")
+                          .eq("room_id", notification.room_id)
+                          .neq("sender_id", userId);
+
+                        if (error) {
+                          console.error(error);
+                          return;
+                        }
+
+                        // 2) 각 메시지마다 read_by 업데이트
+                        for (const msg of messages) {
+                          const nextReadBy = Array.isArray(msg.read_by)
+                            ? msg.read_by.includes(userId)
+                              ? msg.read_by
+                              : [...msg.read_by, userId]
+                            : [userId];
+
+                          await sbClient
+                            .from("messages")
+                            .update({ read_by: nextReadBy })
+                            .eq("id", msg.id);
+                        }
+                      }
+                      router.push(href);
+                    }}
                     className={`block p-4 hover:bg-accent/50 transition-colors ${
                       !notification.read ? "bg-accent/20" : ""
                     }`}

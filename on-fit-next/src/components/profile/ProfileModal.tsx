@@ -12,7 +12,7 @@ type ProfileModalProps = {
   open: boolean;
   onClose: () => void;
   profile: Profile | null;
-  setProfile: (p: (old: Profile | null) => Profile | null) => void;
+  setProfile: React.Dispatch<React.SetStateAction<Profile | null>>;
 };
 
 export default function ProfileModal({

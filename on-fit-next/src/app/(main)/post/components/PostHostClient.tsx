@@ -14,7 +14,7 @@ interface PostHostClientProps {
 
 export default function PostHostClient({ host }: PostHostClientProps) {
   const [open, setOpen] = useState(false);
-  const [profile, setProfile] = useState<Profile>(host);
+  const [profile, setProfile] = useState<Profile|null>(host);
 
   return (
     <>
@@ -59,7 +59,7 @@ export default function PostHostClient({ host }: PostHostClientProps) {
         open={open}
         onClose={() => setOpen(false)}
         profile={profile}
-        setProfile={() => setProfile}
+        setProfile={setProfile}
       />
     </>
   );
