@@ -1,16 +1,13 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import  useKakaoLoader  from '@/hooks/useKakaoLoader'
-import { api } from '@/lib/axios'
+import useKakaoLoader from '@/hooks/useKakaoLoader'
 
 type Props = {
   appKey: string
-  open: boolean
-  onPick: (payload: { lat: number; lng: number; region: string }) => void
+  onPick?: (payload: {lat: number; lng: number; region: string}) => void
 }
 
-/** 시/도 보정: '서울' → '서울시', '경기' → '경기도', '세종' → '세종특별자치시' */
 function formatSido(sido: string) {
   if (/(특별시|광역시|특별자치시|특별자치도|도|시)$/.test(sido)) return sido
   const metro = ['서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종']
@@ -18,138 +15,120 @@ function formatSido(sido: string) {
   return `${sido}도`
 }
 
-/** H(행정동) 우선 → "서울시 동작구" 같은 라벨 반환 */
 function pickGuLabel(res: any[]) {
   const target = res.find((r: any) => r.region_type === 'H') ?? res[0]
   const { region_1depth_name: sidoRaw, region_2depth_name: guRaw } = target
-  const sido = formatSido(sidoRaw || '')
+  const sido = formatSido(sidoRaw)
   const gu = guRaw || ''
-  return gu ? `${sido} ${gu}` : `${sido}`
+  return gu ? `${sido} ${gu}` : sido
 }
 
-export default function LocationPicker({ appKey, open, onPick }: Props) {
+export default function LocationPicker({ appKey, onPick }: Props) {
   const ready = useKakaoLoader(appKey)
   const boxRef = useRef<HTMLDivElement | null>(null)
+
   const [map, setMap] = useState<any>(null)
   const [marker, setMarker] = useState<any>(null)
-  const [label, setLabel] = useState<string>('없음')
-  const [saving, setSaving] = useState(false);
+  const [label, setLabel] = useState<string>('위치 불러오는 중...')
 
-  // 모달 열림 + SDK 준비 → 지도 생성
   useEffect(() => {
-    if (!open || !ready || !boxRef.current || map) return
+    if (!ready || !boxRef.current || map) return
+
     const kakao = (window as any).kakao
-    const center = new kakao.maps.LatLng(37.5665, 126.9780) // 서울시청
-    const _map = new kakao.maps.Map(boxRef.current, { center, level: 5 })
-    const _marker = new kakao.maps.Marker({ position: center })
-    _marker.setMap(_map)
+
+    // 1️⃣ dummy center 로 지도 생성
+    const dummyCenter = new kakao.maps.LatLng(0, 0)
+    const _map = new kakao.maps.Map(boxRef.current, {
+      center: dummyCenter,
+      level: 7, // 반경 10km가 한 눈에 보이도록 살짝 줌 아웃
+    })
+
+    // 2️⃣ 마커 (처음엔 숨김)
+    const _marker = new kakao.maps.Marker({ position: dummyCenter })
+    _marker.setMap(null)
+
     setMap(_map)
     setMarker(_marker)
-  }, [open, ready, map])
 
-  // 열릴 때 레이아웃 보정
-  useEffect(() => {
-    if (!open || !map) return
-    const id = setTimeout(() => {
-      map.relayout()
-      map.setCenter(map.getCenter())
-    }, 0)
-    return () => clearTimeout(id)
-  }, [open, map])
+    // 3️⃣ geolocation → 내 위치 + 반경 10km 원
+    if (navigator.geolocation) {
+      const geocoder = new kakao.maps.services.Geocoder()
 
-  // 지도 클릭 → 역지오코딩
-  useEffect(() => {
-    if (!map || !marker) return
-    const kakao = (window as any).kakao
-    const geocoder = new kakao.maps.services.Geocoder()
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          const {latitude, longitude} = coords
+          const latlng = new kakao.maps.LatLng(coords.latitude, coords.longitude)
 
-    const clickHandler = (e: any) => {
-      const latlng = e.latLng
-      marker.setPosition(latlng)
-      map.panTo(latlng)
-      geocoder.coord2RegionCode(
-        latlng.getLng(),
-        latlng.getLat(),
-        (res: any, status: any) => {
-          if (status === kakao.maps.services.Status.OK && res[0]) {
-            setLabel(pickGuLabel(res)) // ✅ "서울시 동작구"
-          }
+          // 지도 & 마커 갱신
+          _map.setCenter(latlng)
+          _marker.setPosition(latlng)
+          _marker.setMap(_map)
+
+          // 🔵 반경 5km 원 오버레이
+          const circle = new kakao.maps.Circle({
+            center: latlng,
+            radius: 5000, // 10km = 10,000m
+            strokeWeight: 2,
+            strokeColor: '#3182F6',
+            strokeOpacity: 0.8,
+            strokeStyle: 'solid',
+            fillColor: '#3182F6',
+            fillOpacity: 0.15,
+          })
+          circle.setMap(_map)
+
+          // 역지오코딩 → label 업데이트
+          geocoder.coord2RegionCode(
+            latlng.getLng(),
+            latlng.getLat(),
+            (res: any, status: any) => {
+              if (status === kakao.maps.services.Status.OK && res[0]) {
+                const region = pickGuLabel(res)
+                setLabel(`현재 위치 (반경 10km): ${region}`)
+
+                onPick?.({
+                  lat: latitude,
+                  lng: longitude,
+                  region,
+                })
+              }
+            }
+          )
+        },
+        () => {
+          // 위치 권한 거부 → fallback
+          const fallback = new kakao.maps.LatLng(37.5665, 126.9780) // 서울시청
+
+          _map.setCenter(fallback)
+          _marker.setPosition(fallback)
+          _marker.setMap(_map)
+
+          // 서울시청 기준 5km 원 (권한 거부 시에도 UX 유지)
+          const circle = new kakao.maps.Circle({
+            center: fallback,
+            radius: 5000,
+            strokeWeight: 2,
+            strokeColor: '#3182F6',
+            strokeOpacity: 0.8,
+            strokeStyle: 'solid',
+            fillColor: '#3182F6',
+            fillOpacity: 0.15,
+          })
+          circle.setMap(_map)
+
+          setLabel('현재 위치를 불러올 수 없습니다. (기본 위치 기준 반경 10km)')
         }
       )
     }
-
-    kakao.maps.event.addListener(map, 'click', clickHandler)
-    return () => kakao.maps.event.removeListener(map, 'click', clickHandler)
-  }, [map, marker])
-
-  // 현재 위치 버튼
-  const useCurrentLocation = () => {
-    if (!map || !marker) return
-    if (!navigator.geolocation) return alert('브라우저에서 위치를 지원하지 않아요.')
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        const kakao = (window as any).kakao
-        const geocoder = new kakao.maps.services.Geocoder()
-        const latlng = new kakao.maps.LatLng(coords.latitude, coords.longitude)
-        marker.setPosition(latlng)
-        map.setCenter(latlng)
-        geocoder.coord2RegionCode(
-          latlng.getLng(),
-          latlng.getLat(),
-          (res: any, status: any) => {
-            if (status === kakao.maps.services.Status.OK && res[0]) {
-              setLabel(pickGuLabel(res)) // ✅ "서울시 동작구"
-            }
-          }
-        )
-      },
-      () => alert('현재 위치 권한을 허용해 주세요.')
-    )
-  }
-
-  const confirm = async () => {
-    if (!marker || !label || saving) return
-    const pos = marker.getPosition()
-    const payload = { lat: pos.getLat(), lng: pos.getLng(), region: label }
-
-    try{
-      setSaving(true)
-
-      const {data} = await api.post('/api/profile', {location: label})
-
-      if(!data?.ok) {
-        alert(data?.error ?? '업데이트 실패')
-        return
-      }
-
-      onPick(payload)
-    } catch (e: any) {
-      alert(e?.message ?? '업데이트 실패')
-    } finally {
-      setSaving(false)
-    }
-  }
+  }, [ready, map, onPick])
 
   return (
-    <div className="space-y-3">
-      <div ref={boxRef} className="h-72 w-full rounded-xl border overflow-hidden" />
-      <div className="flex items-center justify-between text-sm">
-        <div className="text-muted-foreground">
-          {label ? `선택된 지역: ${label}` : '지도를 클릭하거나 현재 위치를 사용하세요'}
-        </div>
-        <div className="flex gap-2">
-          <button className="h-9 rounded-md border px-3" onClick={useCurrentLocation}>
-            현재 위치
-          </button>
-          <button
-            className="h-9 rounded-md bg-primary px-3 text-primary-foreground disabled:opacity-50"
-            disabled={!label || saving}
-            onClick={confirm}
-          >
-            선택
-          </button>
-        </div>
-      </div>
+    <div className="space-y-2">
+      <div
+        ref={boxRef}
+        className="h-96 w-full rounded-xl border overflow-hidden"
+      />
+      <p className="text-sm text-muted-foreground">{label}</p>
     </div>
   )
 }
