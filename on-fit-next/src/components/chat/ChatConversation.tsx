@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import {useEffect, useRef, useState} from "react";
 import { api } from "@/lib/axios";
 import { subscribeMessages } from "@/lib/realtime";
 import { Message, Profile } from "@/types/chat";
 import { toKstTime } from "@/lib/dateFormatter";
 import ProfileImage from "@/components/common/ProfileImage";
+import {Button} from "@/components/common/Button";
 
 interface ChatConversationProps {
   roomId : string
@@ -15,7 +16,13 @@ export default function ChatConversation({roomId} : ChatConversationProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [userId, setUserId] = useState<string>('')
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // 초기 데이터 불러오기 및 구독
   useEffect(() => {
     if (!roomId) return;
 
@@ -23,6 +30,9 @@ export default function ChatConversation({roomId} : ChatConversationProps) {
       const res = await api.get(`/api/message?roomId=${roomId}`);
       setMessages(res.data.messages);
       setProfiles(res.data.profiles);
+
+      // 초기 메시지 불러온 직후 스크롤
+      setTimeout(scrollToBottom, 0);
     };
 
     fetchMessages();
@@ -48,6 +58,11 @@ export default function ChatConversation({roomId} : ChatConversationProps) {
     };
   }, [roomId]);
 
+  // 메세지 변경될때마다 자동으로 스크롤 아래 변경
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   const messagesWithUsername = messages.map((msg) => {
     const profile = profiles.find((p) => p.id === msg.sender_id);
     return {
@@ -72,7 +87,7 @@ export default function ChatConversation({roomId} : ChatConversationProps) {
                 className={`flex gap-3 ${isMine ? "flex-row-reverse" : "flex-row"}`}
               >
                 {!isMine && (
-                  <ProfileImage src={msg.profile_image ?? ""} profileName={msg.nickname} />
+                  <ProfileImage src={msg.profile_image ?? ""} profileName={msg.nickname}/>
                 )}
 
                 <div
@@ -99,6 +114,7 @@ export default function ChatConversation({roomId} : ChatConversationProps) {
               </div>
             );
           })}
+          <div ref={messagesEndRef}/>
         </div>
       </div>
     </>

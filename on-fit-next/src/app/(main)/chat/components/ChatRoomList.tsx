@@ -65,7 +65,7 @@ export default function ChatRoomList() {
   }
 
   return (
-    <div>
+    <div className="mt-5 flex items-center flex-col gap-6">
       {rooms.map((room) => (
         <ChatRoomCard
           key={room.roomId}

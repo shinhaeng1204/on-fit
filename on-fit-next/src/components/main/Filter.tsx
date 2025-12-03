@@ -55,11 +55,11 @@ export default function Filter({
   }
 
   return (
-    <Card className="mx-5 my-4 bg-card/50 backdrop-blur-sm md:flex md:items-center">
-      <CardHeader className="py-3 px-6 md:pr-0">
+    <Card className="mx-5 my-4 bg-card/50 backdrop-blur-sm md:flex md:items-center px-6 py-3">
+      <CardHeader className="py-0 px-0 pr-3">
         <div className="flex items-center justify-between">
           <div className="flex gap-2 items-center">
-            <Funnel className="text-primary w-4 h-4" />
+            <Funnel className="text-primary w-4 h-4"/>
             <h1 className="text-sm font-semibold">필터</h1>
           </div>
         </div>
@@ -122,6 +122,11 @@ export default function Filter({
           </div>
         </div>
       </CardContent>
+      <CardFooter className="p-0 absolute top-1 right-3 md:relative md:top-0 md:right-0">
+        <Button variant="ghost" onClick={handleReset} leftIcon={<X />} className="cursor-pointer">
+          <h3>초기화</h3>
+        </Button>
+      </CardFooter>
     </Card>
   )
 }

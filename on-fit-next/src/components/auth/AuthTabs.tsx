@@ -153,41 +153,52 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
   }
 
   async function handleSignup(e: React.FormEvent) {
-    e.preventDefault()
-    if (isLoading) return
-    setIsLoading(true)
-    setSignupError(null)
-    setNotice(null)
+    e.preventDefault();
+    if (isLoading) return;
+    setIsLoading(true);
+    setSignupError(null);
+    setNotice(null);
 
     const r = signupSchema.safeParse({
       email: signupEmail.trim(),
       password: signupPw,
       confirm: signupPwConfirm,
-    })
+    });
+
     if (!r.success) {
-      setIsLoading(false)
-      setSignupError(r.error.issues[0].message)
-      return
+      setIsLoading(false);
+      setSignupError(r.error.issues[0].message);
+      return;
     }
 
     try {
-      await api.post('/api/auth/signup', { email: r.data.email, password: r.data.password })
-      setTab('login')
-      setNotice(`회원가입이 완료됐어요. ${r.data.email}을 열고 인증 버튼을 눌러주세요.`)
-      const q = new URLSearchParams(sp.toString())
-      q.set('tab', 'login')
-      q.set('notice', 'verify')
-      router.replace(`${pathname}?${q.toString()}`)
-    } catch (err: any) {
-        const code = err?.response?.data?.error
+      const { data, error } = await sbClient.auth.signUp({
+        email: r.data.email,
+        password: r.data.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+        },
+      });
 
-        if (code === "EMAIL_ALREADY_REGISTERED") {
-          setSignupError("이미 가입된 이메일입니다.")
-        } else {
-          setSignupError(normalizeAuthError(code))
+      if (error) {
+        // 이메일 중복
+        if (error.message.includes("already registered")) {
+          setSignupError("이미 가입된 이메일입니다.");
+          return;
         }
+        setSignupError("회원가입 중 오류가 발생했습니다.");
+        return;
+      }
+
+      setTab("login");
+      setNotice(`회원가입이 완료됐어요. ${r.data.email}을 열고 인증 버튼을 눌러주세요.`);
+
+      const q = new URLSearchParams(sp.toString());
+      q.set("tab", "login");
+      q.set("notice", "verify");
+      router.replace(`${pathname}?${q.toString()}`);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 

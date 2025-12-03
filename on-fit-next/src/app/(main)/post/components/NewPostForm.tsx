@@ -169,11 +169,11 @@ export default function NewPostForm({ sportOption, levelOption }: {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col space-y-2">
                 <label className={labelCls}>날짜 *</label>
-                <Input name="date" type="date" required />
+                <Input name="date" type="date" min={new Date().toISOString().split("T")[0]} required />
               </div>
               <div className="flex flex-col space-y-2">
                 <label className={labelCls}>시간 *</label>
-                <Input name="time" type="time" required />
+                <Input name="time" type="time" defaultValue={'12:00'} required />
               </div>
             </div>
 
@@ -223,10 +223,10 @@ export default function NewPostForm({ sportOption, levelOption }: {
 
             {/* 버튼 */}
             <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" fullWidth>
+              <Button type="button" variant="outline" className="cursor-pointer" fullWidth onClick={() => router.back()}>
                 취소
               </Button>
-              <Button type="submit" variant="hero" fullWidth disabled={loading}>
+              <Button type="submit" variant="hero" className="cursor-pointer" fullWidth disabled={loading}>
                 {loading ? '등록 중…' : '모임 만들기'}
               </Button>
             </div>
