@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/common/Button';
 import { updatePreferencesArray } from '@/app/mypage/actions';
-import { Plus, X, Pencil, Check } from 'lucide-react';
+import { X, Pencil, Check } from 'lucide-react'; // 👈 Plus 제거
 import { useToast } from '@/app/mypage/components/Toast';
 
 type Props = {
@@ -16,15 +16,13 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
   const [editing, setEditing] = useState(false);
   const [tags, setTags] = useState<string[]>(initial);
   const [draft, setDraft] = useState<string[]>(initial);
-  const [selected, setSelected] = useState<string>(''); // 👈 셀렉트 박스에서 선택된 값
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false); // 👈 selected 제거
 
   const addTag = (raw: string) => {
     const v = raw.trim();
     if (!v) return;
     if (draft.includes(v)) return; // 중복 방지
     setDraft((d) => [...d, v]);
-    setSelected('');
   };
 
   const removeTag = (v: string) => {
@@ -33,13 +31,11 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
 
   const startEdit = () => {
     setDraft(tags);
-    setSelected('');
     setEditing(true);
   };
 
   const cancelEdit = () => {
     setDraft(tags);
-    setSelected('');
     setEditing(false);
   };
 
@@ -78,9 +74,7 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
   // 이미 선택된 태그는 드롭다운에서 숨기기
   const availableOptions = options.filter((opt) => !draft.includes(opt));
 
-  // =======================
   // 보기 모드
-  // =======================
   if (!editing) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -98,9 +92,15 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
     );
   }
 
-  // =======================
+  // 드롭다운에서 선택하면 바로 추가
+  const handleSelectChange: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
+    const value = e.target.value;
+    if (!value) return;
+    addTag(value);
+    // value를 ""로 고정해두기 때문에 선택 후 자동으로 placeholder로 돌아감
+  };
+
   // 편집 모드
-  // =======================
   return (
     <div className="space-y-3">
       {/* 선택된 태그들 */}
@@ -112,11 +112,11 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
         ))}
       </div>
 
-      {/* 드롭다운 + 버튼들 */}
+      {/* 드롭다운 + 저장/취소 */}
       <div className="flex flex-wrap items-center gap-2">
         <select
-          value={selected}
-          onChange={(e) => setSelected(e.target.value)}
+          value="" // 항상 placeholder 상태
+          onChange={handleSelectChange}
           className="flex-1 min-w-0 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
         >
           <option value="">운동을 선택해주세요</option>
@@ -126,18 +126,6 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
             </option>
           ))}
         </select>
-
-        {/* 태그 추가 버튼 */}
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => selected && addTag(selected)}
-          disabled={!selected}
-          className="shrink-0"
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          
-        </Button>
 
         {/* 저장 버튼 */}
         <Button
