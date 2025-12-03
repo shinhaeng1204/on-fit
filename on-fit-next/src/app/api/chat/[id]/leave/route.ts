@@ -8,8 +8,6 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
   const { ok: hasUser, user, response } = await requireUserOr401(supabase);
   if (!hasUser) return response;
 
-  console.log(roomId)
-
   // 참가 여부 확인
   const { data: participant, error: participantErr } = await supabase
     .from("participants")

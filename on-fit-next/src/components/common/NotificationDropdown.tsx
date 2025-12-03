@@ -24,13 +24,15 @@ interface Props {
   onMarkAllRead: () => void;
   onDelete: (id: string) => void;
   onMarkOneRead: (id: string) => void;
+  deleteAll: ()=>void;
 }
 
 export const NotificationDropdown = ({
   notifications,
   onMarkAllRead,
   onDelete,
-  onMarkOneRead
+  onMarkOneRead,
+  deleteAll
 }: Props) => {
   const unreadCount = notifications.filter((n) => !n.read).length;
   
@@ -62,16 +64,31 @@ export const NotificationDropdown = ({
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h3 className="font-semibold text-lg">알림</h3>
 
-          {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs h-7"
-              onClick={onMarkAllRead}
-            >
-              모두 읽음
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {notifications.length > 0 && (
+              <>
+                {unreadCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={onMarkAllRead}
+                  >
+                    모두 읽음
+                  </Button>
+                )}
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-7 text-destructive"
+                  onClick={deleteAll}
+                >
+                  전체 삭제
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* 내용 스크롤 영역 */}
