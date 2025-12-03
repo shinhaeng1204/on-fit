@@ -17,7 +17,7 @@ export default function LocationModal({ open, onClose, onSelect }: Props) {
 
 
   return (
-    <Modal open={open} onClose={onClose} size="md" closeOnBackdrop>
+    <Modal open={open} onClose={onClose} size="xl" closeOnBackdrop className='max-h-xl'>
       <ModalHeader className="flex flex-row items-center gap-2 space-y-0">
         <MapPinIcon className="w-5 h-5" />
         <h3 className="text-base leading-none">동네 설정</h3>
@@ -26,15 +26,10 @@ export default function LocationModal({ open, onClose, onSelect }: Props) {
       <ModalContent>
         <LocationPicker
           appKey={process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY as string}
-          open={open}
-          onPick={({ lat, lng, region }) => {
-       
+          onPick={({lat, lng, region}) => {
             onSelect?.(region, lat, lng)
+          }}
           
-            onClose()
-            
-          }
-        }
         />
       </ModalContent>
 
