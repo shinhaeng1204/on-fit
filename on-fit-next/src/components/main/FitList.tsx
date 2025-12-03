@@ -11,10 +11,10 @@ type Props = {
 }
 
 const initialFilter: FilterValue = {
-  sport: "전체",
-  sido: "전체",
-  sigungu: "전체",
-  level: "전체",
+  sport: "종목 선택",
+  sido: "시·도 선택",
+  sigungu: "시·군·구 선택",
+  level: "실력 선택",
 }
 
 export default function FitList({ items }: Props) {
@@ -25,17 +25,17 @@ export default function FitList({ items }: Props) {
     items.forEach((item) => {
       if (item.sport) set.add(item.sport)
     })
-    return ["전체", ...Array.from(set)]
+    return ["종목 선택", ...Array.from(set)]
   }, [items])
 
-  const sidoOptions = ["전체", ...SIDO_OPTIONS]
+  const sidoOptions = ["시·도 선택", ...SIDO_OPTIONS]
 
   const sigunguOptions = useMemo(() => {
-    if (filter.sido === "전체") return ["전체"]
-    return ["전체", ...getSigunguOptions(filter.sido)]
+    if (filter.sido === "시·군·구 선택") return ["시·군·구 선택"]
+    return ["시·군·구 선택", ...getSigunguOptions(filter.sido)]
   }, [filter.sido])
 
-  const levelOptions = ["전체", "브론즈", "실버", "골드"]
+  const levelOptions = ["실력 선택", "브론즈", "실버", "골드"]
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -43,16 +43,16 @@ export default function FitList({ items }: Props) {
       const [itemSido, itemSigungu] = item.location.split(" ")
 
       const sportOk =
-        filter.sport === "전체" || item.sport === filter.sport
+        filter.sport === "종목 선택" || item.sport === filter.sport
 
       const sidoOk =
-        filter.sido === "전체" || itemSido === filter.sido
+        filter.sido === "시·도 선택" || itemSido === filter.sido
 
       const sigunguOk =
-        filter.sigungu === "전체" || itemSigungu === filter.sigungu
+        filter.sigungu === "시·군·구 선택" || itemSigungu === filter.sigungu
 
       const levelOk =
-        filter.level === "전체" || item.level === filter.level
+        filter.level === "실력 선택" || item.level === filter.level
 
       return sportOk && sidoOk && sigunguOk && levelOk
     })

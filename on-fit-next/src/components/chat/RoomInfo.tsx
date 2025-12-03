@@ -74,12 +74,17 @@ export default function RoomInfo({roomId} : RoomInfoProps) {
           </>
         }
       />
-
-      <AnimatePresence>
-        {open && (
-          <ChatParticipants roomId={roomId} onClose={() => setOpen(false)} />
-        )}
-      </AnimatePresence>
+      {open && (
+        <>
+          <div
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 bg-black/30 z-40"
+          />
+          <AnimatePresence>
+              <ChatParticipants roomId={roomId} onClose={() => setOpen(false)}/>
+          </AnimatePresence>
+        </>
+      )}
 
       {/* 채팅방 정보 */}
       <div className="bg-card/50 border-b border-border">

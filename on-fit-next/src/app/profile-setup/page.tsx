@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { Dumbbell, MapPin, User } from 'lucide-react' // ← lucide-react 아이콘 추가
+import LocationSelector from './LocationSelector'
 
 const EXERCISES = [
   '축구','농구','야구','배구','테니스',
@@ -93,13 +94,8 @@ export default async function ProfileSetup() {
                 <MapPin className="w-4 h-4" /> {/* ← lucide-react 아이콘 */}
                 나의 동네
               </label>
-              <input
-                id="location"
-                name="location"
-                placeholder="예: 강남구, 서초동"
-                className="w-full rounded-md border bg-background px-3 py-2"
-                required
-              />
+              <input type="hidden" name="location" id="location-input" />
+              <LocationSelector />
             </div>
 
             {/* 선호 운동 (무JS 토글: checkbox + peer 스타일) */}

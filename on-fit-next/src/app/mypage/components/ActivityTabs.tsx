@@ -1,9 +1,10 @@
-// src/app/mypage/components/ActivityTabs.tsx
 import type { ReactNode } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/common/Tabs';
 import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
 import StatusPill from '@/app/mypage/components/StatusPill';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/common/Button'
+import { Trash2 } from 'lucide-react'
 
 export type ActivityItem = {
   id: string;
@@ -71,13 +72,14 @@ export default function ActivityTabs({
 
                         {/* 🔹 '만든 모임' 탭에서만 삭제 버튼 표시 */}
                         {t.key === 'created' && onDeleteCreated && (
-                          <button
+                          <Button rightIcon={<Trash2 />}
                             type="button"
-                            className="text-xs rounded-full border border-destructive/40 px-2 py-1 text-destructive hover:bg-destructive/10 transition-colors"
+                            variant="default"
+                            size="sm"
                             onClick={() => onDeleteCreated(a.id)}
                           >
-                            삭제
-                          </button>
+                           삭제
+                          </Button>
                         )}
                       </div>
                     </div>
