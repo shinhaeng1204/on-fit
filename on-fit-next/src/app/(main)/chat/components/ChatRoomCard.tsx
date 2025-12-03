@@ -65,7 +65,7 @@ export default function ChatRoomCard({
 
   return (
     <Card
-      className="m-4 md:my-10 md:mx-40 relative cursor-pointer"
+      className="w-[70vw] md:w-[60vw] lg:w-[50vw] xl:w-[40vw] relative cursor-pointer"
       onClick={handleChatRoomCard}
     >
       <CardHeader className="flex-row gap-3 items-start">
@@ -93,7 +93,7 @@ export default function ChatRoomCard({
 
         <div className=" gap-2">
           <div className="flex flex-row gap-2 ">
-            <h3 className="font-bold text-ellipsis md:w-full whitespace-nowrap overflow-hidden">
+            <h3 className="font-bold text-ellipsis max-w-[20vw] md:max-w-[30vw] lg:max-w-full whitespace-nowrap overflow-hidden">
               {title}
             </h3>
             <StatusBadge variant="outline">{member}</StatusBadge>
