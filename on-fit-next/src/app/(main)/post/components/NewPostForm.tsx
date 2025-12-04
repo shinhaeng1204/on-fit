@@ -109,6 +109,9 @@ export default function NewPostForm({ sportOption, levelOption, mode = 'create',
         await api.post(`/api/posts`, payload)
         alert('모임이 생성되었습니다!')
       } else {
+        if (!initialData) {
+          throw new Error("initialData is missing for update mode")
+        }
         await api.patch(`/api/posts/${initialData.id}`, payload)
         alert('수정되었습니다.')
       }

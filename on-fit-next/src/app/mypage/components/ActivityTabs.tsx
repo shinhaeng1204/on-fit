@@ -123,7 +123,7 @@ export default function ActivityTabs({
                         <div className="flex items-center gap-2">
                           <StatusPill status={a.status} />
 
-                          {t.key === 'created' && a.status !== '완료' && (
+                          {t.key === 'created' && a.status !== 'close' && (
                            <Button
                              rightIcon={<Pencil />}
                              type="button"
