@@ -1,8 +1,9 @@
+// src/app/mypage/components/TrophySection.tsx
 import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
 import LevelBadge from '@/components/common/Badge';
 import { cn } from '@/lib/utils';
 import { BadgeType } from '@/types/post';
-import { Trophy } from 'lucide-react';
+import { Trophy, Sprout } from 'lucide-react';
 
 type BadgeItem = {
   id: string;
@@ -20,6 +21,8 @@ type Props = {
 
 // 레벨별 트로피 배경/스타일
 const TROPHY_BG_BY_LEVEL: Record<BadgeType, string> = {
+  초심자:
+    'bg-gradient-to-br from-green-600/90 via-green-500/90 to-green-300/90 text-white',
   브론즈:
     'bg-gradient-to-br from-amber-900/80 via-amber-700/80 to-amber-500/80 text-amber-50',
   실버:
@@ -36,7 +39,6 @@ export default function TrophySection({
   badges,
   className,
 }: Props) {
-  // titleIcon 안 넘기면 기본으로 트로피 아이콘 사용
   const headerIcon = titleIcon ?? <Trophy className="h-5 w-5 text-primary" />;
 
   return (
@@ -60,25 +62,33 @@ export default function TrophySection({
                 key={badge.id}
                 className="flex flex-col items-center rounded-lg bg-secondary/30 p-4 transition-colors hover:bg-secondary/50"
               >
-                {/* 트로피 아이콘 영역 */}
+                {/* 트로피 / 초심자 아이콘 */}
                 <div
                   className={cn(
                     'mb-3 flex h-16 w-16 items-center justify-center rounded-full border border-white/30 shadow-inner shadow-black/20',
                     TROPHY_BG_BY_LEVEL[badge.level],
                   )}
                 >
-                  <Trophy className="h-8 w-8 drop-shadow-sm" />
+                  {badge.level === '초심자' ? (
+                    <Sprout className="h-8 w-8 drop-shadow-sm" />
+                  ) : (
+                    <Trophy className="h-8 w-8 drop-shadow-sm" />
+                  )}
                 </div>
 
-                {/* 레벨 뱃지 (bronze/silver/gold/platinum) */}
-                <LevelBadge type={badge.level} className="mb-1" />
+                {/* 레벨 인디케이터 (색/스타일만, 텍스트 X) */}
+                <LevelBadge
+                  type={badge.level}
+                  showLabel={false}
+                  className="mb-1"
+                />
 
-                {/* 뱃지 이름 */}
+                {/* 뱃지 이름(텍스트는 여기서만 한 번) */}
                 <p className="text-sm font-semibold">{badge.name}</p>
 
-                {/* 설명 있으면 표시 */}
+                {/* 설명 */}
                 {badge.description && (
-                  <p className="px-2 text-center text-xs text-muted-foreground mt-1">
+                  <p className="mt-1 px-2 text-center text-xs text-muted-foreground">
                     {badge.description}
                   </p>
                 )}
