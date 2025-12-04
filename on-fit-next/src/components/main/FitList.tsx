@@ -5,6 +5,7 @@ import Filter, { FilterValue } from "./Filter"
 import FitCard from "./FitCard"
 import { postType } from "@/types/post"
 import { SIDO_OPTIONS, getSigunguOptions } from "@/constants/korea-regions"
+import FitCardSkeleton from "@/components/main/FitCardSkeleton";
 
 type Props = {
   items: postType[]
@@ -19,6 +20,8 @@ const initialFilter: FilterValue = {
 
 export default function FitList({ items }: Props) {
   const [filter, setFilter] = useState<FilterValue>(initialFilter)
+
+  const loading = items.length === 0
 
   const sportsOptions = useMemo(() => {
     const set = new Set<string>()
@@ -75,9 +78,10 @@ export default function FitList({ items }: Props) {
       />
 
       <div className="mx-5 flex flex-col gap-6 md:grid md:grid-cols-3">
-        {filteredItems.map((fit) => (
-          <FitCard key={fit.id} {...fit} />
-        ))}
+        {loading
+          ? Array.from({ length: 6 }).map((_, i) => <FitCardSkeleton key={i} />)
+          : filteredItems.map((fit) => <FitCard key={fit.id} {...fit} />
+          )}
       </div>
     </>
   )

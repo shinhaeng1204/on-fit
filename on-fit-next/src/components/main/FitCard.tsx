@@ -6,7 +6,6 @@ import Link from "next/link";
 import RecruitStatus from "@/components/common/RecruitStatus";
 import React from "react";
 import {postType} from "@/types/post";
-import StatusBadge from "@/components/main/StatusBadge";
 
 export default function FitCard({
     id,
