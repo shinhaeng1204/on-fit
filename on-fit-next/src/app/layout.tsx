@@ -15,7 +15,6 @@ export default async function RootLayout({
         <NotificationProvider>
           {children}
         </NotificationProvider>
-
       </body>
     </html>
   )

@@ -32,7 +32,7 @@ async function getFits(): Promise<postType[]> {
 export default async function Home() {
   const items = await getFits()
 
- const cards = items.map((r) => ({
+  const cards = items.map((r) => ({
     id: r.id,
     sport: r.sport,
     title: r.title,
@@ -88,7 +88,7 @@ export default async function Home() {
       </section>
 
       {/* 필터 (클라 컴포넌트여도 OK) */}
-            <FitList items={cards} />
+      <FitList items={cards} />
     </>
   )
 }

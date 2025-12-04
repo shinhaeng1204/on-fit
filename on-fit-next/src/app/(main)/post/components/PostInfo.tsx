@@ -7,6 +7,7 @@ import { toKstDate, toKstTime } from "@/lib/dateFormatter";
 import {createSupabaseServerClient} from "@/lib/route-helpers";
 import {postType} from "@/types/post";
 import PostInfoClient from "@/app/(main)/post/components/PostInfoClient";
+import {DefaultSportIcon, sportIcons} from "@/lib/sportIcons";
 
 export default async function PostInfo({id} : {id:string}) {
   const supabase = await createSupabaseServerClient();
@@ -22,6 +23,8 @@ export default async function PostInfo({id} : {id:string}) {
 
   if (error) return <div>오류: {error.message}</div>;
 
+  const SportIcon = sportIcons[data?.sport] ?? DefaultSportIcon
+
   return (
     <>
       <Card className="mb-6">
@@ -30,7 +33,7 @@ export default async function PostInfo({id} : {id:string}) {
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-lg bg-primary/10">
-                <Dumbbell className="h-6 w-6 text-primary" />
+                <SportIcon className="h-6 w-6 text-primary" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold mb-1">{data?.title ?? ""}</h1>
