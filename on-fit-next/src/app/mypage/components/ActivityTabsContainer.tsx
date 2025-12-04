@@ -1,9 +1,8 @@
-// src/app/mypage/components/ActivityTabsContainer.tsx
 'use client';
 
 import { useState } from 'react';
 import ActivityTabs, {
-  ActivityItem,
+ActivityItem,
 } from '@/app/mypage/components/ActivityTabs';
 
 type Props = {

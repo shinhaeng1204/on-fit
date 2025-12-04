@@ -27,15 +27,16 @@ export function Modal({
         setMounted(true)
       }, [])
 
-      const sizeClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
-    '2xl': 'max-w-2xl',
-    '3xl': 'max-w-3xl',
-    full: 'max-w-full mx-4',
-  }
+     const sizeClasses = {
+  sm: 'max-w-sm max-h-[80vh]',
+  md: 'max-w-md max-h-[80vh]',
+  lg: 'max-w-lg max-h-[80vh]',
+  xl: 'max-w-xl max-h-[80vh]',
+  '2xl': 'max-w-2xl max-h-[80vh]',
+  '3xl': 'max-w-3xl max-h-[80vh]',
+  full: 'max-w-full mx-4 max-h-[100vh]',
+}
+
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (closeOnBackdrop && e.target === e.currentTarget) {
@@ -60,7 +61,7 @@ export function Modal({
          {/* Modal Content */}
     <Card
     className={cn(
-        'relative w-full mx-4 my-8 max-h-[90vh] pointer-events-auto',
+        'relative w-full mx-4 my-8 pointer-events-auto',
         sizeClasses[size],
         className
     )}

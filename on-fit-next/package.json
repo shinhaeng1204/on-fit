@@ -25,7 +25,8 @@
     "react-dom": "19.2.0",
     "react-router-dom": "^7.9.5",
     "swr": "^2.3.6",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
