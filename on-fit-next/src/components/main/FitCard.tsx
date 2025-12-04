@@ -6,6 +6,7 @@ import Link from "next/link";
 import RecruitStatus from "@/components/common/RecruitStatus";
 import React from "react";
 import {postType} from "@/types/post";
+import {DefaultSportIcon, sportIcons} from "@/lib/sportIcons";
 
 export default function FitCard({
     id,
@@ -19,12 +20,15 @@ export default function FitCard({
     max_participants,
     level,
 }: postType) {
+
+  const SportIcon = sportIcons[sport] ?? DefaultSportIcon
+
   return (
     <Link href={`/post/${id}`}>
       <Card className="group hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary cursor-pointer">
         <CardHeader className="relative flex-row gap-2">
           <div className="flex items-center rounded-lg bg-primary/10 p-2">
-            <DumbbellIcon className="h-5 text-primary" />
+            <SportIcon className="h-5 text-primary" />
           </div>
           <div className="flex flex-col">
             <RecruitStatus type={status} text={status} className="absolute right-5" />
