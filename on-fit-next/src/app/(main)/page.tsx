@@ -19,6 +19,7 @@ async function getFits(): Promise<postType[]> {
   const { data, error } = await supabase
     .from("posts")
     .select("*")
+    .eq("is_deleted", false)
     .order("created_at", { ascending: false })
 
   if (error) {
