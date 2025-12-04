@@ -7,7 +7,8 @@ import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
 import StatusPill from '@/app/mypage/components/StatusPill';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/common/Button';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Pencil } from 'lucide-react';
+import {useRouter} from "next/navigation";
 
 export type ActivityItem = {
   id: string;
@@ -31,6 +32,7 @@ export default function ActivityTabs({
   className,
   onDeleteCreated,
 }: ActivityTabsProps) {
+  const router = useRouter()
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('open'); // 기본값: 진행중
 
   const renderFilterButton = (value: StatusFilter, label: string) => (
@@ -121,13 +123,26 @@ export default function ActivityTabs({
                         <div className="flex items-center gap-2">
                           <StatusPill status={a.status} />
 
+                          {t.key === 'created' && a.status !== '완료' && (
+                           <Button
+                             rightIcon={<Pencil />}
+                             type="button"
+                             variant="secondary"
+                             className="cursor-pointer"
+                             onClick={() => router.push(`/post/${a.id}/edit`)}
+                           >
+                             수정
+                           </Button>
+                          )}
+
                           {/* '만든 모임' 탭에서만 삭제 버튼 표시 */}
                           {t.key === 'created' && onDeleteCreated && (
                             <Button
                               rightIcon={<Trash2 />}
                               type="button"
-                              variant="default"
+                              variant="destructive"
                               size="sm"
+                              className="cursor-pointer"
                               onClick={() => onDeleteCreated(a.id)}
                             >
                               삭제

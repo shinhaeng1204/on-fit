@@ -8,20 +8,65 @@ import { Button } from '@/components/common/Button'
 import { api } from '@/lib/axios'
 import { useRouter } from 'next/navigation'
 import { SIDO_OPTIONS, getSigunguOptions } from '@/constants/korea-regions'
+import {postType} from "@/types/post";
+import {toKstDate, toKstTime} from "@/lib/dateFormatter";
 
-export default function NewPostForm({ sportOption, levelOption }: {
+export default function NewPostForm({ sportOption, levelOption, mode = 'create', initialData }: {
   sportOption: string[]
   levelOption: string[]
+  mode: string
+  initialData?: postType
 }) {
-  const [sport, setSport] = useState(sportOption[0])
-  const [level, setLevel] = useState(levelOption[0])
+  const router = useRouter()
+
+  const [sport, setSport] = useState(initialData?.sport ?? sportOption[0])
+  const [level, setLevel] = useState(initialData?.level ?? levelOption[0])
   const [loading, setLoading] = useState(false)
 
-  // 지역 선택 상태
-  const [sido, setSido] = useState('서울특별시')
-  const [sigungu, setSigungu] = useState(getSigunguOptions('서울특별시')[0] ?? '')
+  function parseLocation(location: string) {
+    if (!location) return { sido: '서울특별시', sigungu: '', detail: '' }
+    const parts = location.trim().split(' ')
+    console.log(parts.slice(2).join(' '))
+    return {
+      sido: parts[0] ?? '서울특별시',
+      sigungu: parts[1] ?? '',
+      detail: parts.slice(2).join(' ') ?? ''
+    }
+  }
 
-  const router = useRouter()
+  const parsed = initialData ? parseLocation(initialData.location) : null
+
+  // 지역 선택 상태
+  const [sido, setSido] = useState(parsed?.sido ?? '서울특별시')
+  const [sigungu, setSigungu] = useState(
+    parsed?.sigungu ?? getSigunguOptions('서울특별시')[0] ?? ''
+  )
+  const [detailLocation, setDetailLocation] = useState(parsed?.detail ?? '')
+
+  // 시간
+  function splitDateTime(dateTime?: string) {
+    if (!dateTime) return { date: "", time: "" };
+
+    const d = new Date(dateTime);
+    if (isNaN(d.getTime())) return { date: "", time: "" };
+
+    // KST 기준 시차 적용 (UTC+9)
+    const korea = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+
+    const year = korea.getUTCFullYear();
+    const month = String(korea.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(korea.getUTCDate()).padStart(2, "0");
+
+    const hour = String(korea.getUTCHours()).padStart(2, "0");
+    const minute = String(korea.getUTCMinutes()).padStart(2, "0");
+
+    return {
+      date: `${year}-${month}-${day}`,  // ✅ 2025-12-13
+      time: `${hour}:${minute}`,        // ✅ 06:00
+    };
+  }
+
+  const dt = splitDateTime(initialData?.date_time)
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -60,8 +105,14 @@ export default function NewPostForm({ sportOption, levelOption }: {
 
     try {
       setLoading(true)
-      await api.post('/api/posts', payload)
-      alert('모임이 생성되었습니다!')
+      if(mode === 'create') {
+        await api.post(`/api/posts`, payload)
+        alert('모임이 생성되었습니다!')
+      } else {
+        await api.patch(`/api/posts/${initialData.id}`, payload)
+        alert('수정되었습니다.')
+      }
+
       form.reset()
 
       // 컨트롤드 컴포넌트 상태도 같이 초기화
@@ -85,7 +136,9 @@ export default function NewPostForm({ sportOption, levelOption }: {
     <main className="container mx-auto px-4 py-8 max-w-2xl">
       <Card>
         <CardHeader className="flex flex-col space-y-1.5 p-6">
-          <h3 className="text-2xl font-semibold tracking-tight">번개 모임 만들기</h3>
+          <h3 className="text-2xl font-semibold tracking-tight">
+            {mode === 'create' ? '번개 모임 만들기' : '번개 모임 수정하기'}
+          </h3>
           <p className="text-sm text-muted-foreground">
             함께 운동할 사람들을 모집해보세요!
           </p>
@@ -113,6 +166,7 @@ export default function NewPostForm({ sportOption, levelOption }: {
                 name="title"
                 type="text"
                 placeholder="예: 강남 배드민턴 초급자 모집!"
+                defaultValue={initialData?.title}
                 required
               />
             </div>
@@ -123,6 +177,7 @@ export default function NewPostForm({ sportOption, levelOption }: {
               <TextArea
                 name="description"
                 placeholder="모임에 대해 간단히 소개해주세요"
+                defaultValue={initialData?.description}
               />
             </div>
 
@@ -160,6 +215,8 @@ export default function NewPostForm({ sportOption, levelOption }: {
                   name="detailLocation"
                   type="text"
                   placeholder="예: ○○체육관 2층 A코트"
+                  value={detailLocation}
+                  onChange={(e) => setDetailLocation(e.target.value)}
                   required
                 />
               </div>
@@ -169,11 +226,20 @@ export default function NewPostForm({ sportOption, levelOption }: {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col space-y-2">
                 <label className={labelCls}>날짜 *</label>
-                <Input name="date" type="date" min={new Date().toISOString().split("T")[0]} required />
+                <Input
+                  name="date"
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  defaultValue={dt.date}
+                  required />
               </div>
               <div className="flex flex-col space-y-2">
                 <label className={labelCls}>시간 *</label>
-                <Input name="time" type="time" defaultValue={'12:00'} required />
+                <Input
+                  name="time"
+                  type="time"
+                  defaultValue={dt.time ?? '12:00'}
+                  required />
               </div>
             </div>
 
@@ -186,6 +252,7 @@ export default function NewPostForm({ sportOption, levelOption }: {
                   type="number"
                   placeholder="예: 6"
                   required
+                  defaultValue={initialData?.max_participants}
                   min={2}
                 />
               </div>
@@ -207,6 +274,7 @@ export default function NewPostForm({ sportOption, levelOption }: {
               <Input
                 name="requirement"
                 type="text"
+                defaultValue={initialData?.requirement}
                 placeholder="예: 라켓(대여 가능), 운동화"
               />
             </div>
@@ -217,6 +285,7 @@ export default function NewPostForm({ sportOption, levelOption }: {
               <Input
                 name="fee"
                 type="text"
+                defaultValue={initialData?.fee}
                 placeholder="예: 15,000원 (시설비 포함)"
               />
             </div>
