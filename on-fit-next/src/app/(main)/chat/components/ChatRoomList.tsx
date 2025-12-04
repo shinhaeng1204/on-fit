@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/axios';
 import ChatRoomCard from './ChatRoomCard';
+import ChatRoomCardSkeleton from "@/app/(main)/chat/components/ChatRoomCardSkeleton";
 
 interface ChatRoomListItem {
   roomId: string;
@@ -49,7 +50,13 @@ export default function ChatRoomList() {
   }, []);
 
   if (loading) {
-    return <div className="p-4 text-sm text-muted-foreground">채팅방을 불러오는 중…</div>;
+    return (
+      <div className="flex flex-col gap-4 items-center">
+        <ChatRoomCardSkeleton />
+        <ChatRoomCardSkeleton />
+        <ChatRoomCardSkeleton />
+      </div>
+    );
   }
 
   if (error) {
