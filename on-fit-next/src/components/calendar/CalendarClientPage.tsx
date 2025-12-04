@@ -259,7 +259,7 @@ export default function CalendarClientPage() {
                       </div>
 
                       {/* 데스크탑: 라벨 표시 */}
-                      <div className="hidden sm:flex flex-col gap-1 mt-auto">
+                      <div className="hidden sm:flex flex-col gap-1 mt-1">
                         {dayEvents.slice(0, 2).map(e => (
                           <div
                             key={e.id}
