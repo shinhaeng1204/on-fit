@@ -1,3 +1,4 @@
+// src/app/mypage/page.tsx
 import { Trophy } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import ProfileHeader from '@/app/mypage/components/ProfileHeader';
@@ -13,6 +14,8 @@ import { getMyReviews } from '@/lib/reviews';
 
 import ActivityTabsContainer from '@/app/mypage/components/ActivityTabsContainer';
 import type { ActivityItem } from '@/app/mypage/components/ActivityTabs';
+import type { FollowUser, MyPageStats } from '@/app/mypage/types';
+import { getBadgeLevelByCompletedCount } from '@/app/mypage/badges';
 
 export default async function MyPage() {
   const supabase = await createSupabaseServerClient();
@@ -24,7 +27,7 @@ export default async function MyPage() {
     redirect('/auth?next=/mypage');
   }
 
-  // 필요 데이터만 사용하도록 joinedCount 제거
+  // ✅ 기본 마이페이지 데이터 (프로필 + 트로피)
   const { profile, badges } = await getMyPageData();
 
   const name = profile.nickname ?? '';
@@ -32,18 +35,113 @@ export default async function MyPage() {
   const region = profile.location ?? '';
   const exercises = (profile.sport_preference ?? []) as string[];
 
-  // ✅ 완료된 모임 수: View에서 가져오기
-  const { data: completedRow, error: completedError } = await supabase
-    .from('v_user_completed_participation_count') // View 이름에 맞게 사용
+  // ===========================
+  // 1) 팔로워 / 팔로잉 + 완료 횟수 → 대표 뱃지 포함 목록
+  // ===========================
+  const followerIds = (profile.followers ?? []) as string[];
+  const followingIds = (profile.following ?? []) as string[];
+
+  let followersList: FollowUser[] = [];
+  let followingsList: FollowUser[] = [];
+
+  // 팔로워 + 팔로잉 전체 유저 id (중복 제거)
+  const allTargetIds = Array.from(new Set([...followerIds, ...followingIds]));
+
+  // user_id -> completedCount 맵
+  const completedCountMap = new Map<string, number>();
+
+  if (allTargetIds.length > 0) {
+    const {
+      data: completedRowsForFollowUsers,
+      error: completedListError,
+    } = await supabase
+      .from('v_user_completed_participation_count')
+      .select('user_id, participation_count')
+      .in('user_id', allTargetIds);
+
+    if (completedListError) {
+      console.error(
+        'failed to load completed participation counts for follow users',
+        completedListError,
+      );
+    } else {
+      completedRowsForFollowUsers?.forEach((row) => {
+        completedCountMap.set(row.user_id, row.participation_count ?? 0);
+      });
+    }
+  }
+
+  // 팔로워 프로필 목록
+  if (followerIds.length > 0) {
+    const { data: followersData, error: followersError } = await supabase
+      .from('profiles')
+      .select('id, nickname, profile_image, location')
+      .in('id', followerIds);
+
+    if (followersError) {
+      console.error('failed to load followers', followersError);
+    } else {
+      followersList =
+        followersData?.map((p) => {
+          const completedCount = completedCountMap.get(p.id) ?? 0;
+          const mainBadgeLevel = getBadgeLevelByCompletedCount(completedCount);
+
+          return {
+            id: p.id,
+            nickname: p.nickname,
+            avatarUrl: p.profile_image,
+            location: p.location,
+            mainBadgeLevel,
+          } satisfies FollowUser;
+        }) ?? [];
+    }
+  }
+
+  // 팔로잉 프로필 목록
+  if (followingIds.length > 0) {
+    const { data: followingsData, error: followingsError } = await supabase
+      .from('profiles')
+      .select('id, nickname, profile_image, location')
+      .in('id', followingIds);
+
+    if (followingsError) {
+      console.error('failed to load followings', followingsError);
+    } else {
+      followingsList =
+        followingsData?.map((p) => {
+          const completedCount = completedCountMap.get(p.id) ?? 0;
+          const mainBadgeLevel = getBadgeLevelByCompletedCount(completedCount);
+
+          return {
+            id: p.id,
+            nickname: p.nickname,
+            avatarUrl: p.profile_image,
+            location: p.location,
+            mainBadgeLevel,
+          } satisfies FollowUser;
+        }) ?? [];
+    }
+  }
+
+  // ===========================
+  // 2) 통계 값들 (진행중 / 완료)
+  // ===========================
+
+  // ✅ 내 완료된 모임 수: View에서 가져오기
+  const { data: myCompletedRow, error: myCompletedError } = await supabase
+    .from('v_user_completed_participation_count')
     .select('participation_count')
     .eq('user_id', user.id)
     .maybeSingle();
 
-  if (completedError) {
-    console.error('failed to load completed participation count', completedError);
+  if (myCompletedError) {
+    console.error(
+      'failed to load completed participation count for me',
+      myCompletedError,
+    );
   }
 
-  const completedCount = completedRow?.participation_count ?? 0;
+  const completedCount = myCompletedRow?.participation_count ?? 0;
 
   // ✅ 내가 만든 모임
   const { data: createdPosts } = await supabase
@@ -93,21 +191,32 @@ export default async function MyPage() {
   }
 
   // ✅ 진행중 모임 수: 참여 중 목록에서 open 상태만 카운트
-  const activeCount = participated.filter((item) => item.status === 'open').length;
+  const activeCount = participated.filter(
+    (item) => item.status === 'open',
+  ).length;
 
-  const stats = {
+  const stats: MyPageStats = {
     activeCount,
     completedCount,
-    followerCount: profile.followers?.length ?? 0,
-    followingCount: profile.following?.length ?? 0,
+    followerCount: followersList.length,
+    followingCount: followingsList.length,
   };
 
+  // ===========================
+  // 3) 리뷰
+  // ===========================
   const reviews = await getMyReviews(user.id);
 
   return (
     <div className="space-y-6">
       <Card className="p-0">
-        <ProfileHeader name={name} avatarUrl={avatarUrl} stats={stats} />
+        <ProfileHeader
+          name={name}
+          avatarUrl={avatarUrl}
+          stats={stats}
+          followers={followersList}
+          followings={followingsList}
+        />
       </Card>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
