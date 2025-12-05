@@ -5,7 +5,7 @@ import { sbClient } from "@/lib/supabase-client"
 import { Button } from "../common/Button"
 import { LogOut } from "lucide-react"
 import { mutate } from "swr"
-import { useNotifications } from "../common/NotificationProvider"
+import { useNotifications } from "../provider/NotificationProvider"
 
 export default function LogoutButton(){
     const router = useRouter()
