@@ -9,7 +9,7 @@ import { MapPin } from "lucide-react"
 import AuthControls from "@/components/header/AuthControls"
 import { usePathname } from "next/navigation";
 import { NotificationDropdown } from "@/components/common/NotificationDropdown"
-import { useNotifications } from "@/components/common/NotificationProvider"
+import { useNotifications } from "@/components/provider/NotificationProvider"
 import Image from "next/image"
 import { User } from "@supabase/supabase-js"
 
