@@ -1,10 +1,9 @@
-// components/header/LocationModal.tsx
 'use client'
 
 import { MapPinIcon } from 'lucide-react'
 import { Modal, ModalHeader, ModalContent, ModalFooter } from '@/components/common/Modal'
-import LocationPicker from '@/components/location/LocationPicker'
 import { useState } from 'react'
+import LocationViewer from '@/components/location/LocationViewer'
 
 type Props = {
   open: boolean
@@ -24,7 +23,7 @@ export default function LocationModal({ open, onClose, onSelect }: Props) {
       </ModalHeader>
 
       <ModalContent>
-        <LocationPicker
+        <LocationViewer
           appKey={process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY as string}
           onPick={({lat, lng, region}) => {
             onSelect?.(region, lat, lng)
