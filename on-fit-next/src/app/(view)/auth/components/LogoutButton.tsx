@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation"
 import { sbClient } from "@/lib/supabase-client"
-import { Button } from "../common/Button"
+import { Button } from "../../../../components/common/Button"
 import { LogOut } from "lucide-react"
 import { mutate } from "swr"
-import { useNotifications } from "../provider/NotificationProvider"
+import { useNotifications } from "../../../../components/provider/NotificationProvider"
 
 export default function LogoutButton(){
     const router = useRouter()

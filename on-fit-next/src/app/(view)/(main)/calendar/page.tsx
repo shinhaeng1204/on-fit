@@ -1,7 +1,7 @@
 // app/calendar/page.tsx
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/route-helpers";
-import CalendarClientPage from "@/components/calendar/CalendarClientPage";
+import CalendarClientPage from "./components/CalendarClientPage";
 
 export default async function CalendarPage() {
   const supabase = await createSupabaseServerClient();
