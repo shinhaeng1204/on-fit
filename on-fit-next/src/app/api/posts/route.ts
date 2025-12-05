@@ -31,8 +31,9 @@ export async function POST(req: Request) {
     return fail("INVALID_JSON_BODY", 400);
   }
 
-  const required = ["title", "sport", "location", "date", "time"];
-  const missing = required.filter((k) => !b?.[k]);
+  // 필수값에 lat/lng/regionLabel 추가
+  const required = ["title", "sport", "location", "date", "time", "latitude", "longitude", "regionLabel"];
+  const missing = required.filter((k) => b[k] === undefined || b[k] === null || b[k] === "");
   if (missing.length) return fail(`필수값 누락: ${missing.join(", ")}`, 400);
 
   const dateISO = toISOFromKST(b.date, b.time);
@@ -41,26 +42,39 @@ export async function POST(req: Request) {
   const payload = {
     sport: String(b.sport),
     title: String(b.title),
+
+    // 기존
     location: String(b.location),
     date_time: dateISO,
     level: b.level ?? "브론즈",
     status: b.status ?? "모집중",
     current_participants: Number(b.currentParticipants ?? 1),
     max_participants: Math.max(1, Number(b.maxParticipants ?? 1)),
-    author_id: user.id, // RLS가 체크
+    author_id: user.id,
     description: b.description ?? "",
     requirement: b.requirement ?? "",
     fee: b.fee ?? "",
+
+    // 새로 추가된 좌표 기반 위치 정보
+    latitude: Number(b.latitude),
+    longitude: Number(b.longitude),
+    region_label: String(b.regionLabel),
   };
 
-  const { data, error } = await supabase.from("posts").insert(payload).select().single();
+  const { data, error } = await supabase
+    .from("posts")
+    .insert(payload)
+    .select()
+    .single();
+
   if (error) return fail(error.message, 400);
 
-  //팔로워들에게 알림 생성
+  // 기존처럼 팔로워 알림 유지
   await notifyFollowers(supabase, user.id, data);
 
   return ok({ item: data }, { status: 201 });
 }
+
 
 //알림 생성 함수
 async function notifyFollowers(supabase:any, author_id:string, data:any){

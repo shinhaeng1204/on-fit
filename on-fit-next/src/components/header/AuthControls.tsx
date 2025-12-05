@@ -50,7 +50,7 @@ export default function AuthControls(){
         ''
 
     return (
-    <div className="flex items-center md:gap-3">
+    <div className="flex items-center gap-3">
       <Link href="/mypage">
         <span
           className="flex-1 min-w-[3em] max-w-[16em] whitespace-nowrap truncate text-sm text-muted-foreground"
