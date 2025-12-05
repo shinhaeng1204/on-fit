@@ -4,7 +4,7 @@ import { Bell, X } from "lucide-react";
 import { Button } from "./Button";
 import { Popover, PopoverContent, PopoverTrigger } from "./PopOver"
 import { ScrollArea } from "./ScrollArea";
-import StatusBadge from "../main/StatusBadge";
+import StatusBadge from "./StatusBadge";
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { sbClient } from "@/lib/supabase-client";

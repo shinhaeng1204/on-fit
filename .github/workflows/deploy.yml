@@ -1,0 +1,38 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy on EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            cd /home/ubuntu/on-fit/on-fit-next
+
+            echo "[DEPLOY] git fetch & reset to origin/main..."
+            git fetch origin
+            git reset --hard origin/main
+
+            echo "[DEPLOY] install dependencies..."
+            npm install --omit=dev
+
+            echo "[DEPLOY] build..."
+            npm run build
+
+            echo "[DEPLOY] restart pm2..."
+            pm2 restart onfit || pm2 start npm --name "onfit" -- start
+
+            echo "[DEPLOY] done."

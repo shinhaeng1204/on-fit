@@ -8,11 +8,12 @@ export interface RecruitStatusProps {
 }
 
 /* 실력 */
-export type BadgeType = "브론즈" | "실버" | "골드" | "플레티넘";
+export type BadgeType = "브론즈" | "실버" | "골드" | "플레티넘" | "초심자";
 
 export interface BadgeProps {
   type: BadgeType;
   className?: string;
+  showLabel?: boolean;
 }
 
 /* 운동 종류 */
@@ -34,4 +35,7 @@ export interface postType {
   requirement?: string,
   fee? : string,
   room_id?: string,
+  latitude: number | null,
+  longitude: number | null,
+  region_label: string | null,
 }

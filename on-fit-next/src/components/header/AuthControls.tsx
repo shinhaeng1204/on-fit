@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useAuthSession } from "@/hooks/useAuthSession"
-import LogoutButton from "../auth/LogoutButton"
+import LogoutButton from "../../app/(view)/auth/components/LogoutButton"
 import { Button } from "../common/Button"
 import { User } from "lucide-react"
 import useSWR from "swr"
