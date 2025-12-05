@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/common/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/common/Card";
-import StatusBadge from "@/components/main/StatusBadge";
+import StatusBadge from "@/components/common/StatusBadge";
 import { Calendar as CalendarIcon, ArrowLeft, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/common/Dialog";
