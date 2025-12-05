@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/route-helpers";
-import { getBadgesByJoinedCount } from "@/app/(view)/mypage/badges";
+import { getBadgesByJoinedCount } from "@/app/(view)/(main)/mypage/badges";
 
 export async function getMyPageData() {
   const supabase = await createSupabaseServerClient();

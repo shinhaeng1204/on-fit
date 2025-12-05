@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
-import type { FollowUser } from '@/app/(view)/mypage/types';
+import type { FollowUser } from '@/app/(view)/(main)/mypage/types';
 import ProfileImage from '@/components/common/ProfileImage';
 import LevelBadge from '@/components/common/Badge';
 
