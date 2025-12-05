@@ -11,8 +11,9 @@ import { usePathname } from "next/navigation";
 import { NotificationDropdown } from "@/components/common/NotificationDropdown"
 import { useNotifications } from "@/components/provider/NotificationProvider"
 import Image from "next/image"
+import { User } from "@supabase/supabase-js"
 
-export default function MainLayoutShell({ children }: { children: React.ReactNode }) {
+export default function MainLayoutShell({ user, children }: { user:User | null; children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const [region, setRegion] = useState<string | null>(null)
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
@@ -82,6 +83,7 @@ export default function MainLayoutShell({ children }: { children: React.ReactNod
                 onDelete={deleteOne}
                 onMarkOneRead={markOneRead}
                 deleteAll={deleteAll}
+                user={user}
               />
               <AuthControls />
             </div>

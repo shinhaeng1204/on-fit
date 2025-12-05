@@ -8,11 +8,12 @@ export interface RecruitStatusProps {
 }
 
 /* 실력 */
-export type BadgeType = "브론즈" | "실버" | "골드" | "플레티넘";
+export type BadgeType = "브론즈" | "실버" | "골드" | "플레티넘" | "초심자";
 
 export interface BadgeProps {
   type: BadgeType;
   className?: string;
+  showLabel?: boolean;
 }
 
 /* 운동 종류 */
