@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/common/Tabs';
 import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
-import StatusPill from '@/app/(view)/mypage/components/StatusPill';
+import StatusPill from '@/app/(view)/(main)/mypage/components/StatusPill';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/common/Button';
 import { Trash2, Pencil } from 'lucide-react';

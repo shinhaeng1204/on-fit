@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/common/Button';
-import { updatePreferencesArray } from '@/app/(view)/mypage/actions';
+import { updatePreferencesArray } from '@/app/(view)/(main)/mypage/actions';
 import { X, Pencil, Check } from 'lucide-react'; // 👈 Plus 제거
-import { useToast } from '@/app/(view)/mypage/components/Toast';
+import { useToast } from '@/app/(view)/(main)/mypage/components/Toast';
 
 type Props = {
   initial: string[];

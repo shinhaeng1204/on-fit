@@ -1,21 +1,21 @@
 // src/app/mypage/page.tsx
 import { Trophy } from 'lucide-react';
 import { Card } from '@/components/common/Card';
-import ProfileHeader from '@/app/(view)/mypage/components/ProfileHeader';
-import TrophySection from '@/app/(view)/mypage/components/TrophySection';
-import RegionSection from '@/app/(view)/mypage/components/RegionSection';
-import PreferredExercisesSection from '@/app/(view)/mypage/components/PreferredExercisesSection';
-import ReviewSection from '@/app/(view)/mypage/components/ReviewSection';
+import ProfileHeader from '@/app/(view)/(main)/mypage/components/ProfileHeader';
+import TrophySection from '@/app/(view)/(main)/mypage/components/TrophySection';
+import RegionSection from '@/app/(view)/(main)/mypage/components/RegionSection';
+import PreferredExercisesSection from '@/app/(view)/(main)/mypage/components/PreferredExercisesSection';
+import ReviewSection from '@/app/(view)/(main)/mypage/components/ReviewSection';
 import { redirect } from 'next/navigation';
 
 import { createSupabaseServerClient } from '@/lib/route-helpers';
-import { getMyPageData } from '@/app/(view)/mypage/_api/getMyPageData';
+import { getMyPageData } from '@/app/(view)/(main)/mypage/_api/getMyPageData';
 import { getMyReviews } from '@/lib/reviews';
 
-import ActivityTabsContainer from '@/app/(view)/mypage/components/ActivityTabsContainer';
-import type { ActivityItem } from '@/app/(view)/mypage/components/ActivityTabs';
-import type { FollowUser, MyPageStats } from '@/app/(view)/mypage/types';
-import { getBadgeLevelByCompletedCount } from '@/app/(view)/mypage/badges';
+import ActivityTabsContainer from '@/app/(view)/(main)/mypage/components/ActivityTabsContainer';
+import type { ActivityItem } from '@/app/(view)/(main)/mypage/components/ActivityTabs';
+import type { FollowUser, MyPageStats } from '@/app/(view)/(main)/mypage/types';
+import { getBadgeLevelByCompletedCount } from '@/app/(view)/(main)/mypage/badges';
 
 export default async function MyPage() {
   const supabase = await createSupabaseServerClient();
