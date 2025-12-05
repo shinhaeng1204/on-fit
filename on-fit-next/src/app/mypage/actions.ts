@@ -70,3 +70,29 @@ export async function updatePreferencesArray(nextList: string[]) {
   revalidatePath('/mypage');
   return { success: true, count: list.length };
 }
+
+
+export async function updateProfileImage(imageUrl: string) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error('로그인이 필요합니다.');
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ profile_image: imageUrl })
+    .eq('id', user.id);
+
+  if (error) {
+    console.error(error);
+    throw new Error('프로필 이미지 업데이트에 실패했습니다.');
+  }
+
+  // 마이페이지 다시 그려지게
+  revalidatePath('/mypage');
+}

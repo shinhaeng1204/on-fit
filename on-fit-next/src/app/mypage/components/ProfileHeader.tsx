@@ -5,10 +5,11 @@ import { CardContent } from '@/components/common/Card';
 import { cn } from '@/lib/utils';
 import { Check, Edit2, X } from 'lucide-react';
 import { useToast } from '@/app/mypage/components/Toast';
-import { updateNicknameDirect } from '@/app/mypage/actions';
+import { updateNicknameDirect, updateProfileImage } from '@/app/mypage/actions'; // 🔥 NEW
 import ProfileImage from '@/components/common/ProfileImage';
 import FollowListModal from '@/app/mypage/components/FollowListModal';
 import type { FollowUser, MyPageStats } from '@/app/mypage/types';
+import { sbClient } from '@/lib/supabase-client';
 
 type Props = {
   name: string;
@@ -29,11 +30,18 @@ export default function ProfileHeader({
 }: Props) {
   const { show } = useToast();
 
+  // 닉네임 편집 상태
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState(name);
   const [temp, setTemp] = useState(name);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // 🔥 프로필 이미지 업로드 관련 상태
+  const [avatar, setAvatar] = useState<string | undefined>(avatarUrl);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [avatarPending, startAvatarTransition] = useTransition();
 
   // 팔로워 / 팔로잉 모달 상태
   const [openMode, setOpenMode] = useState<'followers' | 'followings' | null>(
@@ -43,6 +51,11 @@ export default function ProfileHeader({
   useEffect(() => {
     if (editing) inputRef.current?.focus();
   }, [editing]);
+
+  // 🔥 서버에서 avatarUrl이 바뀌면 로컬 상태도 동기화
+  useEffect(() => {
+    setAvatar(avatarUrl);
+  }, [avatarUrl]);
 
   const initial = displayName?.[0] ?? 'U';
 
@@ -76,18 +89,121 @@ export default function ProfileHeader({
   const openFollowings = () => setOpenMode('followings');
   const closeModal = () => setOpenMode(null);
 
+  // 🔥 프로필 이미지를 눌렀을 때: 파일 선택창 열기
+  const handleAvatarClick = () => {
+    if (uploading || avatarPending) return;
+    fileInputRef.current?.click();
+  };
+
+  // 🔥 파일 선택 시: Supabase Storage 업로드 + DB 업데이트
+  const handleAvatarChange: React.ChangeEventHandler<HTMLInputElement> = async (
+    e,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      show('이미지 파일만 업로드할 수 있어요.');
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      const supabase = sbClient;
+      
+      const { data, error } = await supabase.auth.getUser();
+console.log('user in upload', data, error);
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        show('로그인이 필요합니다.');
+        return;
+      }
+
+      const ext = file.name.split('.').pop() || 'png';
+      const filePath = `${user.id}/${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars') // 👉 Storage 버킷 이름
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error(uploadError);
+        show('이미지 업로드에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+      // 프리뷰를 바로 바꿔주기
+      setAvatar(publicUrl);
+
+      // 서버 액션으로 profiles.profile_image 업데이트
+      startAvatarTransition(async () => {
+        try {
+          await updateProfileImage(publicUrl);
+          show('프로필 이미지가 변경됐습니다.');
+        } catch (err) {
+          console.error(err);
+          show('프로필 이미지 저장에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        }
+      });
+    } finally {
+      setUploading(false);
+      // 같은 파일 다시 선택해도 change 이벤트가 뜨게 초기화
+      e.target.value = '';
+    }
+  };
+
+  const isAvatarBusy = uploading || avatarPending;
+
   return (
     <>
       <CardContent className={cn('pt-6', className)}>
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-          <ProfileImage
-            src={avatarUrl}
-            profileName={initial}
-            containerClassName="relative inline-flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary"
-            imageClassName="h-full w-full object-cover transition-opacity duration-300"
-            alt={displayName}
-            fakeProfileClassName="absolute inset-0 flex items-center justify-center select-none text-2xl font-semibold transition-opacity duration-300"
-          />
+          {/* 🔥 클릭하면 파일 선택창이 열리는 프로필 이미지 */}
+          <div className="flex flex-col items-center gap-1 sm:items-start">
+            <button
+              type="button"
+              onClick={handleAvatarClick}
+              disabled={isAvatarBusy}
+              className={cn(
+                'relative inline-flex rounded-full',
+                isAvatarBusy && 'opacity-70',
+              )}
+              aria-label="프로필 이미지 변경"
+            >
+              <ProfileImage
+                src={avatar}
+                profileName={initial}
+                containerClassName="relative inline-flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary"
+                imageClassName="h-full w-full object-cover transition-opacity duration-300"
+                alt={displayName}
+                fakeProfileClassName="absolute inset-0 flex items-center justify-center select-none text-2xl font-semibold transition-opacity duration-300"
+              />
+              
+            </button>
+
+            {/* 숨겨진 파일 input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+          </div>
 
           <div className="w-full flex-1 text-center sm:text-left">
             {/* 닉네임 + 수정 버튼 */}
