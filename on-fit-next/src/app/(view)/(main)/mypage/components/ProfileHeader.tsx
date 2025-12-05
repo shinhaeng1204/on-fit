@@ -4,11 +4,11 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import { CardContent } from '@/components/common/Card';
 import { cn } from '@/lib/utils';
 import { Check, Edit2, X } from 'lucide-react';
-import { useToast } from '@/app/(view)/mypage/components/Toast';
-import { updateNicknameDirect, updateProfileImage } from '@/app/(view)/mypage/actions'; // 🔥 NEW
+import { useToast } from '@/app/(view)/(main)/mypage/components/Toast';
+import { updateNicknameDirect, updateProfileImage } from '@/app/(view)/(main)/mypage/actions'; // 🔥 NEW
 import ProfileImage from '@/components/common/ProfileImage';
-import FollowListModal from '@/app/(view)/mypage/components/FollowListModal';
-import type { FollowUser, MyPageStats } from '@/app/(view)/mypage/types';
+import FollowListModal from '@/app/(view)/(main)/mypage/components/FollowListModal';
+import type { FollowUser, MyPageStats } from '@/app/(view)/(main)/mypage/types';
 import { sbClient } from '@/lib/supabase-client';
 
 type Props = {

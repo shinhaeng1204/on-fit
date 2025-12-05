@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { ToastProvider } from '@/app/(view)/mypage/components/Toast';
-import MyPageHeader from '@/app/(view)/mypage/components/MyPageHeader';
+import { ToastProvider } from '@/app/(view)/(main)/mypage/components/Toast';
+import MyPageHeader from '@/app/(view)/(main)/mypage/components/MyPageHeader';
 import BottomNav from '@/components/common/BottomNav';
 
 export default function MyPageLayout({ children }: { children: ReactNode }) {

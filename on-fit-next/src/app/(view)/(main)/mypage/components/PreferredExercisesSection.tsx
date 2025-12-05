@@ -2,7 +2,7 @@
 import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
 import { Dumbbell } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import PreferredExercisesEditor from '@/app/(view)/mypage/components/_client/PreferredExercisesEditor';
+import PreferredExercisesEditor from '@/app/(view)/(main)/mypage/components/_client/PreferredExercisesEditor';
 import { createSupabaseServerClient } from '@/lib/route-helpers';
 
 type Props = {

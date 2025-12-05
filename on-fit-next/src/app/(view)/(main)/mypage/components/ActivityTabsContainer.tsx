@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import ActivityTabs, {
 ActivityItem,
-} from '@/app/(view)/mypage/components/ActivityTabs';
+} from '@/app/(view)/(main)/mypage/components/ActivityTabs';
 
 type Props = {
   participated: ActivityItem[];
