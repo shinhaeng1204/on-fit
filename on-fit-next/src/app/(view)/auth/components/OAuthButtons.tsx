@@ -1,7 +1,7 @@
 'use client'
 
 import { sbClient } from "@/lib/supabase-client"
-import { Button } from "../common/Button"
+import { Button } from "../../../../components/common/Button"
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? (typeof window !== 'undefined' ? window.location.origin: "")
 

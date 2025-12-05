@@ -1,7 +1,7 @@
 // app/auth/AuthTabsClientWrapper.tsx
 'use client'
 
-import AuthTabs from "@/components/auth/AuthTabs";
+import AuthTabs from "@/app/(view)/auth/components/AuthTabs";
 // 필요하면 여기서 useSearchParams, useRouter 도 사용 가능
 // import { useSearchParams } from "next/navigation";
 

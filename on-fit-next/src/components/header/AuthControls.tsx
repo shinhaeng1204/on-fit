@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useAuthSession } from "@/hooks/useAuthSession"
-import LogoutButton from "../auth/LogoutButton"
+import LogoutButton from "../../app/(view)/auth/components/LogoutButton"
 import { Button } from "../common/Button"
 import { LogOut, User } from "lucide-react"
 
