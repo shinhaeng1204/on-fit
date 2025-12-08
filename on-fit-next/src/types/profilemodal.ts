@@ -14,4 +14,7 @@ export type Profile = {
   followers?: string[];
   following?: string[];
   stats: ProfileStats;
+  home_lat: number | null
+  home_lng: number | null
+  home_region: string | null
 };

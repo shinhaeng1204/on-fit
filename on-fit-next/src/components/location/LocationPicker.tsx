@@ -9,7 +9,6 @@ import React, {
 import useKakaoLoader from '@/hooks/useKakaoLoader'
 
 type Props = {
-  appKey: string
   onPick?: (payload: { lat: number; lng: number; region: string }) => void
 }
 
@@ -51,8 +50,8 @@ type KakaoPlace = {
   place_url: string
 }
 
-export default function LocationPicker({ appKey, onPick }: Props) {
-  const ready = useKakaoLoader(appKey)
+export default function LocationPicker({ onPick }: Props) {
+  const ready = useKakaoLoader()
   const boxRef = useRef<HTMLDivElement | null>(null)
 
   const [map, setMap] = useState<any>(null)
@@ -72,16 +71,16 @@ export default function LocationPicker({ appKey, onPick }: Props) {
 
     const kakao = (window as any).kakao
 
-    // 지도 생성 (dummy center)
-    const dummyCenter = new kakao.maps.LatLng(0, 0)
+    // 지도 생성 (초기값: 서울시청)
+    const defaultCenter = new kakao.maps.LatLng(37.5665, 126.9780)
     const _map = new kakao.maps.Map(boxRef.current, {
-      center: dummyCenter,
+      center: defaultCenter,
       level: 7,
     })
 
     // 마커 생성 (처음엔 숨김)
     const _marker = new kakao.maps.Marker({
-      position: dummyCenter,
+      position: defaultCenter,
     })
     _marker.setMap(null)
 
@@ -158,6 +157,30 @@ export default function LocationPicker({ appKey, onPick }: Props) {
 
           setLabel('현재 위치를 불러올 수 없습니다. (기본 위치 기준 반경 5km)')
         }
+      )
+    } else {
+      // geolocation 자체 미지원인 경우
+      const fallback = new kakao.maps.LatLng(37.5665, 126.9780)
+
+      _map.setCenter(fallback)
+      _marker.setPosition(fallback)
+      _marker.setMap(_map)
+
+      const circle = new kakao.maps.Circle({
+        center: fallback,
+        radius: 5000,
+        strokeWeight: 2,
+        strokeColor: '#3182F6',
+        strokeOpacity: 0.8,
+        strokeStyle: 'solid',
+        fillColor: '#3182F6',
+        fillOpacity: 0.15,
+      })
+      circle.setMap(_map)
+      circleRef.current = circle
+
+      setLabel(
+        '현재 위치 기능을 사용할 수 없습니다. (기본 위치 기준 반경 5km)'
       )
     }
 
