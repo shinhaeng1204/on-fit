@@ -241,7 +241,7 @@ export default function NewPostForm({
               <label className={labelCls}>장소 *</label>
 
               <LocationPicker
-                appKey={process.env.NEXT_PUBLIC_KAKAO_APP_KEY!}
+               
                 onPick={(loc) => {
                   setPickedLocation(loc)
 
