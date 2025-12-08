@@ -1,27 +1,31 @@
+'use client'
+
 import { Card, CardContent, CardHeader } from "@/components/common/Card";
 import { Calendar, Dumbbell, MapPin, Users } from "lucide-react";
 import RecruitStatus from "@/components/common/RecruitStatus";
 import Badge from "@/components/common/Badge";
 import React from "react";
 import { toKstDate, toKstTime } from "@/lib/dateFormatter";
-import {createSupabaseServerClient} from "@/lib/route-helpers";
-import {postType} from "@/types/post";
 import PostInfoClient from "@/app/(view)/(main)/post/components/PostInfoClient";
 import {DefaultSportIcon, sportIcons} from "@/lib/sportIcons";
+import {useQuery} from "@tanstack/react-query";
+import {api} from "@/lib/axios";
+import PostInfoSkeleton from "@/app/(view)/(main)/post/components/PostInfoSkelton";
 
-export default async function PostInfo({id} : {id:string}) {
-  const supabase = await createSupabaseServerClient();
-  const {
-      data: { user },
-    } = await supabase.auth.getUser();
+export default function PostInfo({id} : {id:string}) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["post", id],
+    queryFn: async () => {
+      const res = await api.get(`/api/posts/${id}`);
+      return res.data.item;
+    },
+  });
 
-  const { data, error } = await supabase
-    .from("posts")
-    .select("*, profile:profiles(id, nickname)")
-    .eq("id", id)
-    .single();
-
-  if (error) return <div>오류: {error.message}</div>;
+  if (isLoading) return (
+    <PostInfoSkeleton />
+  );
+  if (error) return <div>오류 발생</div>;
+  if (!data) return <div>데이터 없음</div>;
 
   const SportIcon = sportIcons[data?.sport] ?? DefaultSportIcon
 
@@ -119,7 +123,7 @@ export default async function PostInfo({id} : {id:string}) {
           </div>
 
           {/* 참여, 신고 */}
-          <PostInfoClient postId={id} roomId={data.room_id} title={data.title} targetUserId={data.profile?.id} user={user}/>
+          <PostInfoClient postId={id} roomId={data.room_id} title={data.title} targetUserId={data.profile?.id}/>
         </CardContent>
       </Card>
     </>

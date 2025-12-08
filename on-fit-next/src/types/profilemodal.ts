@@ -17,10 +17,13 @@ export type Profile = {
   nickname: string;
   level: '초심자' | '브론즈' | '실버' | '골드' | '플레티넘';
   region?: string;
+  profile_image?: string;
   preferred_exercises?: string[]; // Supabase 컬럼명에 맞게
   followers?: string[];
   following?: string[];
-  stats: ProfileStats;
+  stats?: ProfileStats;
+  badges?: BadgeItem[];
+  avatar_url?: string | null;
   home_lat: number | null
   home_lng: number | null
   home_region: string | null
