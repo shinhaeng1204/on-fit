@@ -1,4 +1,3 @@
-// components/main/Filter.tsx
 'use client'
 
 import { Card, CardContent, CardHeader } from '../common/Card'
