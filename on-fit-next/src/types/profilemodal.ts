@@ -23,5 +23,9 @@ export type Profile = {
   following?: string[];
   stats?: ProfileStats;
   badges?: BadgeItem[];
-  avatar_url?: string | null; // 있으면
+  avatar_url?: string | null;
+  stats: ProfileStats;
+  home_lat: number | null
+  home_lng: number | null
+  home_region: string | null
 };
