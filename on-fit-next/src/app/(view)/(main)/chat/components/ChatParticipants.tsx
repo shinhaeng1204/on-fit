@@ -71,8 +71,7 @@ export default function ChatParticipants({ roomId, onClose }: ChatParticipantsPr
         <ProfileModal
           open={open}
           onClose={() => setOpen(false)}
-          profile={selectedProfile}
-          setProfile={setSelectedProfile}
+          profileId={selectedProfile?.id as string}
         />
       </motion.div>
     </>

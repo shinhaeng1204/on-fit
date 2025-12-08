@@ -6,6 +6,9 @@ import { Card } from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
+import {useEffect, useState} from "react";
+import {sbClient} from "@/lib/supabase-client";
+import {useToggleFollow} from "@/hooks/useToggleFollow";
 
 type ProfileModalProps = {
   open: boolean;
@@ -18,77 +21,31 @@ export default function ProfileModal({
     onClose,
     profileId,
   }: ProfileModalProps) {
-  if (!open) return null;
+  if (!open || !profileId) return null;
 
-  const queryClient = useQueryClient();
+  const [userId, setUserId] = useState<string | null>(null);
 
-  /** 프로필 상세 */
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuery({
+  // 로그인 유저 로드
+  useEffect(() => {
+    sbClient.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+  }, []);
+
+  // 프로필 쿼리 (API로 가져온다고 가정)
+  const { data } = useQuery({
     queryKey: ["profile", profileId],
-    enabled: !!profileId,
     queryFn: async () => {
-      const { data } = await api.get(`/api/profile-modal/${profileId}`);
-      return data;
+      const res = await api.get(`/api/profile-modal/${profileId}`)
+      return res.data
     },
   });
 
-  const isFollowing = data?.isFollowing ?? false;
-  const followerCount = data?.stats?.followerCount ?? 0;
+  const toggleFollow = useToggleFollow(profileId, userId);
 
-  /** 팔로우 토글 */
-  const toggleFollow = useMutation({
-    mutationFn: async (currentlyFollowing: boolean) => {
-      console.log(currentlyFollowing)
-      // currentlyFollowing는 mutate() 호출 시 넣어준 값
-      if (currentlyFollowing) {
-        await api.delete(`/api/profile-modal/follow?target=${profileId}`);
-      } else {
-        await api.post(`/api/profile-modal/follow`, { target: profileId });
-      }
-    },
-
-    onMutate: async (currentlyFollowing) => {
-      await queryClient.cancelQueries(["profile", profileId]);
-
-      const prevData = queryClient.getQueryData(["profile", profileId]);
-
-      queryClient.setQueryData(["profile", profileId], (old: any) => {
-        if (!old) return old;
-        return {
-          ...old,
-          isFollowing: !currentlyFollowing,
-          stats: {
-            ...old.stats,
-            followerCount: currentlyFollowing
-              ? old.stats.followerCount - 1
-              : old.stats.followerCount + 1,
-          },
-        };
-      });
-
-      return { prevData };
-    },
-
-    onError: (_err, _vars, context) => {
-      if (context?.prevData) {
-        queryClient.setQueryData(["profile", profileId], context.prevData);
-      }
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries(["profile", profileId]);
-    },
-  });
+  const isFollowing = userId && data?.followers?.includes(userId);
 
   const handleToggleFollow = () => {
-    toggleFollow.mutate(isFollowing);
+    toggleFollow.mutate(isFollowing!);
   };
-
-  if (isLoading || !data) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
@@ -124,10 +81,6 @@ export default function ProfileModal({
               </button>
             </div>
           </div>
-
-          {error && (
-            <p className="mb-3 text-xs text-destructive">{String(error)}</p>
-          )}
 
           {/* 프로필 영역 */}
           <div className="flex items-center gap-8">

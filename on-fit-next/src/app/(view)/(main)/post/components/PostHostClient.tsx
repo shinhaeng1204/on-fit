@@ -57,7 +57,7 @@ export default function PostHostClient({ host }: PostHostClientProps) {
       <ProfileModal
         open={open}
         onClose={() => setOpen(false)}
-        profile={host}
+        profileId={host.id}
       />
     </>
   );

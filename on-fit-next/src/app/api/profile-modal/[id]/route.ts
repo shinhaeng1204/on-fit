@@ -6,18 +6,20 @@ import {
   getBadgeLevelByCompletedCount,
 } from '@/app/(view)/(main)/mypage/badges';
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
-  const supabase = await createSupabaseServerClient();
-  const userId = params.id;
+type Ctx = { params: Promise<{ id: string }> };
 
-  console.log('[profile-modal] start, userId =', userId);
+export async function GET(_: Request, context: Ctx) {
+  const { id } = await context.params;
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const currentUserId = user?.id ?? null;
 
   // ❗ "undefined" 또는 빈값 차단
-  if (!userId || userId === 'undefined') {
-    console.error('[profile-modal] invalid userId:', userId);
+  if (!id || id === 'undefined') {
+    console.error('[profile-modal] invalid userId:', id);
     return NextResponse.json(
       {
         error: 'invalid_id',
@@ -42,10 +44,8 @@ export async function GET(
       following
     `,
     )
-    .eq('id', userId)
+    .eq('id', id)
     .single();
-
-  console.log('[profile-modal] profiles result =', { profile, profileError });
 
   if (profileError) {
     return NextResponse.json(
@@ -70,7 +70,7 @@ export async function GET(
   const { count: joinedCountRaw } = await supabase
     .from('participants')
     .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId);
+    .eq('user_id', id);
 
   const joinedCount = joinedCountRaw ?? 0;
 
@@ -78,13 +78,18 @@ export async function GET(
   const { count: createdCountRaw } = await supabase
     .from('posts')
     .select('*', { count: 'exact', head: true })
-    .eq('host_id', userId);
+    .eq('host_id', id);
 
   const createdCount = createdCountRaw ?? 0;
 
   // 4) 뱃지 / 레벨 계산
   const badges = getBadgesByJoinedCount(joinedCount);
   const level = getBadgeLevelByCompletedCount(joinedCount);
+
+  const followers = profile.followers ?? [];
+  const isFollowing = currentUserId
+    ? followers.includes(currentUserId)
+    : false;
 
   // 5) 응답 데이터
   return NextResponse.json({
@@ -98,6 +103,7 @@ export async function GET(
     following: profile.following ?? [],
     level,
     badges,
+    isFollowing,
     stats: {
       joinedCount,
       createdCount,
