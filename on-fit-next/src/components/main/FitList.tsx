@@ -15,6 +15,7 @@ const initialFilter: FilterValue = {
   sido: "시·도 선택",
   sigungu: "시·군·구 선택",
   level: "실력 선택",
+  keyword:"",
 }
 
 // 거리 계산 (하버사인)
@@ -51,6 +52,8 @@ function getRegionParts(item: postType) {
 
 export default function FitList({ items }: Props) {
   const [filter, setFilter] = useState<FilterValue>(initialFilter)
+  
+  const [searchTriggered, setSearchTriggered] = useState(false)
 
   // 내 위치 상태
   const [myLat, setMyLat] = useState<number | null>(null)
@@ -91,61 +94,103 @@ export default function FitList({ items }: Props) {
   const levelOptions = ["실력 선택", "브론즈", "실버", "골드"]
 
   const filteredItems = useMemo(() => {
-  const hasSidoFilter = filter.sido !== "시·도 선택"
-  // "전체"도 필터 없는 상태로 취급
-  const hasSigunguFilter =
-    filter.sigungu !== "시·군·구 선택" && filter.sigungu !== "전체"
 
-  const hasRegionFilter = hasSidoFilter || hasSigunguFilter
-  const canUseRadius =
-    !hasRegionFilter && myLat != null && myLng != null
+    // 검색 버튼을 눌렀다면 → 전국 기반 필터링 (반경/지역 무시)
+    if (searchTriggered) {
+      const keywordLower = filter.keyword.trim().toLowerCase();
 
-
-  const result = items.filter((item) => {
-    const { base, sido: itemSido, sigungu: itemSigungu, dong } =
-      getRegionParts(item)
-
-    const sportOk =
-      filter.sport === "종목 선택" || item.sport === filter.sport
-
-    const levelOk =
-      filter.level === "실력 선택" || item.level === filter.level
-
-    const sidoOk =
-      !hasSidoFilter || itemSido === filter.sido
-
-    const sigunguOk =
-      !hasSigunguFilter || itemSigungu === filter.sigungu
-
-    // 지역 필터 모드
-    if (hasRegionFilter) {
-      const pass = sportOk && levelOk && sidoOk && sigunguOk
-      return pass
-    }
-
-    // 반경 모드
-    if (canUseRadius) {
-      if (item.latitude == null || item.longitude == null) {
-        return false
+      // 🔥 검색 버튼만 누르고 검색어가 없으면 전국 카드 전체 반환
+      if (keywordLower === "") {
+        return items;
       }
 
-      const d = getDistanceKm(myLat!, myLng!, item.latitude, item.longitude)
-      const distanceOk = d <= RADIUS_KM
+      // 🔥 검색 + 필터 조합 (전국 기반)
+      return items.filter(item => {
+        const keywordOk = item.title.toLowerCase().includes(keywordLower);
 
-     
+        const sportOk =
+          filter.sport === "종목 선택" || item.sport === filter.sport;
 
-      return sportOk && levelOk && distanceOk
+        const levelOk =
+          filter.level === "실력 선택" || item.level === filter.level;
+
+        const { sido: itemSido, sigungu: itemSigungu } = getRegionParts(item);
+        const sidoOk = filter.sido === "시·도 선택" || filter.sido === itemSido;
+        const sigunguOk = filter.sigungu === "시·군·구 선택" || filter.sigungu === itemSigungu;
+
+        return keywordOk && sportOk && levelOk && sidoOk && sigunguOk;
+      });
     }
 
-    // 기본 모드
-    const pass = sportOk && levelOk
-   
-    return pass
-  })
+    const keywordLower = filter.keyword.trim().toLowerCase();
+
+    // 🔥 제목 검색이 존재하면 → 전국 데이터에서 검색 (위치/필터 무시)
+    if (keywordLower !== "") {
+      return items.filter((item) =>
+        item.title.toLowerCase().includes(keywordLower)
+      );
+    }
+
+    const hasSidoFilter = filter.sido !== "시·도 선택"
+    // "전체"도 필터 없는 상태로 취급
+    const hasSigunguFilter =
+      filter.sigungu !== "시·군·구 선택" && filter.sigungu !== "전체"
+
+    const hasRegionFilter = hasSidoFilter || hasSigunguFilter
+    const canUseRadius =
+      !hasRegionFilter && myLat != null && myLng != null
+
+    const result = items.filter((item) => {
+      const { base, sido: itemSido, sigungu: itemSigungu, dong } =
+        getRegionParts(item)
+
+      const sportOk =
+        filter.sport === "종목 선택" || item.sport === filter.sport
+
+      const levelOk =
+        filter.level === "실력 선택" || item.level === filter.level
+
+      const sidoOk =
+        !hasSidoFilter || itemSido === filter.sido
+
+      const sigunguOk =
+        !hasSigunguFilter || itemSigungu === filter.sigungu
+
+        // 🔥 제목 검색 조건
+      const keywordOk =
+        keywordLower === "" ||
+        item.title.toLowerCase().includes(keywordLower)
+
+
+      // 지역 필터 모드
+      if (hasRegionFilter) {
+        const pass = sportOk && levelOk && sidoOk && sigunguOk
+        return pass
+      }
+
+      // 반경 모드
+      if (canUseRadius) {
+        if (item.latitude == null || item.longitude == null) {
+          return false
+        }
+
+        const d = getDistanceKm(myLat!, myLng!, item.latitude, item.longitude)
+        const distanceOk = d <= RADIUS_KM
+
+      
+
+        return sportOk && levelOk && distanceOk
+      }
+
+      // 기본 모드
+      const pass = sportOk && levelOk
+    
+      return pass
+    })
 
  
-  return result
-}, [items, filter, myLat, myLng])
+    return result
+  }, [items, filter, myLat, myLng, searchTriggered])
 
 
   const handleReset = () => {
@@ -156,12 +201,19 @@ export default function FitList({ items }: Props) {
     <>
       <Filter
         value={filter}
-        onChange={setFilter}
-        onReset={handleReset}
+        onChange={(v)=>{
+          setSearchTriggered(false)
+          setFilter(v)
+        }}
+        onReset={()=>{
+          setSearchTriggered(false)
+          handleReset()
+        }}
         sportsOptions={sportsOptions}
         sidoOptions={sidoOptions}
         sigunguOptions={sigunguOptions}
         levelOptions={levelOptions}
+        onSearch={(active)=>setSearchTriggered(active)}
       />
 
       <div className="mx-5 flex flex-col gap-6 md:grid md:grid-cols-3">
