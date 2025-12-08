@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react"
 import FitList from "@/components/main/FitList"
 import type { postType } from "@/types/post"
 import { api } from "@/lib/axios"
+import FitCardSkeleton from "@/components/main/FitCardSkeleton";
 
 async function fetchPosts({ pageParam = 0 }) {
   const res = await api.get(`/api/posts?page=${pageParam}`)
@@ -44,7 +45,17 @@ export default function FitListInfinite() {
     return () => observer.disconnect()
   }, [hasNextPage, fetchNextPage])
 
-  if (status === "pending") return <div>로딩...</div>
+  if (status === "pending") return (
+    <div className = "mx-5 mt-3 flex flex-col gap-6 md:grid md:grid-cols-3">
+      <FitCardSkeleton />
+      <FitCardSkeleton />
+      <FitCardSkeleton />
+      <FitCardSkeleton />
+      <FitCardSkeleton />
+      <FitCardSkeleton />
+    </div>
+
+  )
   if (status === "error") return <div>에러 발생: {String(error)}</div>
 
   const items: postType[] =

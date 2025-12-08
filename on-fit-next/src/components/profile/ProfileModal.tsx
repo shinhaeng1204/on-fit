@@ -12,14 +12,12 @@ type ProfileModalProps = {
   open: boolean;
   onClose: () => void;
   profile: Profile | null;
-  setProfile: React.Dispatch<React.SetStateAction<Profile | null>>;
 };
 
 export default function ProfileModal({
    open,
    onClose,
    profile,
-   setProfile,
  }: ProfileModalProps) {
 
   if (!open || !profile) return null;
@@ -71,18 +69,6 @@ export default function ProfileModal({
       alert(prev ? "언팔로우 실패" : "팔로우 실패");
       return;
     }
-
-    // followers 배열 업데이트 (userId 그대로 사용)
-    setProfile((old) =>
-      old
-        ? {
-          ...old,
-          followers: prev
-            ? (old.followers ?? []).filter((uid) => uid !== userId)
-            : [...(old.followers ?? []), userId],
-        }
-        : old
-    );
 
     // 알림 등록
     if (!prev) {
