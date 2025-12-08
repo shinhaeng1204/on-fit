@@ -23,6 +23,12 @@ export default function ProfileModal({
   }: ProfileModalProps) {
   if (!open || !profileId) return null;
 
+export default function ProfileModal({
+  open,
+  onClose,
+  profile,
+  setProfile,
+}: ProfileModalProps) {
   const [userId, setUserId] = useState<string | null>(null);
 
   // 로그인 유저 로드

@@ -162,6 +162,7 @@ export default async function MyPage() {
     .select('room_id, joined_at')
     .eq('user_id', user.id)
     .is('left_at', null) // 나가지 않은 방만
+    .in('role', ['participant', 'member'])
     .order('joined_at', { ascending: false });
 
   const roomIds = participantRows?.map((row) => row.room_id) ?? [];
