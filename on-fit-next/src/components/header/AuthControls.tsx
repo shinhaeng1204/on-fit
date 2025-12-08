@@ -1,65 +1,64 @@
 'use client'
 
 import Link from "next/link"
-import Image from "next/image"
 import { useAuthSession } from "@/hooks/useAuthSession"
 import LogoutButton from "../../app/(view)/auth/components/LogoutButton"
 import { Button } from "../common/Button"
-import { LogOut, User } from "lucide-react"
+import { User } from "lucide-react"
+import useSWR from "swr"
 
-export default function AuthControls(){
-    const {session, ready} = useAuthSession()
+const fetcher = (url: string) =>
+  fetch(url, { credentials: "include" }).then(r => r.json())
 
-    //아직 세션 확인 중이면 스켈레톤/로딩
-    if(!ready){
-        return (
-            <div className="h-8 w-40 rounded-md bg-muted animate-pulse" />
-        )
-    }
+export default function AuthControls() {
 
-    //비로그인 상태
-    if(!session){
-        return (
-            <>
-                <div className="flex items-center gap-2">
-                    <Link href="/auth">
-                        <div className="hidden md:block">
-                            <Button size="sm" variant="outline">로그인</Button>
-                        </div>
-                        <User className="md:hidden block"/>
-                    </Link>
-                </div>
-                <div className="hidden md:block">
-                    <Link href="/auth?tab=signup">
-                        <Button size="sm" variant="hero">회원가입</Button>
-                    </Link>
-                </div>
-            </>
-        )
-    }
+  // 1️⃣ 훅은 반드시 컴포넌트 최상단에서 실행
+  const { session, ready } = useAuthSession()
 
-    //로그인 상태
-    const user = session.user
-    const name = 
-        (user.user_metadata?.name as string) ||
-        (user.user_metadata?.full_name as string) ||
-        user.email
-    const avatar = 
-        (user.user_metadata?.avatar_url as string) || 
-        (user.user_metadata?.picture as string) ||
-        ''
+  // 🔥 세션이 존재할 때만 프로필을 불러오게 해야 문제 없음
+  const userId = session?.user?.id ?? null
 
+  const { data: profileData } = useSWR(
+    userId ? "/api/profile/me" : null,  // <-- 조건은 여기서만!
+    fetcher
+  )
+
+  // 2️⃣ 아래부터 조건 렌더링 시작
+  if (!ready) {
+    return <div className="h-8 w-40 rounded-md bg-muted animate-pulse" />
+  }
+
+  if (!session) {
     return (
-    <div className="flex items-center gap-3">
+      <>
+        <div className="flex items-center gap-2">
+          <Link href="/auth">
+            <div className="hidden md:block">
+              <Button size="sm" variant="outline">로그인</Button>
+            </div>
+            <User className="md:hidden block" />
+          </Link>
+        </div>
+
+        <div className="hidden md:block">
+          <Link href="/auth?tab=signup">
+            <Button size="sm" variant="hero">회원가입</Button>
+          </Link>
+        </div>
+      </>
+    )
+  }
+
+  const nickname = profileData?.profile?.nickname
+
+  return (
+    <div className="flex items-center md:gap-3">
       <Link href="/mypage">
-        <span
-          className="flex-1 min-w-[3em] max-w-[16em] whitespace-nowrap truncate text-sm text-muted-foreground"
-          title={name}
-        >
-        {name}
+        <span className="truncate text-sm text-muted-foreground" title={nickname}>
+          {nickname}
         </span>
       </Link>
-      <LogoutButton/>
+      <LogoutButton />
     </div>
   )
 }

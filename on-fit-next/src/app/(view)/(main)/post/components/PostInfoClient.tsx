@@ -14,17 +14,13 @@ interface PostInfoClientType {
   roomId : string,
   title : string,
   targetUserId : string
-  user?: User | null
 }
 
-export default function PostInfoClient ({postId, roomId, title, targetUserId, user} : PostInfoClientType) {
+export default function PostInfoClient ({postId, roomId, title, targetUserId} : PostInfoClientType) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
 
   const handleJoinChat = async () => {
-    if(!user){
-      redirect(`/auth?next=/post/${postId}`);
-    }
     try {
       if (!roomId) {
         // 룸이 없으면 생성

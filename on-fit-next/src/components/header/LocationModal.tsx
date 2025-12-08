@@ -24,7 +24,6 @@ export default function LocationModal({ open, onClose, onSelect }: Props) {
 
       <ModalContent>
         <LocationViewer
-          appKey={process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY as string}
           onPick={({lat, lng, region}) => {
             onSelect?.(region, lat, lng)
           }}

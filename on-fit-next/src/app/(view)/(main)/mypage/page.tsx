@@ -6,7 +6,6 @@ import TrophySection from '@/app/(view)/(main)/mypage/components/TrophySection';
 import RegionSection from '@/app/(view)/(main)/mypage/components/RegionSection';
 import PreferredExercisesSection from '@/app/(view)/(main)/mypage/components/PreferredExercisesSection';
 import ReviewSection from '@/app/(view)/(main)/mypage/components/ReviewSection';
-import { redirect } from 'next/navigation';
 
 import { createSupabaseServerClient } from '@/lib/route-helpers';
 import { getMyPageData } from '@/app/(view)/(main)/mypage/_api/getMyPageData';
@@ -20,12 +19,10 @@ import { getBadgeLevelByCompletedCount } from '@/app/(view)/(main)/mypage/badges
 export default async function MyPage() {
   const supabase = await createSupabaseServerClient();
   const {
-    data: { user },
+    data
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect('/auth?next=/mypage');
-  }
+  const user = data.user!
 
   // ✅ 기본 마이페이지 데이터 (프로필 + 트로피)
   const { profile, badges } = await getMyPageData();
@@ -165,6 +162,7 @@ export default async function MyPage() {
     .select('room_id, joined_at')
     .eq('user_id', user.id)
     .is('left_at', null) // 나가지 않은 방만
+    .in('role', ['participant', 'member'])
     .order('joined_at', { ascending: false });
 
   const roomIds = participantRows?.map((row) => row.room_id) ?? [];
