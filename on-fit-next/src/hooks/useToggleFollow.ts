@@ -9,26 +9,28 @@ export function useToggleFollow(profileId: string, userId: string | null) {
         return fetch(`/api/profile-modal/follow?target=${profileId}`, {
           method: "DELETE",
         }).then((r) => r.json());
-      } else {
-        return fetch(`/api/profile-modal/follow`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ target: profileId }),
-        }).then((r) => r.json());
       }
+
+      return fetch(`/api/profile-modal/follow`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: profileId }),
+      }).then((r) => r.json());
     },
 
-    /** 🔥 Optimistic update */
     onMutate: async (prevIsFollowing) => {
       if (!userId) return;
 
-      // 프로필 캐시 pause
-      await queryClient.cancelQueries(["profile", profileId]);
+      // 🔥 정확한 v5 API
+      await queryClient.cancelQueries({ queryKey: ["profile", profileId] });
 
-      // 기존 데이터 가져오기
-      const prevData = queryClient.getQueryData(["profile", profileId]);
+      // 🔥 getQueryData는 배열만 받음
+      const prevData = queryClient.getQueryData<{
+        followers: string[];
+        isFollowing: boolean;
+      }>(["profile", profileId]);
 
-      // 낙관적 업데이트
+      // 👉 낙관적 업데이트
       queryClient.setQueryData(["profile", profileId], (old: any) => {
         if (!old) return old;
 
@@ -43,17 +45,16 @@ export function useToggleFollow(profileId: string, userId: string | null) {
       return { prevData };
     },
 
-    /** 실패 시 rollback */
-    onError: (err, _, context) => {
+    onError: (_err, _vars, context) => {
       if (context?.prevData) {
         queryClient.setQueryData(["profile", profileId], context.prevData);
       }
       alert("에러가 발생했습니다.");
     },
 
-    /** 성공 시 refetch */
     onSettled: () => {
-      queryClient.invalidateQueries(["profile", profileId]);
+      queryClient.invalidateQueries({ queryKey: ["profile", profileId] });
+      queryClient.invalidateQueries({ queryKey: ["post-host"] });
     },
   });
 }

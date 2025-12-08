@@ -85,39 +85,39 @@ export default function ProfileModal({
           {/* 프로필 영역 */}
           <div className="flex items-center gap-8">
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary/20 text-3xl">
-              {data.profile_image ? (
+              {data?.profile_image ? (
                 <img
-                  src={data.profile_image}
-                  alt={data.nickname}
+                  src={data?.profile_image}
+                  alt={data?.nickname}
                   className="h-full w-full rounded-full object-cover"
                 />
               ) : (
-                data.nickname.slice(0, 1)
+                data?.nickname.slice(0, 1)
               )}
             </div>
 
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3">
-                <p className="text-2xl font-semibold">{data.nickname}</p>
-                <Badge type={data.level ?? "브론즈"} />
+                <p className="text-2xl font-semibold">{data?.nickname}</p>
+                <Badge type={data?.level ?? "브론즈"} />
               </div>
 
               <div className="mt-2 flex gap-10 text-center">
                 <div>
                   <p className="text-2xl font-semibold text-primary">
-                    {data.stats.joinedCount}
+                    {data?.stats.joinedCount}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">참여</p>
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-primary">
-                    {data.stats.followerCount}
+                    {data?.stats.followerCount}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">팔로워</p>
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-primary">
-                    {data.stats.followingCount}
+                    {data?.stats.followingCount}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">팔로잉</p>
                 </div>
@@ -134,7 +134,7 @@ export default function ProfileModal({
                 <MapPin className="h-4 w-4 text-primary" />
                 <span>활동 지역</span>
               </div>
-              <p className="text-sm">{data.location}</p>
+              <p className="text-sm">{data?.location}</p>
             </div>
           </section>
 
@@ -146,12 +146,12 @@ export default function ProfileModal({
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
-              {data.sport_preference.length === 0 ? (
+              {data?.sport_preference.length === 0 ? (
                 <p className="text-xs text-muted-foreground">
                   아직 선호 종목을 설정하지 않았어요.
                 </p>
               ) : (
-                data.sport_preference.map((label: string) => (
+                data?.sport_preference.map((label: string) => (
                   <span
                     key={label}
                     className="rounded-full border border-border/70 bg-black/40 px-3 py-1 text-xs"
@@ -170,13 +170,13 @@ export default function ProfileModal({
               <span>획득 뱃지</span>
             </div>
 
-            {data.badges.length === 0 ? (
+            {data?.badges.length === 0 ? (
               <p className="text-xs text-muted-foreground">
                 아직 획득한 뱃지가 없어요.
               </p>
             ) : (
               <ul className="divide-y divide-border/60 text-sm">
-                {data.badges.map((badge: any) => (
+                {data?.badges.map((badge: any) => (
                   <li
                     key={badge.id}
                     className="flex items-center justify-between py-2"
