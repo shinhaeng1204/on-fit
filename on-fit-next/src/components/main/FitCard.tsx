@@ -105,12 +105,11 @@ export default function FitCard({
         </CardContent>
       </Card>
     </Link>
-     <ProfileModal
+     {/*<ProfileModal
         open={openProfileModal}
         onClose={() => setOpenProfileModal(false)}
-        profile={modalProfile}
-        setProfile={setModalProfile}
-      />
+        profileId={modalProfile?.id}
+      />*/}
       </>
   );
 }

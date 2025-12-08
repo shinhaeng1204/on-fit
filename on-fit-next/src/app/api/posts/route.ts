@@ -4,17 +4,34 @@ import { requireUserOr401, ok, fail, toISOFromKST, createSupabaseServerClient } 
 export const runtime = "nodejs";
 
 // GET: 공개 목록( RLS에서 to public using (true) 설정했으므로 익명도 조회 가능)
-export async function GET() {
-  const supabase = await createSupabaseServerClient();
+export async function GET(req: Request) {
+  const supabase = await createSupabaseServerClient()
+
+  const { searchParams } = new URL(req.url)
+  const page = Number(searchParams.get("page") ?? 0)
+  const limit = 10
+  const from = page * limit
+  const to = from + limit - 1
 
   const { data, error } = await supabase
     .from("posts")
-    .select("*")
-    .eq("is_deleted", false)
-    .order("created_at", { ascending: false });
+    .select(`
+      *,
+      profiles:author_id (
+        id,
+        nickname,
+        profile_image
+      )
+    `)
+    .order("created_at", { ascending: false })
+    .range(from, to)
 
-  if (error) return fail(error.message, 500);
-  return ok({ items: data });
+  if (error) return Response.json({ error: error.message }, { status: 500 })
+
+  return Response.json({
+    items: data,
+    nextPage: data.length < limit ? null : page + 1,
+  })
 }
 
 // POST: 로그인 필요 + RLS(with check author_id = auth.uid()) 준수

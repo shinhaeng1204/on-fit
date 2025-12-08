@@ -56,7 +56,7 @@ export default function ChatParticipants({ roomId, onClose }: ChatParticipantsPr
                       setSelectedProfile(p.profiles);
                       setOpen(true)
                     }}>
-                <ProfileImage src={p.profiles?.profile_image} profileName={p.profiles?.nickname}/>
+                <ProfileImage src={p.profiles?.profile_image ?? ""} profileName={p.profiles?.nickname}/>
                 <div className="flex-1">
                   <div className="font-medium">{p.profiles?.nickname ?? "알 수 없음"}</div>
                   <div className="text-xs text-muted-foreground">
@@ -71,8 +71,7 @@ export default function ChatParticipants({ roomId, onClose }: ChatParticipantsPr
         <ProfileModal
           open={open}
           onClose={() => setOpen(false)}
-          profile={selectedProfile}
-          setProfile={setSelectedProfile}
+          profileId={selectedProfile?.id as string}
         />
       </motion.div>
     </>

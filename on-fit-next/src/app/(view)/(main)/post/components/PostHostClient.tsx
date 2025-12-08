@@ -14,7 +14,6 @@ interface PostHostClientProps {
 
 export default function PostHostClient({ host }: PostHostClientProps) {
   const [open, setOpen] = useState(false);
-  const [profile, setProfile] = useState<Profile|null>(host);
 
   return (
     <>
@@ -31,12 +30,12 @@ export default function PostHostClient({ host }: PostHostClientProps) {
               className="flex items-center gap-3 text-left"
               onClick={() => setOpen(true)}
             >
-              <ProfileImage profileName={profile?.nickname} />
+              <ProfileImage profileName={host?.nickname} />
               <div>
-                <p className="font-semibold">{profile?.nickname}</p>
+                <p className="font-semibold">{host?.nickname}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  참여 {profile?.stats?.joinedCount ?? 0}회 · 팔로워{" "}
-                  {profile?.followers?.length ?? 0}명
+                  참여 {host?.stats?.joinedCount ?? 0}회 · 팔로워{" "}
+                  {host?.followers?.length ?? 0}명
                 </p>
               </div>
             </button>
@@ -58,8 +57,7 @@ export default function PostHostClient({ host }: PostHostClientProps) {
       <ProfileModal
         open={open}
         onClose={() => setOpen(false)}
-        profile={profile}
-        setProfile={setProfile}
+        profileId={host.id}
       />
     </>
   );
