@@ -27,7 +27,7 @@ export default async function AuthPage({ searchParams }: Props) {
     <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
       <div className="w-full max-w-md space-y-4">
         <Link
-          href="/on-fit/on-fit-next/public"
+          href="/"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
         >
           <span aria-hidden>←</span>
