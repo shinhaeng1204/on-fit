@@ -214,7 +214,6 @@ export default function FitList({ items }: Props) {
       return pass
     })
 
-    
     return result
   }, [items, filter, myLat, myLng, searchTriggered])
 

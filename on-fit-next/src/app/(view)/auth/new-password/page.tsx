@@ -62,7 +62,7 @@ export default async function NewPasswordPage({ searchParams }: PageProps) {
             className="w-fit -ml-2 mb-2 inline-flex items-center gap-2 text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>홈으로 돌아가기</span>
+            <span>로그인으로 돌아가기</span>
           </Link>
           <CardTitle className="text-2xl font-bold">새 비밀번호 설정</CardTitle>
           <CardDescription>

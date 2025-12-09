@@ -130,7 +130,7 @@ export default function CalendarClientPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-sm border-b border-border">
+      {/* <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <Button
@@ -151,7 +151,7 @@ export default function CalendarClientPage() {
             <div className="w-8 sm:w-20" />
           </div>
         </div>
-      </header>
+      </header> */}
 
       {/* MAIN */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-6xl">
@@ -332,10 +332,11 @@ export default function CalendarClientPage() {
               {selectedDate && getEventsForDay(selectedDate).length > 0 ? (
                 <div className="space-y-2 sm:space-y-3">
                   {getEventsForDay(selectedDate).map((event) => (
+                    <div key={event.id}>
                     <Link
                       href={`/post/${event.id}`}
                       key={event.id}
-                      onClick={() => setIsDialogOpen(false)}
+                      onClick={() => setIsDialogOpen(true)}
                     >
                       <div className="p-3 sm:p-4 bg-gradient-to-r from-accent/10 to-primary/5 rounded-lg border border-transparent hover:border-accent transition-all">
                         <p className="font-semibold mb-1 text-sm sm:text-lg">{event.title}</p>
@@ -348,6 +349,7 @@ export default function CalendarClientPage() {
                         </div>
                       </div>
                     </Link>
+                    </div>
                   ))}
                 </div>
               ) : (
