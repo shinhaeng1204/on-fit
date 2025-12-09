@@ -40,22 +40,32 @@ export default function FitCard({
     <>
     <Link href={`/post/${id}`}>
       <Card className="group hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary cursor-pointer">
-        <CardHeader className="relative flex-row gap-2">
-          <div className="flex items-center rounded-lg bg-primary/10 p-2">
-            <DumbbellIcon className="h-5 text-primary" />
-          </div>
-          <div className="flex flex-col">
-            <RecruitStatus
-              type={status}
-              text={status}
-              className="absolute right-5"
-            />
-            <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
-              {title}
-            </h3>
-            <span className="text-sm text-muted-foreground">{sport}</span>
-          </div>
-        </CardHeader>
+        <CardHeader className="flex flex-row gap-2">
+  {/* 아이콘 */}
+  <div className="flex items-center rounded-lg bg-primary/10 p-2">
+    <DumbbellIcon className="h-5 text-primary" />
+  </div>
+
+  {/* 오른쪽 전체 영역 */}
+  <div className="flex-1 min-w-0">
+    {/* 제목 + 상태 뱃지를 한 줄로 */}
+    <div className="flex items-start gap-2">
+      {/* 제목 + 종목 텍스트 영역 */}
+      <div className="flex-1 min-w-0">
+        <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
+          {title}
+        </h3>
+        <span className="text-sm text-muted-foreground">{sport}</span>
+      </div>
+      <RecruitStatus
+        type={status}
+        text={status}
+        className="shrink-0"
+      />
+    </div>
+  </div>
+</CardHeader>
+
 
         <CardContent className="flex flex-col gap-2">
           <div className="flex items-center gap-2">

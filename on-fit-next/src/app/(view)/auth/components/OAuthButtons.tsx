@@ -2,6 +2,7 @@
 
 import { sbClient } from "@/lib/supabase-client"
 import { Button } from "../../../../components/common/Button"
+import Image from "next/image"
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? (typeof window !== 'undefined' ? window.location.origin: "")
 
@@ -18,6 +19,15 @@ export function KakaoLoginButton({ next, className }: { next: string; className?
 
     return (
         <Button type ='button' className={className} variant="outline" onClick={onClick}>
+            <div className="absolute left-3">
+            <Image
+                src="/kakao.png"
+                alt="kakao"
+                width={20}
+                height={20}
+                className="rounded-sm object-contain"
+                />
+            </div>
             카카오 계정으로 로그인
         </Button>
     )
@@ -36,6 +46,15 @@ export function GoogleLoginButton({ next, className }: { next: string; className
 
     return (
         <Button type="button" className={className} variant="outline" onClick={onClick}>
+            <div className="absolute left-3">
+            <Image
+                src="/google.svg"
+                alt="kakao"
+                width={20}
+                height={20}
+                className="rounded-sm object-contain"
+                />
+            </div>
             구글 계정으로 로그인
         </Button>
     )

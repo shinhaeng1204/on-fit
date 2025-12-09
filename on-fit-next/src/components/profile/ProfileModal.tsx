@@ -4,11 +4,12 @@ import { X, MapPin, Calendar, Award } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/axios";
-import {useEffect, useState} from "react";
-import {sbClient} from "@/lib/supabase-client";
-import {useToggleFollow} from "@/hooks/useToggleFollow";
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/axios';
+import { useEffect, useState } from 'react';
+import { sbClient } from '@/lib/supabase-client';
+import { useToggleFollow } from '@/hooks/useToggleFollow';
+import Image from 'next/image';
 
 type ProfileModalProps = {
   open: boolean;
@@ -16,60 +17,91 @@ type ProfileModalProps = {
   profileId: string;
 };
 
-export default function ProfileModal({
-    open,
-    onClose,
-    profileId,
-  }: ProfileModalProps) {
-  if (!open || !profileId) return null;
+type BadgeItem = {
+  id: string;
+  name: string;
+  description?: string;
+};
 
+type ProfileModalData = {
+  profile_image: string | null;
+  nickname: string;
+  level: '초심자' | '브론즈' | '실버' | '골드' | '플레티넘';
+  followers: string[];
+  sport_preference: string[];
+  badges: BadgeItem[];
+  stats: {
+    joinedCount: number;
+    followerCount: number;
+    followingCount: number;
+  };
+  location?: string | null;
+};
+
+export default function ProfileModal({
+  open,
+  onClose,
+  profileId,
+}: ProfileModalProps) {
+  // ✅ 훅은 항상 컴포넌트 최상단에서 **무조건** 호출
   const [userId, setUserId] = useState<string | null>(null);
 
   // 로그인 유저 로드
   useEffect(() => {
-    sbClient.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+    sbClient.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id ?? null);
+    });
   }, []);
 
-  // 프로필 쿼리 (API로 가져온다고 가정)
-  const { data } = useQuery({
-    queryKey: ["profile", profileId],
+  // 프로필 쿼리
+  const { data } = useQuery<ProfileModalData>({
+    queryKey: ['profile', profileId],
     queryFn: async () => {
-      const res = await api.get(`/api/profile-modal/${profileId}`)
-      return res.data
+      const res = await api.get(`/api/profile-modal/${profileId}`);
+      return res.data;
     },
+    // 모달이 열려 있고, profileId가 있을 때만 요청
+    enabled: open && !!profileId,
   });
 
   const toggleFollow = useToggleFollow(profileId, userId);
 
-  const isFollowing = userId && data?.followers?.includes(userId);
+  const isFollowing =
+    !!userId && !!data?.followers?.includes(userId);
 
   const handleToggleFollow = () => {
-    toggleFollow.mutate(isFollowing!);
+    if (!userId) return;
+    toggleFollow.mutate(isFollowing);
   };
+
+  // ✅ 훅들을 다 선언한 "후에" early return
+  if (!open || !profileId) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
       <div className="relative w-full max-w-md">
-        <Card
-          className="relative max-h-[90vh] overflow-y-auto rounded-3xl border border-border bg-[#111519]/95 px-8 pb-10 pt-6 shadow-2xl backdrop-blur">
-
+        <Card className="relative max-h-[90vh] overflow-y-auto rounded-3xl border border-border bg-[#111519]/95 px-8 pb-10 pt-6 shadow-2xl backdrop-blur">
           {/* 헤더 */}
           <div className="mb-6 flex items-center justify-between">
-            <p className="text-sm font-semibold text-muted-foreground">프로필</p>
+            <p className="text-sm font-semibold text-muted-foreground">
+              프로필
+            </p>
 
             <div className="flex items-center gap-3">
               {profileId && (
                 <Button
-                  variant={isFollowing ? "outline" : "sport"}
+                  variant={isFollowing ? 'outline' : 'sport'}
                   size="sm"
                   disabled={toggleFollow.isPending}
                   onClick={handleToggleFollow}
                 >
                   {toggleFollow.isPending
-                    ? "처리 중..."
+                    ? '처리 중...'
                     : isFollowing
-                      ? "팔로우 취소"
-                      : "팔로우"}
+                    ? '팔로우 취소'
+                    : '팔로우'}
                 </Button>
               )}
 
@@ -89,13 +121,14 @@ export default function ProfileModal({
             <div
               className="flex-shrink-0 h-24 w-24 flex items-center justify-center rounded-full bg-primary/20 text-3xl">
               {data?.profile_image ? (
-                <img
-                  src={data?.profile_image}
-                  alt={data?.nickname}
-                  className="h-full w-full rounded-full object-cover"
+                <Image
+                  src={data.profile_image}
+                  alt={data.nickname}
+                  fill
+                  className="object-cover"
                 />
               ) : (
-                data?.nickname.slice(0, 1)
+                data?.nickname?.slice(0, 1)
               )}
             </div>
 
@@ -142,7 +175,7 @@ export default function ProfileModal({
                 <MapPin className="h-4 w-4 text-primary"/>
                 <span>활동 지역</span>
               </div>
-              <p className="text-sm">{data?.location}</p>
+              <p className="text-sm">{data?.location ?? '미설정'}</p>
             </div>
           </section>
 
@@ -154,12 +187,12 @@ export default function ProfileModal({
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
-              {data?.sport_preference.length === 0 ? (
+              {!data?.sport_preference?.length ? (
                 <p className="text-xs text-muted-foreground">
                   아직 선호 종목을 설정하지 않았어요.
                 </p>
               ) : (
-                data?.sport_preference.map((label: string) => (
+                data.sport_preference.map((label) => (
                   <span
                     key={label}
                     className="rounded-full border border-border/70 bg-black/40 px-3 py-1 text-xs"
@@ -178,13 +211,13 @@ export default function ProfileModal({
               <span>획득 뱃지</span>
             </div>
 
-            {data?.badges.length === 0 ? (
+            {!data?.badges?.length ? (
               <p className="text-xs text-muted-foreground">
                 아직 획득한 뱃지가 없어요.
               </p>
             ) : (
               <ul className="divide-y divide-border/60 text-sm">
-                {data?.badges.map((badge: any) => (
+                {data.badges.map((badge) => (
                   <li
                     key={badge.id}
                     className="flex items-center justify-between py-2"
