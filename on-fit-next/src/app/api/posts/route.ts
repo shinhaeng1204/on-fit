@@ -23,6 +23,7 @@ export async function GET(req: Request) {
         profile_image
       )
     `)
+    .eq("is_deleted", false)
     .order("created_at", { ascending: false })
     .range(from, to)
 
