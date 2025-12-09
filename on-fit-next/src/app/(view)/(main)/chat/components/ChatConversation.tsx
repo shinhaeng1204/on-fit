@@ -7,64 +7,69 @@ import { Message, Profile } from "@/types/chat";
 import { toKstTime } from "@/lib/dateFormatter";
 import ProfileImage from "@/components/common/ProfileImage";
 import {Button} from "@/components/common/Button";
+import {useQuery} from "@tanstack/react-query";
 
 interface ChatConversationProps {
   roomId : string
 }
 
+interface massageProps {
+  id: string
+  sender_id : string
+  profile_image : string
+  nickname : string
+  content : string
+  created_at: string
+}
+
 export default function ChatConversation({roomId} : ChatConversationProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [userId, setUserId] = useState<string>('')
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // React Query로 메시지 및 프로필 데이터 가져오기
+  const { data, refetch } = useQuery({
+    queryKey: ["chat", roomId],
+    queryFn: async () => {
+      const res = await api.get(`/api/message?roomId=${roomId}`);
+      return res.data;
+    },
+    enabled: !!roomId,
+  });
+
+  const { data: userId, isLoading: userLoading } = useQuery({
+    queryKey: ["me"],
+    queryFn: async () => {
+      const res = await api.get(`/api/auth/me`);
+      return res.data.user.id
+    },
+  });
+
+  const messages = data?.messages ?? [];
+  const profiles = data?.profiles ?? [];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // 초기 데이터 불러오기 및 구독
+  // 실시간 구독
   useEffect(() => {
     if (!roomId) return;
 
-    const fetchMessages = async () => {
-      const res = await api.get(`/api/message?roomId=${roomId}`);
-      setMessages(res.data.messages);
-      setProfiles(res.data.profiles);
-
-      // 초기 메시지 불러온 직후 스크롤
-      setTimeout(scrollToBottom, 0);
-    };
-
-    fetchMessages();
-
-    const fetchUser = async () => {
-      const res = await api.get(`/api/auth/me`);
-      setUserId(res.data.user.id)
-    }
-
-    fetchUser()
-
-    const unsubscribe = subscribeMessages(roomId, (msg) => {
-      setMessages((prev) => [...prev, msg]);
+    const unsubscribe = subscribeMessages(roomId, (msg: Message) => {
+      refetch(); // 새 메시지가 오면 React Query refetch
     });
 
-    // 여기가 핵심: cleanup은 동기 함수여야 함
     return () => {
-      if (unsubscribe) {
-        // unsubscribe가 Promise를 리턴하더라도
-        // cleanup 함수는 아무것도 리턴하지 않도록 한다.
-        void unsubscribe();
-      }
+      if (unsubscribe) void unsubscribe();
     };
-  }, [roomId]);
+  }, [roomId, refetch]);
 
-  // 메세지 변경될때마다 자동으로 스크롤 아래 변경
+  // 메시지 변경될 때마다 스크롤
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const messagesWithUsername = messages.map((msg) => {
-    const profile = profiles.find((p) => p.id === msg.sender_id);
+  const messagesWithUsername = messages.map((msg: Message) => {
+    const profile = profiles.find((p : Profile) => p.id === msg.sender_id);
     return {
       ...msg,
       nickname: profile?.nickname ?? "알 수 없음",
@@ -72,13 +77,14 @@ export default function ChatConversation({roomId} : ChatConversationProps) {
     };
   });
 
+
   return (
     <>
       {/* 채팅방 대화 내용 */}
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-4 space-y-4">
           {/* 대화 */}
-          {messagesWithUsername.map((msg) => {
+          {messagesWithUsername.map((msg : massageProps) => {
             const isMine = msg.sender_id === userId
 
             return (

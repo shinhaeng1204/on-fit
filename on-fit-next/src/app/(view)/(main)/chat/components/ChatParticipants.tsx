@@ -2,36 +2,32 @@
 
 import { motion } from "framer-motion";
 import {X} from "lucide-react";
-import {useEffect, useState} from "react";
+import {JSX, useEffect, useState} from "react";
 import {api} from "@/lib/axios";
 import {Profile} from "@/types/profilemodal";
 import ProfileImage from "@/components/common/ProfileImage";
 import Badge from "@/components/common/Badge";
 import {Button} from "@/components/common/Button";
 import ProfileModal from "@/components/profile/ProfileModal";
+import {useQuery} from "@tanstack/react-query";
 
 type ChatParticipantsProps = {
   roomId: string;
   onClose: () => void;
 };
 
-interface Participants {
-  role: string
-  profiles: Profile
-}
-
 export default function ChatParticipants({ roomId, onClose }: ChatParticipantsProps) {
-  const [participants, setParticipants] = useState<Participants[]>([])
   const [open, setOpen] = useState<boolean>(false)
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
 
-  useEffect(() => {
-    const fetchParticipants = async () => {
+  const { data: participants = [], isLoading, isError } = useQuery({
+    queryKey: ["chatParticipants", roomId],
+    queryFn: async () => {
       const res = await api.get(`/api/chat/rooms/participants?roomId=${roomId}`);
-      setParticipants(res.data.participants);
-    };
-    fetchParticipants();
-  }, [roomId]);
+      return res.data.participants;
+    },
+    enabled: !!roomId,
+  });
 
   return (
     <>
@@ -48,7 +44,7 @@ export default function ChatParticipants({ roomId, onClose }: ChatParticipantsPr
         </div>
 
         <div className="flex flex-col gap-4">
-          {participants.map(p => (
+          {participants.map((p: { profiles: Profile; role: string }): JSX.Element => (
             <button type="button"
                     key={p.profiles.id}
                     className="flex justify-start items-center gap-3 p-3 rounded-lg bg-card border border-border hover:bg-accent/50 transition-colors cursor-pointer"
