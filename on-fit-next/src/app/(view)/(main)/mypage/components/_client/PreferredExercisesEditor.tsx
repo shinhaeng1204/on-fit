@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { Button } from '@/components/common/Button';
 import { updatePreferencesArray } from '@/app/(view)/(main)/mypage/actions';
-import { X, Pencil, Check } from 'lucide-react'; // 👈 Plus 제거
+import { X, Pencil, Check } from 'lucide-react';
 import { useToast } from '@/app/(view)/(main)/mypage/components/Toast';
 
 type Props = {
   initial: string[];
-  options: string[]; // 👈 Supabase에서 내려준 운동 리스트
+  options: string[]; // Supabase에서 내려준 운동 리스트
 };
 
 export default function PreferredExercisesEditor({ initial, options }: Props) {
@@ -16,7 +16,7 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
   const [editing, setEditing] = useState(false);
   const [tags, setTags] = useState<string[]>(initial);
   const [draft, setDraft] = useState<string[]>(initial);
-  const [saving, setSaving] = useState(false); // 👈 selected 제거
+  const [saving, setSaving] = useState(false);
 
   const addTag = (raw: string) => {
     const v = raw.trim();
@@ -55,7 +55,13 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
   };
 
   // pill UI 공통
-  const Pill = ({ children, onRemove }: { children: React.ReactNode; onRemove?: () => void }) => (
+  const Pill = ({
+    children,
+    onRemove,
+  }: {
+    children: React.ReactNode;
+    onRemove?: () => void;
+  }) => (
     <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card/50 px-3 py-1 text-sm">
       {children}
       {onRemove && (
@@ -74,7 +80,9 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
   // 이미 선택된 태그는 드롭다운에서 숨기기
   const availableOptions = options.filter((opt) => !draft.includes(opt));
 
-  // 보기 모드
+  // ─────────────────────────────
+  // 보기 모드 (원래 버전으로 되돌림)
+  // ─────────────────────────────
   if (!editing) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -82,10 +90,18 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
           {tags.length ? (
             tags.map((t) => <Pill key={t}>{t}</Pill>)
           ) : (
-            <span className="text-sm text-muted-foreground">선호 운동 정보 없음</span>
+            <span className="text-sm text-muted-foreground">
+              선호 운동 정보 없음
+            </span>
           )}
         </div>
-        <Button type="button" variant="ghost" onClick={startEdit} className="p-1.5 gap-0">
+
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={startEdit}
+          className="p-1.5 gap-0"
+        >
           <Pencil className="h-4 w-4" />
         </Button>
       </div>
@@ -97,12 +113,13 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
     const value = e.target.value;
     if (!value) return;
     addTag(value);
-    // value를 ""로 고정해두기 때문에 선택 후 자동으로 placeholder로 돌아감
   };
 
+  // ─────────────────────────────
   // 편집 모드
+  // ─────────────────────────────
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3 text-sm">
       {/* 선택된 태그들 */}
       <div className="flex flex-wrap gap-2">
         {draft.map((t) => (
@@ -115,7 +132,7 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
       {/* 드롭다운 + 저장/취소 */}
       <div className="flex flex-wrap items-center gap-2">
         <select
-          value="" // 항상 placeholder 상태
+          value=""
           onChange={handleSelectChange}
           className="flex-1 min-w-0 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
         >
@@ -136,7 +153,7 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
           disabled={saving}
           className="shrink-0"
         >
-          <Check className="h-4 w-4 mr-1" />
+          <Check className="mr-1 h-4 w-4" />
         </Button>
 
         {/* 취소 버튼 */}
@@ -147,7 +164,7 @@ export default function PreferredExercisesEditor({ initial, options }: Props) {
           onClick={cancelEdit}
           className="shrink-0"
         >
-          <X className="h-4 w-4 mr-1" />
+          <X className="mr-1 h-4 w-4" />
         </Button>
       </div>
     </div>
