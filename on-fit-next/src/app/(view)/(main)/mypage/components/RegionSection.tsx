@@ -17,8 +17,16 @@ export default function RegionSection({ region, className }: Props) {
         </CardTitle>
       </CardHeader>
 
-      <CardContent className={cn('pb-5', className)}>
-        <div className="rounded-lg bg-secondary/30 p-4">
+      {/* ⭐ 수정: 
+        1. flex-1: 남은 공간 꽉 채움 
+        2. h-full, flex-col: 높이 상속 
+      */}
+      <CardContent className={cn('flex h-full flex-1 flex-col pb-5', className)}>
+        {/* ⭐ 수정: 
+          회색 박스가 부모(CardContent)를 꽉 채우도록 flex-1 설정
+          내부 아이템 수직 중앙 정렬 (justify-center)
+        */}
+        <div className="flex flex-1 flex-col justify-center rounded-lg bg-secondary/30 p-4">
           {region ? (
             <div className="flex items-center gap-2 text-sm">
               <MapPin className="h-4 w-4 opacity-70" />

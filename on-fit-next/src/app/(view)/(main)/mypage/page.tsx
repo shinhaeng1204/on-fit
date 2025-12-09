@@ -18,11 +18,8 @@ import { getBadgeLevelByCompletedCount } from '@/app/(view)/(main)/mypage/badges
 
 export default async function MyPage() {
   const supabase = await createSupabaseServerClient();
-  const {
-    data
-  } = await supabase.auth.getUser();
-
-  const user = data.user!
+  const { data } = await supabase.auth.getUser();
+  const user = data.user!;
 
   // ✅ 기본 마이페이지 데이터 (프로필 + 트로피)
   const { profile, badges } = await getMyPageData();
@@ -41,10 +38,7 @@ export default async function MyPage() {
   let followersList: FollowUser[] = [];
   let followingsList: FollowUser[] = [];
 
-  // 팔로워 + 팔로잉 전체 유저 id (중복 제거)
   const allTargetIds = Array.from(new Set([...followerIds, ...followingIds]));
-
-  // user_id -> completedCount 맵
   const completedCountMap = new Map<string, number>();
 
   if (allTargetIds.length > 0) {
@@ -123,8 +117,6 @@ export default async function MyPage() {
   // ===========================
   // 2) 통계 값들 (진행중 / 완료)
   // ===========================
-
-  // ✅ 내 완료된 모임 수: View에서 가져오기
   const { data: myCompletedRow, error: myCompletedError } = await supabase
     .from('v_user_completed_participation_count')
     .select('participation_count')
@@ -156,12 +148,12 @@ export default async function MyPage() {
       status: p.status === '모집중' ? 'open' : 'close',
     })) ?? [];
 
-  // ✅ 내가 참여 중인 모임 (나간 방은 left_at으로 제외)
+  // ✅ 내가 참여 중인 모임
   const { data: participantRows } = await supabase
     .from('participants')
     .select('room_id, joined_at')
     .eq('user_id', user.id)
-    .is('left_at', null) // 나가지 않은 방만
+    .is('left_at', null)
     .in('role', ['participant', 'member'])
     .order('joined_at', { ascending: false });
 
@@ -188,7 +180,6 @@ export default async function MyPage() {
       })) ?? [];
   }
 
-  // ✅ 진행중 모임 수: 참여 중 목록에서 open 상태만 카운트
   const activeCount = participated.filter(
     (item) => item.status === 'open',
   ).length;
@@ -205,9 +196,16 @@ export default async function MyPage() {
   // ===========================
   const reviews = await getMyReviews(user.id);
 
+  // ===========================
+  // 4) 렌더링 (모바일 + 데스크톱 대응)
+  // ===========================
   return (
-    <div className="space-y-6">
-      <Card className="p-0">
+    <div className="flex flex-col gap-6">
+      {/* 상단 프로필은 항상 전체 폭 사용 */}
+      {/* ⭐ 수정됨: p-0과 flex justify-center 클래스를 제거했습니다. ⭐
+          Card의 기본 패딩이 적용되어 좌우 여백이 생깁니다.
+      */}
+      <Card> 
         <ProfileHeader
           name={name}
           avatarUrl={avatarUrl}
@@ -217,29 +215,43 @@ export default async function MyPage() {
         />
       </Card>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card className="p-0">
-          <RegionSection region={region} />
-        </Card>
-        <Card className="p-0">
-          <PreferredExercisesSection exercises={exercises} />
-        </Card>
+      {/* 아래부터는 lg 이상에서 2컬럼 레이아웃 */}
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[2fr,3fr] lg:items-start">
+        {/* 왼쪽 컬럼: 지역 + 선호운동 + 트로피 */}
+        <section className="flex flex-col gap-6">
+          {/* 지역 & 선호운동: md 이상에서는 2열, 모바일에서는 1열 */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* 이 Card는 여전히 p-0이 필요 없으므로 제거하고, 높이 맞춤을 위해 flex h-full flex-col 유지 */}
+            <Card className="flex h-full flex-col">
+              <RegionSection region={region} />
+            </Card>
+            <Card className="flex h-full flex-col">
+              <PreferredExercisesSection exercises={exercises} />
+            </Card>
+          </div>
+
+          <Card className="p-0">
+            <TrophySection
+              titleIcon={<Trophy className="h-5 w-5 text-primary" />}
+              badges={badges}
+            />
+          </Card>
+        </section>
+
+        {/* 오른쪽 컬럼: 활동내역 + 받은 후기 */}
+        <section className="flex flex-col gap-6">
+          <Card className="p-0">
+            <ActivityTabsContainer
+              participated={participated}
+              created={created}
+            />
+          </Card>
+
+          <Card className="p-0">
+            <ReviewSection reviews={reviews} />
+          </Card>
+        </section>
       </div>
-
-      <Card className="p-0">
-        <TrophySection
-          titleIcon={<Trophy className="h-5 w-5 text-primary" />}
-          badges={badges}
-        />
-      </Card>
-
-      <Card className="p-0">
-        <ActivityTabsContainer participated={participated} created={created} />
-      </Card>
-
-      <Card className="p-0">
-        <ReviewSection reviews={reviews} />
-      </Card>
     </div>
   );
 }
