@@ -131,7 +131,7 @@ export default function PostInfo({id} : {id:string}) {
           </div>
 
           {/* 참여, 신고 */}
-          <PostInfoClient postId={id} roomId={data.room_id} title={data.title} targetUserId={data.author_id}/>
+          <PostInfoClient postId={id} roomId={data.room_id} title={data.title} hostId={data.author_id}/>
         </CardContent>
       </Card>
     </>
