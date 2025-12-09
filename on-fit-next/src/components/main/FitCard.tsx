@@ -2,13 +2,12 @@
 import { Calendar, DumbbellIcon, MapPin, Users } from "lucide-react";
 import { Card, CardContent, CardHeader } from "../common/Card";
 import Badge from "../common/Badge";
-import { Button } from "../common/Button";
 import Link from "next/link";
 import RecruitStatus from "@/components/common/RecruitStatus";
 import React, { useState } from "react";
 import { postType } from "@/types/post";
-import { Profile } from "@/types/profilemodal";
 import ProfileModal from "../profile/ProfileModal";
+import {toKstDate, toKstTime} from "@/lib/dateFormatter";
 
 export default function FitCard({
   id,
@@ -16,23 +15,19 @@ export default function FitCard({
   status,
   sport,
   location,
-  date,
-  time,
+  date_time,
+  author_id,
   current_participants,
   max_participants,
   level,
-  profile,
+  profiles,
 }: postType) {
   // 주최자 닉네임만 사용
   const hostName =
-    (profile as any)?.nickname ??
+    (profiles as any)?.nickname ??
     "운동 메이트"; // Profile 타입에 nickname 있으면 any 대신 정확한 타입으로 바꿔도 됨
 
   const [openProfileModal, setOpenProfileModal] = useState(false);
-
-  const [modalProfile, setModalProfile] = useState<Profile | null>(
-    (profile as Profile) ?? null,
-  );
 
   const handleHostClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     // 카드 전체가 Link라서, 이동 막아줘야 함
@@ -40,7 +35,6 @@ export default function FitCard({
     e.stopPropagation();
     setOpenProfileModal(true);
   };
-
 
   return (
     <>
@@ -74,7 +68,7 @@ export default function FitCard({
           <div className="flex items-center gap-2">
             <Calendar className="text-muted-foreground w-4 h-4" />
             <span className="text-muted-foreground text-sm font-semibold">
-              {date} {time}
+              {toKstDate(date_time)} {toKstTime(date_time)}
             </span>
           </div>
 
@@ -89,27 +83,25 @@ export default function FitCard({
 
           <div className="flex mt-2 justify-between items-center">
             <Badge type={level} className="max-h-6" />
+
             <div className="flex items-center gap-2">
-              <h3 className="text-sm text-muted-foreground">
-              주최:
-            </h3>
-            <button
+              <button
                 type="button"
                 onClick={handleHostClick}
-                className="text-sm text-muted-foreground hover:text-primary "
+                className="text-sm text-muted-foreground hover:text-primary cursor-pointer"
               >
-              {hostName}
+                  주최: {hostName}
               </button>
             </div>
           </div>
         </CardContent>
       </Card>
     </Link>
-     {/*<ProfileModal
+      <ProfileModal
         open={openProfileModal}
         onClose={() => setOpenProfileModal(false)}
-        profileId={modalProfile?.id}
-      />*/}
+        profileId={author_id}
+      />
       </>
   );
 }
