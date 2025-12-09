@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import {X} from "lucide-react";
-import {useEffect, useState} from "react";
+import {JSX, useEffect, useState} from "react";
 import {api} from "@/lib/axios";
 import {Profile} from "@/types/profilemodal";
 import ProfileImage from "@/components/common/ProfileImage";
@@ -44,7 +44,7 @@ export default function ChatParticipants({ roomId, onClose }: ChatParticipantsPr
         </div>
 
         <div className="flex flex-col gap-4">
-          {participants.map(p => (
+          {participants.map((p: { profiles: Profile; role: string }): JSX.Element => (
             <button type="button"
                     key={p.profiles.id}
                     className="flex justify-start items-center gap-3 p-3 rounded-lg bg-card border border-border hover:bg-accent/50 transition-colors cursor-pointer"

@@ -22,6 +22,13 @@ type Props = {
   className?: string;
 };
 
+export interface ProfileResponse {
+  profile: {
+    nickname: string;
+    profile_image?: string | null;
+  };
+}
+
 export default function ProfileHeader({
   name,
   avatarUrl,
@@ -73,7 +80,7 @@ export default function ProfileHeader({
     }
 
     // 낙관적 업데이트
-    const prevProfile = queryClient.getQueryData(["profile", userId]);
+    const prevProfile = queryClient.getQueryData<ProfileResponse>(["profile", userId]);
 
     setDisplayName(next);
 
