@@ -80,6 +80,11 @@ export default function PostInfoClient ({postId, roomId, title, targetUserId} : 
         err.message;
       console.error("채팅방 참여 실패", message);
 
+      if(status === 401) {
+        router.push('/auth')
+        return;
+      }
+
       // 정원 초과 처리(409)
       if (status === 409) {
         alert("모집 인원이 이미 가득 찼습니다.");

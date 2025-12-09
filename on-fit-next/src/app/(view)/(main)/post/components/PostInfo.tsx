@@ -33,21 +33,29 @@ export default function PostInfo({id} : {id:string}) {
     <>
       <Card className="mb-6">
         <CardHeader>
-          {/* 제목/설명/아이콘 */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-primary/10">
-                <SportIcon className="h-6 w-6 text-primary" />
+          <div className="flex items-start justify-between mb-4 w-full">
+            {/* 왼쪽: 아이콘 + 제목 영역 */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="p-3 rounded-lg bg-primary/10 flex-shrink-0">
+                <SportIcon className="h-6 w-6 text-primary"/>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold mb-1">{data?.title ?? ""}</h1>
-                <p className="text-muted-foreground">{data?.sport ?? ""}</p>
+
+              {/* 제목/스포츠 */}
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold mb-1 truncate">
+                  {data?.title ?? ""}
+                </h1>
+                <p className="text-muted-foreground whitespace-pre-wrap break-words">
+                  {data?.sport ?? ""}
+                </p>
               </div>
             </div>
 
-            {/* 모집 상태 */}
+            {/* 오른쪽: 모집 상태 */}
             {data?.status && (
-              <RecruitStatus type={data.status} text={data.status} />
+              <div className="flex-shrink-0 ml-3">
+                <RecruitStatus type={data.status} text={data.status}/>
+              </div>
             )}
           </div>
         </CardHeader>
@@ -56,7 +64,7 @@ export default function PostInfo({id} : {id:string}) {
           {/* 모임 소개 */}
           <div>
             <h3 className="font-semibold mb-2">모임소개</h3>
-            <p className="text-muted-foreground leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed whitespace-pre-line break-words">
               {data?.description ?? ""}
             </p>
           </div>
@@ -64,7 +72,7 @@ export default function PostInfo({id} : {id:string}) {
           {/* 모임 정보 */}
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="flex items-start gap-3 p-3 bg-secondary/30 rounded-lg">
-              <MapPin className="h-5 w-5 text-primary mt-0.5" />
+              <MapPin className="h-5 w-5 text-primary mt-0.5"/>
               <div>
                 <p className="text-sm font-medium mb-1">장소</p>
                 <p className="text-sm text-muted-foreground">{data?.location ?? ""}</p>
@@ -111,13 +119,13 @@ export default function PostInfo({id} : {id:string}) {
             {data?.requirement && (
               <div>
                 <p className="text-sm font-medium mb-1">준비물</p>
-                <p className="text-sm text-muted-foreground">{data.requirement}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-line break-words">{data.requirement}</p>
               </div>
             )}
             {data?.fee && (
               <div>
                 <p className="text-sm font-medium mb-1">참가비</p>
-                <p className="text-sm text-muted-foreground">{data.fee}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-line break-words">{data.fee}</p>
               </div>
             )}
           </div>
