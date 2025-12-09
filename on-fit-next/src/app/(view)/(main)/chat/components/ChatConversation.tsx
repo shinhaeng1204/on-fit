@@ -15,7 +15,6 @@ interface ChatConversationProps {
 
 export default function ChatConversation({roomId} : ChatConversationProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [userId, setUserId] = useState<string>("");
 
   // React Query로 메시지 및 프로필 데이터 가져오기
   const { data, refetch } = useQuery({
@@ -27,11 +26,11 @@ export default function ChatConversation({roomId} : ChatConversationProps) {
     enabled: !!roomId,
   });
 
-  const { data: user, isLoading: userLoading } = useQuery({
+  const { data: userId, isLoading: userLoading } = useQuery({
     queryKey: ["me"],
     queryFn: async () => {
       const res = await api.get(`/api/auth/me`);
-      setUserId(res.data.user.id);
+      return res.data.user.id
     },
   });
 

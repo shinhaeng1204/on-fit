@@ -10,13 +10,14 @@ import Header from "@/components/common/Header";
 import { Button } from "@/components/common/Button";
 import ChatParticipants from "@/app/(view)/(main)/chat/components/ChatParticipants";
 import {AnimatePresence} from "framer-motion";
-import {useQuery} from "@tanstack/react-query";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 
 interface RoomInfoProps {
   roomId : string
 }
 
 export default function RoomInfo({roomId} : RoomInfoProps) {
+  const queryClient = useQueryClient()
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
 
@@ -29,17 +30,74 @@ export default function RoomInfo({roomId} : RoomInfoProps) {
     enabled: !!roomId, // roomId 없으면 요청 안 보냄
   });
 
-
-  const handleLeave = async () => {
-    const ok = confirm("정말 채팅방을 나가시겠습니까?")
-    if(!ok) return
-    try {
+  const leaveMutation = useMutation({
+    mutationFn: async () => {
       await api.delete(`/api/chat/${roomId}/leave`);
-      router.push('/');
-    } catch (e) {
-      console.error(e)
-    }
-  }
+    },
+
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["post", roomId] });
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
+
+      const prevPost = queryClient.getQueryData<RoomInfoData>(["post", roomId]);
+      const prevPosts = queryClient.getQueryData<any>(["posts"]); // infiniteQuery data
+
+      // 1) 상세 페이지 낙관적 업데이트
+      if (prevPost) {
+        queryClient.setQueryData<RoomInfoData>(["post", roomId], {
+          ...prevPost,
+          current_participants: Math.max(prevPost.current_participants - 1, 0),
+        });
+      }
+
+      // 2) 메인 목록 낙관적 업데이트
+      if (prevPosts) {
+        queryClient.setQueryData(["posts"], {
+          ...prevPosts,
+          pages: prevPosts.pages.map((page: any) => ({
+            ...page,
+            items: page.items.map((item: any) =>
+              item.room_id === roomId
+                ? {
+                  ...item,
+                  current_participants: Math.max(
+                    item.current_participants - 1,
+                    0
+                  ),
+                }
+                : item
+            ),
+          })),
+        });
+      }
+
+      return { prevPost, prevPosts };
+    },
+
+    onError: (_err, _vars, context) => {
+      // 롤백
+      if (context?.prevPost)
+        queryClient.setQueryData(["post", roomId], context.prevPost);
+
+      if (context?.prevPosts)
+        queryClient.setQueryData(["posts"], context.prevPosts);
+
+      alert("나가기 실패! 다시 시도해주세요.");
+    },
+
+    onSettled: async () => {
+      // 서버 값 재정확화
+      await queryClient.invalidateQueries({ queryKey: ["post", roomId] });
+      await queryClient.invalidateQueries({ queryKey: ["posts"] });
+      router.push("/");
+    },
+  });
+
+  const handleLeave = () => {
+    const ok = confirm("정말 채팅방을 나가시겠습니까?");
+    if (!ok) return;
+    leaveMutation.mutate();
+  };
 
   return (
     <>
