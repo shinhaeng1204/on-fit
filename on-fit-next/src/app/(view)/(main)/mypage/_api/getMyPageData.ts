@@ -20,7 +20,7 @@ export async function getMyPageData() {
     profile_image,
     followers,
     following,
-    location,
+    home_region,
     sport_preference
   `)
   .eq("id", user.id)
