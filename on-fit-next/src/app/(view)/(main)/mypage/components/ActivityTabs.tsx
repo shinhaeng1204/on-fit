@@ -1,14 +1,15 @@
+// src/app/(view)/(main)/mypage/components/ActivityTabs.tsx
 'use client';
 
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/common/Tabs';
 import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
 import StatusPill from '@/app/(view)/(main)/mypage/components/StatusPill';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/common/Button';
-import { Trash2, Pencil } from 'lucide-react';
-import {useRouter} from "next/navigation";
+import { Trash2, Pencil, MoreVertical } from 'lucide-react';
 
 export type ActivityItem = {
   id: string;
@@ -32,8 +33,9 @@ export default function ActivityTabs({
   className,
   onDeleteCreated,
 }: ActivityTabsProps) {
-  const router = useRouter()
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('open'); // 기본값: 진행중
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null); // 현재 열려 있는 카드 메뉴 id
 
   const renderFilterButton = (value: StatusFilter, label: string) => (
     <button
@@ -43,7 +45,7 @@ export default function ActivityTabs({
         'rounded-full px-3 py-1 text-xs border transition-colors',
         value === statusFilter
           ? 'bg-primary text-primary-foreground border-primary'
-          : 'bg-background/60 text-muted-foreground border-border hover:bg-muted/70'
+          : 'bg-background/60 text-muted-foreground border-border hover:bg-muted/70',
       )}
     >
       {label}
@@ -109,48 +111,78 @@ export default function ActivityTabs({
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {filteredItems.map((a) => (
-                      <div
-                        key={a.id}
-                        className="flex items-center justify-between rounded-lg bg-secondary/30 p-3"
-                      >
-                        <div>
-                          <p className="font-medium">{a.title}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatDate(a.date)}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <StatusPill status={a.status} />
+                    {filteredItems.map((a) => {
+                      const isCreatedTab = t.key === 'created';
+                      const canEdit = isCreatedTab && a.status !== 'close';
 
-                          {t.key === 'created' && a.status !== 'close' && (
-                           <Button
-                             rightIcon={<Pencil />}
-                             type="button"
-                             variant="secondary"
-                             className="cursor-pointer"
-                             onClick={() => router.push(`/post/${a.id}/edit`)}
-                           >
-                             수정
-                           </Button>
-                          )}
+                      return (
+                        <div
+                          key={a.id}
+                          className="relative rounded-lg bg-secondary/30 p-3"
+                        >
+                          {/* 상단: 제목/날짜 + 상태 + 더보기 버튼 */}
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="font-medium break-keep">{a.title}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {formatDate(a.date)}
+                              </p>
+                            </div>
 
-                          {/* '만든 모임' 탭에서만 삭제 버튼 표시 */}
-                          {t.key === 'created' && onDeleteCreated && (
-                            <Button
-                              rightIcon={<Trash2 />}
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              className="cursor-pointer"
-                              onClick={() => onDeleteCreated(a.id)}
-                            >
-                              삭제
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              <StatusPill status={a.status} />
+
+                              {isCreatedTab && (
+                                <button
+                                  type="button"
+                                  className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-black/20 -mr-1"
+                                  onClick={() =>
+                                    setOpenMenuId((prev) =>
+                                      prev === a.id ? null : a.id,
+                                    )
+                                  }
+                                >
+                                  <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 드롭다운 메뉴: 만든 모임 + 현재 카드가 열려있을 때만 */}
+                          {isCreatedTab && openMenuId === a.id && (
+                            <div className="absolute right-2 top-11 z-20 w-32 rounded-md border border-border bg-popover py-1 shadow-lg">
+                              {canEdit && (
+                                <button
+                                  type="button"
+                                  className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
+                                  onClick={() => {
+                                    setOpenMenuId(null);
+                                    router.push(`/post/${a.id}/edit`);
+                                  }}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                  <span>수정하기</span>
+                                </button>
+                              )}
+
+                              {onDeleteCreated && (
+                                <button
+                                  type="button"
+                                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted"
+                                  onClick={() => {
+                                    setOpenMenuId(null);
+                                    onDeleteCreated(a.id);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span>삭제하기</span>
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </TabsContent>
