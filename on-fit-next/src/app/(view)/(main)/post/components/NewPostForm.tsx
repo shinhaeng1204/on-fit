@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import LocationPicker from '@/components/location/LocationPicker'
 import { SIDO_OPTIONS, getSigunguOptions } from '@/constants/korea-regions'
 import { postType } from '@/types/post'
+import {handleMaxLength} from "@/lib/handle-max-length";
 
 type Mode = 'create' | 'edit'
 
@@ -220,9 +221,10 @@ export default function NewPostForm({
               <Input
                 name="title"
                 type="text"
-                placeholder="예: 강남 배드민턴 초급자 모집!"
+                placeholder="예: 강남 배드민턴 초급자 모집! (최대 50자)"
                 defaultValue={initialData?.title}
                 required
+                onChange={(e) => handleMaxLength(e, 50)}
               />
             </div>
 
@@ -289,9 +291,12 @@ export default function NewPostForm({
                   <Input
                     name="detailLocation"
                     type="text"
-                    placeholder="예: ○○체육관 2층 A코트"
+                    placeholder="광체육관 (최대 200자)"
                     value={detailLocation}
-                    onChange={(e) => setDetailLocation(e.target.value)}
+                    onChange={(e) => {
+                      setDetailLocation(e.target.value)
+                      handleMaxLength(e, 200)
+                    }}
                     required
                   />
                 </div>
@@ -318,7 +323,7 @@ export default function NewPostForm({
                   name="date"
                   type="date"
                   min={new Date().toISOString().split('T')[0]}
-                  defaultValue={dt.date}
+                  defaultValue={dt.date || new Date().toISOString().split('T')[0]}
                   required
                 />
               </div>
@@ -340,10 +345,11 @@ export default function NewPostForm({
                 <Input
                   name="maxParticipants"
                   type="number"
-                  placeholder="예: 6"
+                  placeholder="예: 6 (최소 2명, 최대 100명)"
                   required
                   defaultValue={initialData?.max_participants}
                   min={2}
+                  max={100}
                 />
               </div>
               <div className="flex flex-col space-y-2">
@@ -365,7 +371,8 @@ export default function NewPostForm({
                 name="requirement"
                 type="text"
                 defaultValue={initialData?.requirement}
-                placeholder="예: 라켓(대여 가능), 운동화"
+                placeholder="예: 라켓(대여 가능), 운동화 (최대 500자)"
+                onChange={(e) => handleMaxLength(e, 500)}
               />
             </div>
 
@@ -374,9 +381,10 @@ export default function NewPostForm({
               <label className={labelCls}>참가비</label>
               <Input
                 name="fee"
-                type="text"
+                type="number"
                 defaultValue={initialData?.fee}
-                placeholder="예: 15,000원 (시설비 포함)"
+                placeholder="15000 (최대 1억원)"
+                max={1000000000}
               />
             </div>
 

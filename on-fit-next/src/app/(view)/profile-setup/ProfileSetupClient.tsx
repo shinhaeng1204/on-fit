@@ -4,6 +4,7 @@
 import { useRef } from 'react'
 import { Dumbbell, MapPin, User } from 'lucide-react'
 import LocationPicker from '@/components/location/LocationPicker'
+import {handleMaxLength} from "@/lib/handle-max-length";
 
 const EXERCISES = [
   '축구','농구','야구','배구','테니스',
@@ -48,6 +49,7 @@ export default function ProfileSetupClient({ saveProfile }: Props) {
               placeholder="닉네임을 입력하세요"
               className="w-full rounded-md border bg-background px-3 py-2"
               required
+              onChange={(e) => handleMaxLength(e, 8)}
             />
           </div>
 

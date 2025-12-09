@@ -8,6 +8,7 @@ import React, { useState } from "react";
 import { postType } from "@/types/post";
 import ProfileModal from "../profile/ProfileModal";
 import {toKstDate, toKstTime} from "@/lib/dateFormatter";
+import {DefaultSportIcon, sportIcons} from "@/lib/sportIcons";
 
 export default function FitCard({
   id,
@@ -36,73 +37,78 @@ export default function FitCard({
     setOpenProfileModal(true);
   };
 
+  const SportIcon = sportIcons[sport] ?? DefaultSportIcon
+
   return (
     <>
     <Link href={`/post/${id}`}>
       <Card className="group hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary cursor-pointer">
         <CardHeader className="flex flex-row gap-2">
-  {/* 아이콘 */}
-  <div className="flex items-center rounded-lg bg-primary/10 p-2">
-    <DumbbellIcon className="h-5 text-primary" />
-  </div>
+        {/* 아이콘 */}
+        <div className="flex items-center rounded-lg bg-primary/10 p-2">
+          <SportIcon className="h-5 text-primary" />
+        </div>
 
-  {/* 오른쪽 전체 영역 */}
-  <div className="flex-1 min-w-0">
-    {/* 제목 + 상태 뱃지를 한 줄로 */}
-    <div className="flex items-start gap-2">
-      {/* 제목 + 종목 텍스트 영역 */}
-      <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
-          {title}
-        </h3>
-        <span className="text-sm text-muted-foreground">{sport}</span>
-      </div>
-      <RecruitStatus
-        type={status}
-        text={status}
-        className="shrink-0"
-      />
-    </div>
-  </div>
-</CardHeader>
+        {/* 오른쪽 전체 영역 */}
+        <div className="flex-1 min-w-0">
+          {/* 제목 + 상태 뱃지를 한 줄로 */}
+          <div className="flex items-start gap-2">
+            {/* 제목 + 종목 텍스트 영역 */}
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
+                {title}
+              </h3>
+              <span className="text-sm text-muted-foreground">{sport}</span>
+            </div>
+            <RecruitStatus
+              type={status}
+              text={status}
+              className="shrink-0"
+            />
+          </div>
+        </div>
+      </CardHeader>
 
 
         <CardContent className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <MapPin className="text-muted-foreground w-4 h-4" />
+            <MapPin className="text-muted-foreground w-4 h-4"/>
             <span className="text-muted-foreground text-sm font-semibold">
               {location}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <Calendar className="text-muted-foreground w-4 h-4" />
+            <Calendar className="text-muted-foreground w-4 h-4"/>
             <span className="text-muted-foreground text-sm font-semibold">
               {toKstDate(date_time)} {toKstTime(date_time)}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <Users className="text-muted-foreground w-4 h-4" />
+            <Users className="text-muted-foreground w-4 h-4"/>
             <span className="text-muted-foreground text-sm font-semibold">
               {current_participants}/{max_participants}명
             </span>
           </div>
 
-          <div className="py-[0.1px] w-full bg-muted-foreground/40 mt-2 backdrop-blur-3xl" />
+          <div className="py-[0.1px] w-full bg-muted-foreground/40 mt-2 backdrop-blur-3xl"/>
 
-          <div className="flex mt-2 justify-between items-center">
-            <Badge type={level} className="max-h-6" />
+          <div className="flex mt-2 gap-3 justify-between items-center">
+            {/* 왼쪽 배지 */}
+            <Badge type={level} className="max-h-6 shrink-0"/>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleHostClick}
-                className="text-sm text-muted-foreground hover:text-primary cursor-pointer"
-              >
-                  주최: {hostName}
-              </button>
-            </div>
+            {/* 오른쪽 영역 */}
+            <button
+              type="button"
+              onClick={handleHostClick}
+              className="text-sm text-muted-foreground hover:text-primary cursor-pointer
+               flex-1 min-w-0 text-right"
+            >
+              <span className="block truncate">
+                주최: {hostName}
+              </span>
+            </button>
           </div>
         </CardContent>
       </Card>
@@ -110,8 +116,8 @@ export default function FitCard({
       <ProfileModal
         open={openProfileModal}
         onClose={() => setOpenProfileModal(false)}
-        profileId={author_id?? ''}
+        profileId={author_id ?? ''}
       />
-      </>
+    </>
   );
 }
