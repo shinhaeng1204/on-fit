@@ -10,6 +10,8 @@ import ProfileImage from '@/components/common/ProfileImage';
 import FollowListModal from '@/app/(view)/(main)/mypage/components/FollowListModal';
 import type { FollowUser, MyPageStats } from '@/app/(view)/(main)/mypage/types';
 import { sbClient } from '@/lib/supabase-client';
+import {useQueryClient} from "@tanstack/react-query";
+import {useAuthSession} from "@/hooks/useAuthSession";
 
 type Props = {
   name: string;
@@ -36,6 +38,9 @@ export default function ProfileHeader({
   const [temp, setTemp] = useState(name);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
+  const { session } = useAuthSession();
+  const userId = session?.user?.id;
 
   // 🔥 프로필 이미지 업로드 관련 상태
   const [avatar, setAvatar] = useState<string | undefined>(avatarUrl);
@@ -67,15 +72,34 @@ export default function ProfileHeader({
       return;
     }
 
+    // 낙관적 업데이트
+    const prevProfile = queryClient.getQueryData(["profile", userId]);
+
+    setDisplayName(next);
+
+    queryClient.setQueryData(["profile", userId], (old: any) => {
+      if (!old) return old;
+      return {
+        ...old,
+        profile: {
+          ...old.profile,
+          nickname: next,
+        },
+      };
+    });
+
     startTransition(async () => {
       try {
         await updateNicknameDirect(next);
-        setDisplayName(next);
         setEditing(false);
-        show('닉네임이 변경됐습니다.');
+        show("닉네임이 변경됐습니다.");
       } catch (err) {
         console.error(err);
-        show('닉네임 변경에 실패했습니다. 잠시 후 다시 시도해주세요.');
+
+        queryClient.setQueryData(["profile", userId], prevProfile);
+
+        show("닉네임 변경에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        setDisplayName(prevProfile?.profile?.nickname ?? displayName);
       }
     });
   };
@@ -114,7 +138,6 @@ export default function ProfileHeader({
       const supabase = sbClient;
       
       const { data, error } = await supabase.auth.getUser();
-console.log('user in upload', data, error);
 
       const {
         data: { user },

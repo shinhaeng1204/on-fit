@@ -5,25 +5,23 @@ import { useAuthSession } from "@/hooks/useAuthSession"
 import LogoutButton from "../../app/(view)/auth/components/LogoutButton"
 import { Button } from "../common/Button"
 import { User } from "lucide-react"
-import useSWR from "swr"
-
-const fetcher = (url: string) =>
-  fetch(url, { credentials: "include" }).then(r => r.json())
+import {useQuery} from "@tanstack/react-query";
+import {api} from "@/lib/axios";
 
 export default function AuthControls() {
-
-  // 1️⃣ 훅은 반드시 컴포넌트 최상단에서 실행
   const { session, ready } = useAuthSession()
 
-  // 🔥 세션이 존재할 때만 프로필을 불러오게 해야 문제 없음
   const userId = session?.user?.id ?? null
 
-  const { data: profileData } = useSWR(
-    userId ? "/api/profile/me" : null,  // <-- 조건은 여기서만!
-    fetcher
-  )
+  const { data: profileData } = useQuery({
+    queryKey: ["profile", userId],
+    queryFn: async () => {
+      const res = await api.get("/api/profile/me")
+      return res.data
+    },
+    enabled: !!userId,
+  })
 
-  // 2️⃣ 아래부터 조건 렌더링 시작
   if (!ready) {
     return <div className="h-8 w-40 rounded-md bg-muted animate-pulse" />
   }

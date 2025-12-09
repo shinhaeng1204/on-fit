@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { api } from '@/lib/axios';
 import ChatRoomCard from './ChatRoomCard';
 import ChatRoomCardSkeleton from "@/app/(view)/(main)/chat/components/ChatRoomCardSkeleton";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 
 interface ChatRoomListItem {
   roomId: string;
@@ -20,9 +20,14 @@ interface ChatRoomListItem {
 }
 
 export default function ChatRoomList() {
-  const [rooms, setRooms] = useState<ChatRoomListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const { data: rooms = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ['chatRooms'],
+    queryFn: async () => {
+      const res = await api.get('/api/chat/rooms');
+      return (res.data.items ?? []);
+    },
+  });
 
   // 시간 포맷 (원하면 나중에 따로 분리해도 됨)
   const formatTime = (iso: string) => {
@@ -33,23 +38,15 @@ export default function ChatRoomList() {
     });
   };
 
-  useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const res = await api.get('/api/chat/rooms');
-        setRooms(res.data.items ?? []);
-      } catch (err) {
-        console.error('채팅방 리스트 불러오기 실패', err);
-        setError('채팅방 리스트를 불러오는데 실패했어요.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // 방 나가기 후 캐시 업데이트
+  const handleLeaveRoom = (roomId: string) => {
+    // Optimistic Update: 서버 응답 기다리지 않고 UI에서 제거
+    queryClient.setQueryData(['chatRooms'], (old?: ChatRoomListItem[]) =>
+      old?.filter((r) => r.roomId !== roomId) ?? []
+    );
+  };
 
-    fetchRooms();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex flex-col gap-4 items-center mt-5">
         <ChatRoomCardSkeleton />
@@ -60,8 +57,8 @@ export default function ChatRoomList() {
     );
   }
 
-  if (error) {
-    return <div className="p-4 text-sm text-red-500">{error}</div>;
+  if (isError) {
+    return <div className="p-4 text-sm text-red-500">{isError}</div>;
   }
 
   if (rooms.length === 0) {
@@ -85,9 +82,7 @@ export default function ChatRoomList() {
           tag={room.tag ?? room.sport ?? ''}
           unreadCount={room.unreadCount}
           canReview={room.canReview}
-          onLeave={(id) => {
-            setRooms((prev) => prev.filter((r) => r.roomId !== id))
-          }}
+          onLeave={handleLeaveRoom}
         />
       ))}
     </div>
