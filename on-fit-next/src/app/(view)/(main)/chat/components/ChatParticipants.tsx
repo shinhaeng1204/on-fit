@@ -36,7 +36,7 @@ export default function ChatParticipants({ roomId, onClose }: ChatParticipantsPr
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: 300, opacity: 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 25 }}
-        className="fixed right-0 top-0 h-full w-110 bg-card z-50 p-6 overflow-y-auto"
+        className="fixed right-0 top-0 h-full md:w-110 w-[100%]  bg-card z-50 p-6 overflow-y-auto"
       >
         <div className="mb-4 flex justify-between">
           <h4 className="text-lg font-semibold">참여자 보기</h4>
