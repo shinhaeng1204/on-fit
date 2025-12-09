@@ -100,7 +100,7 @@ export default function FitCard({
       <ProfileModal
         open={openProfileModal}
         onClose={() => setOpenProfileModal(false)}
-        profileId={author_id}
+        profileId={author_id?? ''}
       />
       </>
   );
