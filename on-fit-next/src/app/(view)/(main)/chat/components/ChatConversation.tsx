@@ -13,6 +13,15 @@ interface ChatConversationProps {
   roomId : string
 }
 
+interface massageProps {
+  id: string
+  sender_id : string
+  profile_image : string
+  nickname : string
+  content : string
+  created_at: string
+}
+
 export default function ChatConversation({roomId} : ChatConversationProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +69,7 @@ export default function ChatConversation({roomId} : ChatConversationProps) {
   }, [messages]);
 
   const messagesWithUsername = messages.map((msg: Message) => {
-    const profile = profiles.find((p) => p.id === msg.sender_id);
+    const profile = profiles.find((p : Profile) => p.id === msg.sender_id);
     return {
       ...msg,
       nickname: profile?.nickname ?? "알 수 없음",
@@ -75,7 +84,7 @@ export default function ChatConversation({roomId} : ChatConversationProps) {
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-4 space-y-4">
           {/* 대화 */}
-          {messagesWithUsername.map((msg) => {
+          {messagesWithUsername.map((msg : massageProps) => {
             const isMine = msg.sender_id === userId
 
             return (

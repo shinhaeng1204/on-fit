@@ -88,8 +88,8 @@ export default function PostInfoClient ({postId, roomId, title, targetUserId} : 
       }
 
       // 기타 에러 처리
-      queryClient.invalidateQueries(["post", postId]);
-      queryClient.invalidateQueries(["posts"]);
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
       alert("채팅방 참여 중 오류가 발생했습니다.");
     }
   };
