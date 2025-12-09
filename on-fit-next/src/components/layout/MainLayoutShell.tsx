@@ -54,10 +54,10 @@ export default function MainLayoutShell({ user, children }: { user:User | null; 
       {isPost ? (
         <Header
           variant="back"
-          title="목록으로"
+          title="뒤로가기"
           containerClassName="bg-card/80 backdrop-blur-sm border-b border-border"
         />
-      ) : (isChatOther || isCalendar) ? null : (
+      ) : (
         <Header
           variant="main"
           left={

@@ -258,12 +258,12 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
                 />
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col sm:flex-row gap-2">
-              <Button type="submit" className="w-full sm:w-auto flex-1" variant="hero" disabled={isLoading}>
+            <CardFooter className="flex flex-col gap-2">
+              <Button type="submit" className="w-full flex-1" variant="hero" disabled={isLoading}>
                 {isLoading ? "로딩중" : "로그인"}
               </Button>
-              <KakaoLoginButton next={next} className="w-full sm:w-auto flex-1" />
-              <GoogleLoginButton next={next} className="w-full sm:w-auto flex-1" />
+              <KakaoLoginButton next={next} className="w-full" />
+              <GoogleLoginButton next={next} className="w-full flex-1" />
             </CardFooter>
           </form>
         </Card>
