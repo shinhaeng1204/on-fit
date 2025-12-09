@@ -71,7 +71,6 @@ export default function PostInfoClient ({postId, roomId, title, targetUserId} : 
         });
       }
 
-
       router.push(`/chat/${roomId}`);
     } catch (err: any) {
       const status = err?.response?.status;
