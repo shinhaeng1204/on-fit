@@ -49,8 +49,8 @@ export default function ChatRoomCard({
     router.push(`/review/${roomId}`);
   };
 
-    const handleLeave = async (e: React.MouseEvent) => {
-        e.stopPropagation();
+  const handleLeave = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     const ok = confirm("정말 채팅방을 나가시겠습니까?")
     if(!ok) return
     try {

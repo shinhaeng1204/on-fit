@@ -10,6 +10,7 @@ import Header from "@/components/common/Header";
 import { Button } from "@/components/common/Button";
 import ChatParticipants from "@/app/(view)/(main)/chat/components/ChatParticipants";
 import {AnimatePresence} from "framer-motion";
+import {useQuery} from "@tanstack/react-query";
 
 interface RoomInfoProps {
   roomId : string
@@ -17,23 +18,17 @@ interface RoomInfoProps {
 
 export default function RoomInfo({roomId} : RoomInfoProps) {
   const router = useRouter();
-  const [roomInfo, setRoomInfo] = useState<RoomInfoData | null>(null);
   const [open, setOpen] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (!roomId) return;
+  const { data: roomInfo, isLoading, error } = useQuery<RoomInfoData>({
+    queryKey: ["post", roomId],
+    queryFn: async () => {
+      const res = await api.get(`/api/chat/${roomId}`);
+      return res.data.post;
+    },
+    enabled: !!roomId, // roomId 없으면 요청 안 보냄
+  });
 
-    const fetchRoomInfo = async () => {
-      try {
-        const res = await api.get(`/api/chat/${roomId}`);
-        setRoomInfo(res.data.post);
-      } catch (err) {
-        console.error("방 정보 불러오기 실패:", err);
-      }
-    };
-
-    fetchRoomInfo();
-  }, [roomId]);
 
   const handleLeave = async () => {
     const ok = confirm("정말 채팅방을 나가시겠습니까?")

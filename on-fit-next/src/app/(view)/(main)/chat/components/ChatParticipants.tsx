@@ -9,29 +9,25 @@ import ProfileImage from "@/components/common/ProfileImage";
 import Badge from "@/components/common/Badge";
 import {Button} from "@/components/common/Button";
 import ProfileModal from "@/components/profile/ProfileModal";
+import {useQuery} from "@tanstack/react-query";
 
 type ChatParticipantsProps = {
   roomId: string;
   onClose: () => void;
 };
 
-interface Participants {
-  role: string
-  profiles: Profile
-}
-
 export default function ChatParticipants({ roomId, onClose }: ChatParticipantsProps) {
-  const [participants, setParticipants] = useState<Participants[]>([])
   const [open, setOpen] = useState<boolean>(false)
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
 
-  useEffect(() => {
-    const fetchParticipants = async () => {
+  const { data: participants = [], isLoading, isError } = useQuery({
+    queryKey: ["chatParticipants", roomId],
+    queryFn: async () => {
       const res = await api.get(`/api/chat/rooms/participants?roomId=${roomId}`);
-      setParticipants(res.data.participants);
-    };
-    fetchParticipants();
-  }, [roomId]);
+      return res.data.participants;
+    },
+    enabled: !!roomId,
+  });
 
   return (
     <>
