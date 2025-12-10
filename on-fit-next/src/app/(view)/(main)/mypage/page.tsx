@@ -26,7 +26,7 @@ export default async function MyPage() {
 
   const name = profile.nickname ?? '';
   const avatarUrl = profile.profile_image ?? '';
-  const region = profile.location ?? '';
+  const region = profile.home_region ?? '';
   const exercises = (profile.sport_preference ?? []) as string[];
 
   // ===========================
