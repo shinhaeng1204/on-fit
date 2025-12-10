@@ -4,11 +4,19 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/common/Tabs';
-import { CardHeader, CardTitle, CardContent } from '@/components/common/Card';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from '@/components/common/Tabs';
+import {
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from '@/components/common/Card';
 import StatusPill from '@/app/(view)/(main)/mypage/components/StatusPill';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/common/Button';
 import { Trash2, Pencil, MoreVertical } from 'lucide-react';
 
 export type ActivityItem = {
@@ -34,7 +42,8 @@ export default function ActivityTabs({
   onDeleteCreated,
 }: ActivityTabsProps) {
   const router = useRouter();
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('open'); // 기본값: 진행중
+  const [statusFilter, setStatusFilter] =
+    useState<StatusFilter>('open'); // 기본값: 진행중
   const [openMenuId, setOpenMenuId] = useState<string | null>(null); // 현재 열려 있는 카드 메뉴 id
 
   const renderFilterButton = (value: StatusFilter, label: string) => (
@@ -54,7 +63,8 @@ export default function ActivityTabs({
 
   const applyFilter = (items: ActivityItem[]) => {
     if (statusFilter === 'all') return items;
-    if (statusFilter === 'open') return items.filter((i) => i.status === 'open');
+    if (statusFilter === 'open')
+      return items.filter((i) => i.status === 'open');
     return items.filter((i) => i.status === 'close');
   };
 
@@ -64,7 +74,8 @@ export default function ActivityTabs({
         <CardTitle>활동 내역</CardTitle>
       </CardHeader>
 
-      <CardContent className={cn('pb-5', className)}>
+      {/* 가로 스크롤 방지 */}
+      <CardContent className={cn('pb-5 overflow-x-hidden', className)}>
         <Tabs defaultValue={defaultTab} className="w-full">
           {/* 상단 탭: 참여한 모임 / 만든 모임 */}
           <TabsList className="grid w-full grid-cols-2">
@@ -113,23 +124,30 @@ export default function ActivityTabs({
                   <div className="space-y-3">
                     {filteredItems.map((a) => {
                       const isCreatedTab = t.key === 'created';
-                      const canEdit = isCreatedTab && a.status !== 'close';
+                      const canEdit =
+                        isCreatedTab && a.status !== 'close';
 
                       return (
                         <div
                           key={a.id}
-                          className="relative rounded-lg bg-secondary/30 p-3"
+                          // 카드 자체도 min-w-0
+                          className="relative rounded-lg bg-secondary/30 p-3 min-w-0"
                         >
                           {/* 상단: 제목/날짜 + 상태 + 더보기 버튼 */}
-                          <div className="flex items-center justify-between gap-3">
-                            <div>
-                              <p className="font-medium break-keep">{a.title}</p>
+                          <div className="flex items-center justify-between gap-3 min-w-0">
+                            {/* 제목/날짜 영역: flex-1 + min-w-0 */}
+                            <div className="min-w-0 flex-1">
+                              {/* 제목: 항상 일정 글자 수까지만 표시 + 넘치면 ... */}
+                              <p className="font-medium truncate">
+                                {truncateTitle(a.title, 28)}
+                              </p>
                               <p className="text-sm text-muted-foreground">
                                 {formatDate(a.date)}
                               </p>
                             </div>
 
-                            <div className="flex items-center gap-1">
+                            {/* 상태 + 더보기 버튼: 줄어들지 않게 shrink-0 */}
+                            <div className="flex items-center gap-1 shrink-0">
                               <StatusPill status={a.status} />
 
                               {isCreatedTab && (
@@ -198,4 +216,11 @@ function formatDate(raw: string) {
   const dateOnly = raw.split('T')[0];
   const [y, m, d] = dateOnly.split('-');
   return `${y}.${m}.${d}`;
+}
+
+// 🔹 제목을 일정 길이까지만 보여주고 나머지는 … 처리
+function truncateTitle(title: string, max = 15) {
+  if (!title) return '';
+  if (title.length <= max) return title;
+  return title.slice(0, max) + '…';
 }
