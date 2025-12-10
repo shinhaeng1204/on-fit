@@ -14,9 +14,10 @@ type ReviewMember = {
 interface ReviewCardProps {
   member: ReviewMember;
   onPraise: (member: ReviewMember) => void;
+  completed: boolean;
 }
 
-export default function ReviewCard({ member, onPraise }: ReviewCardProps) {
+export default function ReviewCard({ member, onPraise, completed  }: ReviewCardProps) {
   const { nickname, profileImage } = member;
   const initial = nickname.charAt(0);
 
@@ -41,13 +42,15 @@ export default function ReviewCard({ member, onPraise }: ReviewCardProps) {
         </div>
 
         <div className="flex flex-row items-center gap-4 flex-wrap">
-          <Button
-            leftIcon={<ThumbsUp size={16} />}
-            size="sm"
-            onClick={() => onPraise(member)}
-          >
-            칭찬하기
-          </Button>
+          {!completed && (
+            <Button
+              leftIcon={<ThumbsUp size={16} />}
+              size="sm"
+              onClick={() => onPraise(member)}
+            >
+              칭찬하기
+            </Button>
+          )}
           <Flag size={16} />
         </div>
       </CardHeader>
