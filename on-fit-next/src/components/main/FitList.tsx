@@ -5,6 +5,9 @@ import Filter, { FilterValue } from "./Filter"
 import FitCard from "./FitCard"
 import { postType } from "@/types/post"
 import { SIDO_OPTIONS, getSigunguOptions } from "@/constants/korea-regions"
+import { Button } from "../common/Button"
+import { Home } from "lucide-react"
+import { api } from "@/lib/axios"
 
 type Props = {
   items: postType[]
@@ -61,9 +64,15 @@ export default function FitList({ items }: Props) {
   
   const [searchTriggered, setSearchTriggered] = useState(false)
 
+  // 나의 동네 모드 여부
+  const [useMyTown, setUseMyTown] = useState(false)
+
   // 내 위치 상태
   const [myLat, setMyLat] = useState<number | null>(null)
   const [myLng, setMyLng] = useState<number | null>(null)
+
+  const [homeLat, setHomeLat] = useState<number | null>(null)
+  const [homeLng, setHomeLng] = useState<number | null>(null)
 
   useEffect(() => {
     if (!navigator.geolocation) return
@@ -79,6 +88,20 @@ export default function FitList({ items }: Props) {
         setMyLng(null)
       }
     )
+  }, [])
+
+    useEffect(() => {
+    ;(async () => {
+      try {
+        const res = await api.get("/api/profile/me")
+        const profile = res.data.item ?? res.data.profile ?? res.data
+
+        setHomeLat(profile.home_lat)
+        setHomeLng(profile.home_lng)
+      } catch (e) {
+        console.error("나의 동네 좌표 가져오기 실패", e)
+      }
+    })()
   }, [])
 
   useEffect(() => {
@@ -106,12 +129,12 @@ export default function FitList({ items }: Props) {
     if (searchTriggered) {
       const keywordLower = filter.keyword.trim().toLowerCase();
 
-      // 🔥 검색 버튼만 누르고 검색어가 없으면 전국 카드 전체 반환
+      //  검색 버튼만 누르고 검색어가 없으면 전국 카드 전체 반환
       if (keywordLower === "") {
         return items;
       }
 
-      // 🔥 검색 + 필터 조합 (전국 기반)
+      //  검색 + 필터 조합 (전국 기반)
       return items.filter(item => {
         const keywordOk = item.title.toLowerCase().includes(keywordLower);
 
@@ -131,7 +154,7 @@ export default function FitList({ items }: Props) {
 
     const keywordLower = filter.keyword.trim().toLowerCase();
 
-    // 🔥 제목 검색이 존재하면 → 전국 데이터에서 검색 (위치/필터 무시)
+    //  제목 검색이 존재하면 → 전국 데이터에서 검색 (위치/필터 무시)
     if (keywordLower !== "") {
       return items.filter((item) =>
         item.title.toLowerCase().includes(keywordLower)
@@ -148,6 +171,9 @@ export default function FitList({ items }: Props) {
     const hasRegionFilter = hasSidoFilter || hasSigunguFilter
     const canUseRadius =
       !hasRegionFilter && myLat != null && myLng != null
+
+    const canUseRadiusFromHome = 
+    !hasRegionFilter && useMyTown && homeLat != null && homeLng != null
 
     const result = items.filter((item) => {
       const { base, sido: rawSido, sigungu: rawSigungu, dong } =
@@ -175,6 +201,22 @@ export default function FitList({ items }: Props) {
         return pass
       }
 
+      if (canUseRadiusFromHome) {
+        if (item.latitude == null || item.longitude == null) {
+          return false
+        }
+
+        const d = getDistanceKm(
+          homeLat!,
+          homeLng!,
+          item.latitude,
+          item.longitude
+        )
+        const distanceOk = d <= RADIUS_KM
+
+        return sportOk && levelOk && distanceOk
+      }
+
       // 반경 필터 모드
       if (canUseRadius) {
         if (item.latitude == null || item.longitude == null) {
@@ -195,7 +237,7 @@ export default function FitList({ items }: Props) {
     })
 
     return result
-  }, [items, filter, myLat, myLng, searchTriggered])
+  }, [items, filter, myLat, myLng, searchTriggered, homeLat, homeLng, useMyTown])
 
   useEffect(() => {
 
@@ -207,6 +249,7 @@ export default function FitList({ items }: Props) {
 
   return (
     <>
+   
       <Filter
         value={filter}
         onChange={(v)=>{
@@ -222,8 +265,14 @@ export default function FitList({ items }: Props) {
         sigunguOptions={sigunguOptions}
         levelOptions={levelOptions}
         onSearch={(active)=>setSearchTriggered(active)}
+        onMyTownToggle={(active) => {
+          setUseMyTown(active)
+          if (active) {
+            setSearchTriggered(false)
+          }
+        }}
       />
-
+    
       <div className="mx-5 flex flex-col gap-6 md:grid md:grid-cols-3">
         {filteredItems.map((fit) => (
           <FitCard key={fit.id} {...fit} />

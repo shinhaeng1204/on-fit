@@ -8,16 +8,16 @@ import ReportModal from "@/app/(view)/(main)/post/components/ReportModal";
 import {redirect, useRouter} from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/route-helpers";
 import type { User } from '@supabase/supabase-js'
-import {useQueryClient} from "@tanstack/react-query";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 
 interface PostInfoClientType {
   postId : string,
   roomId : string,
   title : string,
-  targetUserId : string
+  hostId : string
 }
 
-export default function PostInfoClient ({postId, roomId, title, targetUserId} : PostInfoClientType) {
+export default function PostInfoClient ({postId, roomId, title, hostId} : PostInfoClientType) {
   const router = useRouter()
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false)
@@ -71,7 +71,6 @@ export default function PostInfoClient ({postId, roomId, title, targetUserId} : 
         });
       }
 
-
       router.push(`/chat/${roomId}`);
     } catch (err: any) {
       const status = err?.response?.status;
@@ -80,6 +79,11 @@ export default function PostInfoClient ({postId, roomId, title, targetUserId} : 
         err?.response?.data?.message ??
         err.message;
       console.error("채팅방 참여 실패", message);
+
+      if(status === 401) {
+        router.push('/auth')
+        return;
+      }
 
       // 정원 초과 처리(409)
       if (status === 409) {
@@ -94,6 +98,14 @@ export default function PostInfoClient ({postId, roomId, title, targetUserId} : 
     }
   };
 
+  const { data: userId, isLoading: userLoading } = useQuery({
+    queryKey: ["me"],
+    queryFn: async () => {
+      const res = await api.get(`/api/auth/me`);
+      return res.data.user.id
+    },
+  });
+
   return (
     <>
       <div className="flex gap-3 pt-4">
@@ -107,21 +119,23 @@ export default function PostInfoClient ({postId, roomId, title, targetUserId} : 
           참여하기
         </Button>
 
-        <Button
-          variant="sport"
-          size="lg"
-          className="cursor-pointer"
-          onClick={() => setIsOpen(true)}
-        >
-          <Flag/>
-        </Button>
+        {userId !== hostId &&
+          <Button
+            variant="sport"
+            size="lg"
+            className="cursor-pointer"
+            onClick={() => setIsOpen(true)}
+          >
+            <Flag/>
+          </Button>
+        }
       </div>
 
       <ReportModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         postId={String(postId)}
-        postTitle={title ?? ""} targetUserId={targetUserId ?? ""} />
+        postTitle={title ?? ""} targetUserId={hostId ?? ""} />
     </>
   )
 }

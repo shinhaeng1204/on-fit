@@ -5,13 +5,19 @@ import { CardContent } from '@/components/common/Card';
 import { cn } from '@/lib/utils';
 import { Check, Edit2, X } from 'lucide-react';
 import { useToast } from '@/app/(view)/(main)/mypage/components/Toast';
-import { updateNicknameDirect, updateProfileImage } from '@/app/(view)/(main)/mypage/actions'; // 🔥 NEW
+import {
+  updateNicknameDirect,
+  updateProfileImage,
+} from '@/app/(view)/(main)/mypage/actions';
 import ProfileImage from '@/components/common/ProfileImage';
 import FollowListModal from '@/app/(view)/(main)/mypage/components/FollowListModal';
-import type { FollowUser, MyPageStats } from '@/app/(view)/(main)/mypage/types';
+import type {
+  FollowUser,
+  MyPageStats,
+} from '@/app/(view)/(main)/mypage/types';
 import { sbClient } from '@/lib/supabase-client';
-import {useQueryClient} from "@tanstack/react-query";
-import {useAuthSession} from "@/hooks/useAuthSession";
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuthSession } from '@/hooks/useAuthSession';
 
 type Props = {
   name: string;
@@ -49,7 +55,7 @@ export default function ProfileHeader({
   const { session } = useAuthSession();
   const userId = session?.user?.id;
 
-  // 🔥 프로필 이미지 업로드 관련 상태
+  // 프로필 이미지 업로드 관련 상태
   const [avatar, setAvatar] = useState<string | undefined>(avatarUrl);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -64,7 +70,7 @@ export default function ProfileHeader({
     if (editing) inputRef.current?.focus();
   }, [editing]);
 
-  // 🔥 서버에서 avatarUrl이 바뀌면 로컬 상태도 동기화
+  // 서버에서 avatarUrl이 바뀌면 로컬 상태도 동기화
   useEffect(() => {
     setAvatar(avatarUrl);
   }, [avatarUrl]);
@@ -79,34 +85,46 @@ export default function ProfileHeader({
       return;
     }
 
-    // 낙관적 업데이트
-    const prevProfile = queryClient.getQueryData<ProfileResponse>(["profile", userId]);
+    // 낙관적 업데이트용 이전 값
+    const prevProfile =
+      queryClient.getQueryData<ProfileResponse>(['profile', userId]) ?? null;
 
+    // 로컬 닉네임 먼저 변경
     setDisplayName(next);
 
-    queryClient.setQueryData(["profile", userId], (old: any) => {
-      if (!old) return old;
-      return {
-        ...old,
-        profile: {
-          ...old.profile,
-          nickname: next,
-        },
-      };
-    });
+    // React Query 캐시 업데이트 (any 제거)
+    queryClient.setQueryData<ProfileResponse | null>(
+      ['profile', userId],
+      (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          profile: {
+            ...old.profile,
+            nickname: next,
+          },
+        };
+      },
+    );
 
     startTransition(async () => {
       try {
         await updateNicknameDirect(next);
         setEditing(false);
-        show("닉네임이 변경됐습니다.");
+        show('닉네임이 변경됐습니다.');
       } catch (err) {
         console.error(err);
 
-        queryClient.setQueryData(["profile", userId], prevProfile);
+        // 실패 시 캐시 롤백
+        queryClient.setQueryData<ProfileResponse | null>(
+          ['profile', userId],
+          prevProfile,
+        );
 
-        show("닉네임 변경에 실패했습니다. 잠시 후 다시 시도해주세요.");
-        setDisplayName(prevProfile?.profile?.nickname ?? displayName);
+        show('닉네임 변경에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        setDisplayName(
+          prevProfile?.profile?.nickname ?? displayName ?? name,
+        );
       }
     });
   };
@@ -120,13 +138,13 @@ export default function ProfileHeader({
   const openFollowings = () => setOpenMode('followings');
   const closeModal = () => setOpenMode(null);
 
-  // 🔥 프로필 이미지를 눌렀을 때: 파일 선택창 열기
+  // 프로필 이미지를 눌렀을 때: 파일 선택창 열기
   const handleAvatarClick = () => {
     if (uploading || avatarPending) return;
     fileInputRef.current?.click();
   };
 
-  // 🔥 파일 선택 시: Supabase Storage 업로드 + DB 업데이트
+  // 파일 선택 시: Supabase Storage 업로드 + DB 업데이트
   const handleAvatarChange: React.ChangeEventHandler<HTMLInputElement> = async (
     e,
   ) => {
@@ -143,8 +161,6 @@ export default function ProfileHeader({
       setUploading(true);
 
       const supabase = sbClient;
-      
-      const { data, error } = await supabase.auth.getUser();
 
       const {
         data: { user },
@@ -160,7 +176,7 @@ export default function ProfileHeader({
       const filePath = `${user.id}/${Date.now()}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('avatars') // 👉 Storage 버킷 이름
+        .from('avatars') // Storage 버킷 이름
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: true,
@@ -176,7 +192,7 @@ export default function ProfileHeader({
         data: { publicUrl },
       } = supabase.storage.from('avatars').getPublicUrl(filePath);
 
-      // 프리뷰를 바로 바꿔주기
+      // 프리뷰 즉시 반영
       setAvatar(publicUrl);
 
       // 서버 액션으로 profiles.profile_image 업데이트
@@ -186,12 +202,14 @@ export default function ProfileHeader({
           show('프로필 이미지가 변경됐습니다.');
         } catch (err) {
           console.error(err);
-          show('프로필 이미지 저장에 실패했습니다. 잠시 후 다시 시도해주세요.');
+          show(
+            '프로필 이미지 저장에 실패했습니다. 잠시 후 다시 시도해주세요.',
+          );
         }
       });
     } finally {
       setUploading(false);
-      // 같은 파일 다시 선택해도 change 이벤트가 뜨게 초기화
+      // 같은 파일 다시 선택해도 change 이벤트가 뜨도록 초기화
       e.target.value = '';
     }
   };
@@ -202,7 +220,7 @@ export default function ProfileHeader({
     <>
       <CardContent className={cn('pt-6', className)}>
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-          {/* 🔥 클릭하면 파일 선택창이 열리는 프로필 이미지 */}
+          {/* 프로필 이미지 */}
           <div className="flex flex-col items-center gap-1 sm:items-start">
             <button
               type="button"
@@ -222,7 +240,6 @@ export default function ProfileHeader({
                 alt={displayName}
                 fakeProfileClassName="absolute inset-0 flex items-center justify-center select-none text-2xl font-semibold transition-opacity duration-300"
               />
-              
             </button>
 
             {/* 숨겨진 파일 input */}
@@ -235,19 +252,21 @@ export default function ProfileHeader({
             />
           </div>
 
-          <div className="w-full flex-1 text-center sm:text-left">
+          {/* 프로필 텍스트 영역 */}
+          <div className="w-full flex-1 text-center sm:text-left min-w-0">
             {/* 닉네임 + 수정 버튼 */}
-            <div className="flex items-center justify-center gap-2 sm:justify-start">
+            <div className="flex items-center justify-center gap-2 sm:justify-start min-w-0">
               {!editing ? (
                 <>
-                  <h2 className="max-w-[16ch] truncate text-xl font-semibold sm:text-2xl">
+                  {/* ✅ 닉네임: truncate + max-w + min-w-0 */}
+                  <h2 className="min-w-0 max-w-[16ch] truncate text-xl font-semibold sm:text-2xl">
                     {displayName}
                   </h2>
                   <button
                     type="button"
                     aria-label="닉네임 수정"
                     onClick={() => setEditing(true)}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-foreground/5"
+                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md hover:bg-foreground/5"
                   >
                     <Edit2 className="h-4 w-4" />
                   </button>
@@ -266,7 +285,7 @@ export default function ProfileHeader({
                       'h-9 rounded-md border border-border bg-background px-3 text-base outline-none',
                       'focus:ring-2 focus:ring-primary/40',
                     )}
-                    maxLength={20}
+                    maxLength={8}
                     placeholder="닉네임 입력"
                     aria-label="닉네임 입력"
                     disabled={isPending}

@@ -1,6 +1,7 @@
 // components/layout/MainLayoutShell.tsx
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from "react"
 import Header from "@/components/common/Header"
 import BottomNav from "@/components/common/BottomNav"
@@ -61,7 +62,9 @@ export default function MainLayoutShell({ user, children }: { user:User | null; 
         <Header
           variant="main"
           left={
-            <Image src="/logo.png" alt="로고" width={100} height={40} className="object-cover h-8" />
+            <Link href="/">
+              <Image src="/logo.png" alt="로고" width={100} height={40} className="object-cover h-8" />
+            </Link>
           }
           titleClassName="text-2xl text-gradient-brand font-bold"
           containerClassName="bg-card/80 backdrop-blur-sm border-b border-border"
