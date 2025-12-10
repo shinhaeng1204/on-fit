@@ -43,7 +43,7 @@ export default function ProfileModal({
   onClose,
   profileId,
 }: ProfileModalProps) {
-  // ✅ 훅은 항상 컴포넌트 최상단에서 **무조건** 호출
+  // ✅ 훅은 항상 최상단
   const [userId, setUserId] = useState<string | null>(null);
 
   // 로그인 유저 로드
@@ -60,7 +60,6 @@ export default function ProfileModal({
       const res = await api.get(`/api/profile-modal/${profileId}`);
       return res.data;
     },
-    // 모달이 열려 있고, profileId가 있을 때만 요청
     enabled: open && !!profileId,
   });
 
@@ -74,10 +73,15 @@ export default function ProfileModal({
     toggleFollow.mutate(isFollowing);
   };
 
-  // ✅ 훅들을 다 선언한 "후에" early return
+  // ✅ 훅 뒤에 early return
   if (!open || !profileId) {
     return null;
   }
+
+  // ✅ stats가 없어도 안전하게 쓰도록 기본값 처리
+  const joinedCount = data?.stats?.joinedCount ?? 0;
+  const followerCount = data?.stats?.followerCount ?? 0;
+  const followingCount = data?.stats?.followingCount ?? 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
@@ -100,8 +104,8 @@ export default function ProfileModal({
                   {toggleFollow.isPending
                     ? '처리 중...'
                     : isFollowing
-                    ? '팔로우 취소'
-                    : '팔로우'}
+                      ? '팔로우 취소'
+                      : '팔로우'}
                 </Button>
               )}
 
@@ -110,7 +114,7 @@ export default function ProfileModal({
                 onClick={onClose}
                 className="flex h-8 w-8 items-center justify-center rounded-full border border-border/70 bg-black/40 hover:bg-white/5 cursor-pointer"
               >
-                <X className="h-4 w-4"/>
+                <X className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -118,12 +122,11 @@ export default function ProfileModal({
           {/* 프로필 영역 */}
           <div className="flex items-center gap-8 w-full">
             {/* 프로필 이미지 */}
-            <div
-              className="flex-shrink-0 h-24 w-24 flex items-center justify-center rounded-full bg-primary/20 text-3xl">
+            <div className="relative flex-shrink-0 h-24 w-24 flex items-center justify-center rounded-full bg-primary/20 text-3xl overflow-hidden">
               {data?.profile_image ? (
                 <Image
                   src={data.profile_image}
-                  alt={data.nickname}
+                  alt={data.nickname || ''}
                   fill
                   className="object-cover"
                 />
@@ -139,26 +142,26 @@ export default function ProfileModal({
                 <p className="text-2xl font-semibold truncate flex-1 min-w-0">
                   {data?.nickname}
                 </p>
-                <Badge className="flex-shrink-0" type={data?.level ?? "브론즈"}/>
+                <Badge className="flex-shrink-0" type={data?.level ?? '브론즈'} />
               </div>
 
               {/* 참여/팔로워/팔로잉 */}
               <div className="mt-2 flex gap-10 text-center">
                 <div>
                   <p className="text-2xl font-semibold text-primary">
-                    {data?.stats.joinedCount}
+                    {joinedCount}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">참여</p>
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-primary">
-                    {data?.stats.followerCount}
+                    {followerCount}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">팔로워</p>
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-primary">
-                    {data?.stats.followingCount}
+                    {followingCount}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">팔로잉</p>
                 </div>
@@ -166,13 +169,13 @@ export default function ProfileModal({
             </div>
           </div>
 
-          <div className="my-6 h-px w-full bg-border/60"/>
+          <div className="my-6 h-px w-full bg-border/60" />
 
           {/* 활동 지역 */}
           <section className="mb-4 rounded-2xl border border-border/70 bg-black/20 px-5 py-4">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4 text-primary"/>
+                <MapPin className="h-4 w-4 text-primary" />
                 <span>활동 지역</span>
               </div>
               <p className="text-sm">{data?.location ?? '미설정'}</p>
@@ -182,7 +185,7 @@ export default function ProfileModal({
           {/* 선호 종목 */}
           <section className="mb-4 rounded-2xl border border-border/70 bg-black/20 px-5 py-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4 text-primary"/>
+              <Calendar className="h-4 w-4 text-primary" />
               <span>선호 종목</span>
             </div>
 
@@ -207,7 +210,7 @@ export default function ProfileModal({
           {/* 획득 뱃지 */}
           <section className="rounded-2xl border border-border/70 bg-black/20 px-5 py-4">
             <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
-              <Award className="h-4 w-4 text-primary"/>
+              <Award className="h-4 w-4 text-primary" />
               <span>획득 뱃지</span>
             </div>
 
