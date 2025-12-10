@@ -85,11 +85,16 @@ export default function ReportModal ({
         {/* 모달 헤더 */}
         <div className="flex flex-col space-y-1.5 text-center sm:text-left">
           <h2 className="text-lg font-semibold leading-none tracking-tight flex items-center gap-2">
-            <Flag className="h-5 w-5 text-destructive" />
+            <Flag className="h-5 w-5 text-destructive"/>
             신고하기
           </h2>
-          <p className="text-sm text-muted-foreground">
-            게시글 '{postTitle}'을(를) 신고합니다.
+
+          <p className="text-sm text-muted-foreground min-w-0">
+            게시글 '
+            <span className="inline-block max-w-[14rem] truncate align-bottom">
+              {postTitle}
+            </span>
+            '을(를) 신고합니다.
           </p>
         </div>
 

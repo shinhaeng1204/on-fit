@@ -34,7 +34,6 @@ export default function LogoutButton(){
             로그아웃
         </Button>
       </div>
-        <LogOut className="block md:hidden" onClick={onLogout}/>
         </>
     )
 }

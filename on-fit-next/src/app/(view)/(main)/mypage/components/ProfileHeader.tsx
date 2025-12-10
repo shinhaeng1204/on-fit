@@ -285,7 +285,7 @@ export default function ProfileHeader({
                       'h-9 rounded-md border border-border bg-background px-3 text-base outline-none',
                       'focus:ring-2 focus:ring-primary/40',
                     )}
-                    maxLength={20}
+                    maxLength={8}
                     placeholder="닉네임 입력"
                     aria-label="닉네임 입력"
                     disabled={isPending}

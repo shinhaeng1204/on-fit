@@ -31,6 +31,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '필수 값이 존재하지 않습니다.' }, { status: 400 });
     }
 
+    console.log(user.id, postId, targetUserId, reason, details)
+
     // 같은 유저가 신고했는지 확인
     const { data: exists } = await supabase
       .from("reports")
