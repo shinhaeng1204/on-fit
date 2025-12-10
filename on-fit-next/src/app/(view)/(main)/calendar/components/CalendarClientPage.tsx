@@ -339,7 +339,7 @@ export default function CalendarClientPage() {
                       onClick={() => setIsDialogOpen(true)}
                     >
                       <div className="p-3 sm:p-4 bg-gradient-to-r from-accent/10 to-primary/5 rounded-lg border border-transparent hover:border-accent transition-all">
-                        <p className="font-semibold mb-1 text-sm sm:text-lg">{event.title}</p>
+                        <p className="font-semibold mb-1 text-sm sm:text-lg truncate max-w-[200px] sm:max-w-[300px]">{event.title}</p>
                         <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <CalendarIcon className="h-3 sm:h-4 w-3 sm:w-4" />
@@ -379,7 +379,7 @@ export default function CalendarClientPage() {
                   <Link key={event.id} href={`/post/${event.id}`}>
                     <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-secondary/30 to-secondary/10 rounded-lg border border-transparent hover:border-primary transition-all">
                       <div>
-                        <p className="font-semibold text-sm sm:text-base mb-1">{event.title}</p>
+                        <p className="font-semibold text-sm sm:text-base mb-1 truncate max-w-[200px] sm:max-w-[300px]">{event.title}</p>
                         <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
                           <CalendarIcon className="h-3 w-3" />
                           {event.date.getMonth() + 1}월 {event.date.getDate()}일 {event.time}

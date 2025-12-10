@@ -149,16 +149,6 @@ export default function FitList({ items }: Props) {
     const canUseRadius =
       !hasRegionFilter && myLat != null && myLng != null
 
-    console.log("🔍 필터 상태", {
-      filter,
-      hasSidoFilter,
-      hasSigunguFilter,
-      hasRegionFilter,
-      canUseRadius,
-      myLat,
-      myLng,
-    })
-
     const result = items.filter((item) => {
       const { base, sido: rawSido, sigungu: rawSigungu, dong } =
         getRegionParts(item)
@@ -177,16 +167,6 @@ export default function FitList({ items }: Props) {
 
       const sigunguOk =
         !hasSigunguFilter || rawSigungu === filter.sigungu
-
-      console.log("🏷 게시글", {
-        id: item.id,
-        title: item.title,
-        location: item.location,
-        region_label: item.region_label,
-        parsed: { base, rawSido, rawSigungu, dong },
-        normalized: { itemSidoNorm, filterSidoNorm },
-        coords: { latitude: item.latitude, longitude: item.longitude },
-      })
 
       // 지역 필터 모드
       if (hasRegionFilter) {
