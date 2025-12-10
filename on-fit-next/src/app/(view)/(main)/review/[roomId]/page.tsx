@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { api } from "@/lib/axios";
 import ReviewList from "../components/ReviewList";
 import ReviewModal from "../components/ReviewModal";
+import ReportModal from "@/app/(view)/(main)/post/components/ReportModal";
 
 type ReviewMember = {
   userId: string;
@@ -22,6 +23,8 @@ export default function ReviewPage() {
   const [loading, setLoading] = useState(true);       
   const [error, setError] = useState<string | null>(null);
   const [completed, setCompleted] = useState<string[]>([])
+
+  const [reportTarget, setReportTarget] = useState<ReviewMember | null>(null);
 
   useEffect(() => {
     if (!roomId) return;
@@ -55,6 +58,10 @@ export default function ReviewPage() {
     setCompleted((prev) => [...prev, userId]);
   };
 
+  const handleReport = (member: ReviewMember) => {
+    setReportTarget(member);
+  };
+
   if (loading) {
     return (
       <div className="p-4 text-sm text-muted-foreground">
@@ -78,7 +85,7 @@ export default function ReviewPage() {
       </h1>
       <h3 className="text-muted-foreground text-center mb-8">칭찬을 남겨보세요 💪</h3>
 
-      <ReviewList members={members} onPraise={handlePraise} completed={completed} />
+      <ReviewList members={members} onPraise={handlePraise} completed={completed} onReport={handleReport} />
 
  
       <ReviewModal
@@ -89,6 +96,14 @@ export default function ReviewPage() {
         onComplete={handlePraiseComplete}
       />
 
+      {/* 신고 모달 */}
+      <ReportModal
+        isOpen={!!reportTarget}
+        roomId={roomId}
+        targetUserId={reportTarget?.userId ?? ""}
+        postTitle={reportTarget?.nickname ?? ""}
+        onClose={() => setReportTarget(null)}
+      />
     </div>
   );
 }

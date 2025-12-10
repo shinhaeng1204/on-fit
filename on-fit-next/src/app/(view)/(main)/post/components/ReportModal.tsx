@@ -9,7 +9,8 @@ import {useState} from "react";
 interface ReportModalProps {
   isOpen : boolean
   onClose : () => void
-  postId : string
+  postId? : string
+  roomId? : string
   targetUserId : string
   postTitle? : string
 }
@@ -18,6 +19,7 @@ export default function ReportModal ({
    isOpen,
    onClose,
    postId,
+   roomId,
    postTitle,
    targetUserId
   } : ReportModalProps) {
@@ -38,6 +40,7 @@ export default function ReportModal ({
 
       await api.post('/api/posts/report', {
         postId,
+        roomId,
         targetUserId,
         reason,
         details,
