@@ -74,6 +74,20 @@ export default function FitList({ items }: Props) {
   const [homeLat, setHomeLat] = useState<number | null>(null)
   const [homeLng, setHomeLng] = useState<number | null>(null)
 
+  const validItems = useMemo(() => {
+    const now = new Date()
+
+    return items.filter((item) => {
+      if (!item.date_time) return true
+      
+      const deadline = new Date(item.date_time)
+
+      if(Number.isNaN(deadline.getTime())) return true
+
+      return deadline >= now
+    })
+  }, [items])
+
   useEffect(() => {
     if (!navigator.geolocation) return
 
@@ -131,11 +145,11 @@ export default function FitList({ items }: Props) {
 
       //  검색 버튼만 누르고 검색어가 없으면 전국 카드 전체 반환
       if (keywordLower === "") {
-        return items;
+        return validItems;
       }
 
       //  검색 + 필터 조합 (전국 기반)
-      return items.filter(item => {
+      return validItems.filter(item => {
         const keywordOk = item.title.toLowerCase().includes(keywordLower);
 
         const sportOk =
@@ -156,7 +170,7 @@ export default function FitList({ items }: Props) {
 
     //  제목 검색이 존재하면 → 전국 데이터에서 검색 (위치/필터 무시)
     if (keywordLower !== "") {
-      return items.filter((item) =>
+      return validItems.filter((item) =>
         item.title.toLowerCase().includes(keywordLower)
       );
     }
@@ -175,7 +189,7 @@ export default function FitList({ items }: Props) {
     const canUseRadiusFromHome = 
     !hasRegionFilter && useMyTown && homeLat != null && homeLng != null
 
-    const result = items.filter((item) => {
+    const result = validItems.filter((item) => {
       const { base, sido: rawSido, sigungu: rawSigungu, dong } =
         getRegionParts(item)
 
@@ -237,7 +251,7 @@ export default function FitList({ items }: Props) {
     })
 
     return result
-  }, [items, filter, myLat, myLng, searchTriggered, homeLat, homeLng, useMyTown])
+  }, [validItems, filter, myLat, myLng, searchTriggered, homeLat, homeLng, useMyTown])
 
   useEffect(() => {
 
