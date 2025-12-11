@@ -23,6 +23,7 @@ interface ReviewModalProps {
   roomId: string;
   targetMember: ReviewMember | null;
   onClose: () => void;
+  onComplete: (userId: string) => void;
 }
 
 export default function ReviewModal({
@@ -30,6 +31,7 @@ export default function ReviewModal({
   roomId,
   targetMember,
   onClose,
+  onComplete,
 }: ReviewModalProps) {
   const [content, setContent] = useState("");
   const [saving, setSaving] = useState(false);
@@ -48,6 +50,7 @@ export default function ReviewModal({
         content,
       });
 
+      onComplete(targetMember.userId)
       // 성공 후 초기화 + 모달 닫기
       setContent("");
       onClose();

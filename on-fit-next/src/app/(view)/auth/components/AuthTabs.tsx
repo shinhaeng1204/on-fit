@@ -172,21 +172,24 @@ export default function AuthTabs({ initialTab, initialNotice }: Props) {
     }
 
     try {
-      const { data, error } = await sbClient.auth.signUp({
-        email: r.data.email,
-        password: r.data.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
-        },
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: r.data.email,
+          password: r.data.password,
+        }),
       });
 
-      if (error) {
-        // 이메일 중복
-        if (error.message.includes("already registered")) {
+      const result = await res.json();
+      console.log(result)
+
+      if (!result.ok) {
+        if (result.error === "이미 가입된 이메일입니다.") {
           setSignupError("이미 가입된 이메일입니다.");
-          return;
+        } else {
+          setSignupError("회원가입 중 오류가 발생했습니다.");
         }
-        setSignupError("회원가입 중 오류가 발생했습니다.");
         return;
       }
 

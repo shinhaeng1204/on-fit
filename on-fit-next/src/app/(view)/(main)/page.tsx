@@ -2,6 +2,7 @@
 import AfterAuthRefetchOnce from "./AfterAuthRefetchOnce"
 import Hero from "@/components/main/Hero";
 import FitListInfinite from "@/components/main/FitListInfinite";
+import { OnboardingModal } from "@/components/common/OnBoardingModal";
 
 export default async function Home() {
   return (
@@ -10,6 +11,7 @@ export default async function Home() {
 
       {/* 히어로 섹션 */}
       <Hero />
+      <OnboardingModal isNewUser={true}/>
 
       {/* 리스트 섹션 */}
       <FitListInfinite />

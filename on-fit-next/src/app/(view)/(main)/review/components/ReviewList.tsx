@@ -11,9 +11,11 @@ type ReviewMember = {
 interface ReviewListProps {
   members: ReviewMember[];
   onPraise: (member: ReviewMember) => void;
+  onReport: (member: ReviewMember) => void;
+  completed: string[]
 }
 
-export default function ReviewList({ members, onPraise }: ReviewListProps) {
+export default function ReviewList({ members, onPraise, completed, onReport }: ReviewListProps) {
   return (
     <div className="flex flex-col gap-4 w-full max-w-2xl mx-auto px-4">
       {members.map((m) => (
@@ -21,6 +23,8 @@ export default function ReviewList({ members, onPraise }: ReviewListProps) {
           key={m.userId}
           member={m}
           onPraise={onPraise}
+          onReport={onReport}
+          completed={completed.includes(m.userId)}
         />
       ))}
     </div>

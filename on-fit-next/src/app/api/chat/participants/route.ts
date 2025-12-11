@@ -64,6 +64,16 @@ export async function GET(req: Request) {
     );
   }
 
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("target_user_id")
+    .eq("room_id", roomId)
+    .eq("reviewer_id", user.id);
+
+  console.log(reviews)
+
+  const completed = reviews?.map((r) => r.target_user_id) ?? [];
+
   const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
 
   const items = participants.map((p) => {
@@ -77,5 +87,5 @@ export async function GET(req: Request) {
     };
   });
 
-  return NextResponse.json({ ok: true, items }, { status: 200 });
+  return NextResponse.json({ ok: true, items, completed }, { status: 200 });
 }

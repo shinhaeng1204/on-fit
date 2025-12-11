@@ -1,4 +1,4 @@
-// src/app/mypage/page.tsx
+// src/app/(view)/(main)/mypage/page.tsx
 import { Trophy } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import ProfileHeader from '@/app/(view)/(main)/mypage/components/ProfileHeader';
@@ -15,18 +15,28 @@ import ActivityTabsContainer from '@/app/(view)/(main)/mypage/components/Activit
 import type { ActivityItem } from '@/app/(view)/(main)/mypage/components/ActivityTabs';
 import type { FollowUser, MyPageStats } from '@/app/(view)/(main)/mypage/types';
 import { getBadgeLevelByCompletedCount } from '@/app/(view)/(main)/mypage/badges';
+import { redirect } from 'next/navigation';
+import MyPageToastWatcher from '@/app/(view)/(main)/mypage/components/MyPageToastWatcher';
 
 export default async function MyPage() {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.auth.getUser();
-  const user = data.user!;
+  const user = data.user;
+
+  // 로그인 안 되어 있으면 로그인/온보딩 쪽으로 보내기
+  if (!user) {
+    redirect('/auth'); // 팀 규칙에 맞는 경로로 수정 가능
+  }
 
   // ✅ 기본 마이페이지 데이터 (프로필 + 트로피)
   const { profile, badges } = await getMyPageData();
 
   const name = profile.nickname ?? '';
   const avatarUrl = profile.profile_image ?? '';
-  const region = profile.home_region ?? '';
+
+  // ✅ 이제부터 주소는 home_region만 사용
+  const region: string = profile.home_region ?? '';
+
   const exercises = (profile.sport_preference ?? []) as string[];
 
   // ===========================
@@ -66,7 +76,8 @@ export default async function MyPage() {
   if (followerIds.length > 0) {
     const { data: followersData, error: followersError } = await supabase
       .from('profiles')
-      .select('id, nickname, profile_image, location')
+      // ✅ home_region만 사용
+      .select('id, nickname, profile_image, home_region')
       .in('id', followerIds);
 
     if (followersError) {
@@ -81,7 +92,8 @@ export default async function MyPage() {
             id: p.id,
             nickname: p.nickname,
             avatarUrl: p.profile_image,
-            location: p.location,
+            // FollowUser 타입의 location 필드에 home_region을 그대로 넣어서 사용
+            location: p.home_region ?? null,
             mainBadgeLevel,
           } satisfies FollowUser;
         }) ?? [];
@@ -92,7 +104,8 @@ export default async function MyPage() {
   if (followingIds.length > 0) {
     const { data: followingsData, error: followingsError } = await supabase
       .from('profiles')
-      .select('id, nickname, profile_image, location')
+      // ✅ home_region만 사용
+      .select('id, nickname, profile_image, home_region')
       .in('id', followingIds);
 
     if (followingsError) {
@@ -107,7 +120,7 @@ export default async function MyPage() {
             id: p.id,
             nickname: p.nickname,
             avatarUrl: p.profile_image,
-            location: p.location,
+            location: p.home_region ?? null,
             mainBadgeLevel,
           } satisfies FollowUser;
         }) ?? [];
@@ -201,11 +214,11 @@ export default async function MyPage() {
   // ===========================
   return (
     <div className="flex flex-col gap-6">
-      {/* 상단 프로필은 항상 전체 폭 사용 */}
-      {/* ⭐ 수정됨: p-0과 flex justify-center 클래스를 제거했습니다. ⭐
-          Card의 기본 패딩이 적용되어 좌우 여백이 생깁니다.
-      */}
-      <Card> 
+      {/* ⭐ 동네 변경 완료 시 토스트를 띄워주는 감시 컴포넌트 */}
+      <MyPageToastWatcher />
+
+      {/* 상단 프로필 */}
+      <Card>
         <ProfileHeader
           name={name}
           avatarUrl={avatarUrl}
@@ -221,7 +234,6 @@ export default async function MyPage() {
         <section className="flex flex-col gap-6">
           {/* 지역 & 선호운동: md 이상에서는 2열, 모바일에서는 1열 */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {/* 이 Card는 여전히 p-0이 필요 없으므로 제거하고, 높이 맞춤을 위해 flex h-full flex-col 유지 */}
             <Card className="flex h-full flex-col">
               <RegionSection region={region} />
             </Card>
