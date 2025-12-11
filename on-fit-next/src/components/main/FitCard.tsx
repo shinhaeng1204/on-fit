@@ -43,7 +43,7 @@ export default function FitCard({
     <>
     <Link href={`/post/${id}`}>
       <Card className="group hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary cursor-pointer">
-        <CardHeader className="flex flex-row gap-2">
+        <CardHeader className="flex flex-row gap-2 items-center">
         {/* 아이콘 */}
         <div className="flex items-center rounded-lg bg-primary/10 p-2">
           <SportIcon className="h-5 text-primary" />
@@ -92,9 +92,9 @@ export default function FitCard({
             </span>
           </div>
 
-          <div className="py-[0.1px] w-full bg-muted-foreground/40 mt-2 backdrop-blur-3xl"/>
+         
 
-          <div className="flex mt-2 gap-3 justify-between items-center">
+          <div className="flex mt-2 gap-3 justify-between items-center border-t border-muted-foreground/40 pt-4">
             {/* 왼쪽 배지 */}
             <Badge type={level} className="max-h-6 shrink-0"/>
 
