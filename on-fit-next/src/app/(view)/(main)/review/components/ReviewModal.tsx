@@ -23,7 +23,7 @@ interface ReviewModalProps {
   roomId: string;
   targetMember: ReviewMember | null;
   onClose: () => void;
-  onComplete: () => void;
+  onComplete: (userId: string) => void;
 }
 
 export default function ReviewModal({
