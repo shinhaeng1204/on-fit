@@ -58,7 +58,7 @@ export default function ReviewSection({ reviews, className }: ReviewSectionProps
                 </div>
 
                 {/* 후기 내용 */}
-                <p className="text-sm text-foreground/90 whitespace-pre-wrap">
+                <p className="text-sm text-foreground/90 whitespace-pre-wrap break-all">
                   {review.content}
                 </p>
               </div>
