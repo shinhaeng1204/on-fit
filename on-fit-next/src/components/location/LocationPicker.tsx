@@ -89,7 +89,7 @@ export default function LocationPicker({ onPick }: Props) {
 
     const geocoder = new kakao.maps.services.Geocoder()
 
-    // ✅ 내 위치 기준 초기 세팅
+    // 내 위치 기준 초기 세팅
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         ({ coords }) => {
@@ -342,6 +342,8 @@ export default function LocationPicker({ onPick }: Props) {
   const handleSelectPlace = (place: KakaoPlace) => {
     const lat = parseFloat(place.y)
     const lng = parseFloat(place.x)
+
+    setQuery(place.road_address_name || place.address_name || place.place_name)
 
     applyLocation(lat, lng, '선택한 장소')
     setSearchResults([]) // 리스트 닫기
