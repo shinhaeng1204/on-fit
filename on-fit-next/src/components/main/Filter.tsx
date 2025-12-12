@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import DropBox from "../common/DropBox"
 import { Funnel, Search, X, ChevronDown, Home } from "lucide-react"
 import { Button } from "../common/Button"
@@ -37,13 +37,23 @@ export default function Filter({
   onSearch,
   onMyTownToggle,
 }: FilterProps) {
-  const [activeTab, setActiveTab] = useState<"search" | "filter" | "my" | null>(
-    null
-  )
+  const [activeTab, setActiveTab] = useState<"search" | "filter" | "my" | null>(null)
 
   const toggleTab = (tab: "search" | "filter" | "my") => {
     setActiveTab((prev) => (prev === tab ? null : tab))
   }
+
+  // ✅ 탭 상태가 바뀔 때만 "모드"를 부모에 알려준다 (가장 안정적)
+  useEffect(() => {
+    const isSearch = activeTab === "search"
+    const isMyTown = activeTab === "my"
+
+    onSearch?.(isSearch)
+    onMyTownToggle?.(isMyTown)
+
+    // 정책: 나의동네 켜면 검색모드 OFF
+    if (isMyTown) onSearch?.(false)
+  }, [activeTab, onSearch, onMyTownToggle])
 
   const handleReset = () => onReset?.()
 
@@ -53,11 +63,7 @@ export default function Filter({
       <div className="flex gap-2">
         {/* 검색 탭 (모드 ON/OFF) */}
         <Button
-          onClick={() => {
-            const next = activeTab === "search" ? null : "search"
-            toggleTab("search")
-            onSearch?.(next === "search")
-          }}
+          onClick={() => toggleTab("search")}
           variant={activeTab === "search" ? "default" : "outline"}
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
@@ -78,9 +84,7 @@ export default function Filter({
 
         {/* 필터 탭 (UI만 열고 닫기 — 상태 강제 변경 ❌) */}
         <Button
-          onClick={() => {
-            toggleTab("filter")
-          }}
+          onClick={() => toggleTab("filter")}
           variant={activeTab === "filter" ? "default" : "outline"}
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
@@ -99,14 +103,9 @@ export default function Filter({
           />
         </Button>
 
-        {/* 나의 동네 (모드 ON/OFF) */}
+        {/* 나의 동네 탭 */}
         <Button
-          onClick={() => {
-            const next = activeTab === "my" ? null : "my"
-            toggleTab("my")
-            onMyTownToggle?.(next === "my")
-            if (next === "my") onSearch?.(false) // 나의동네 켜면 검색모드 OFF(정책 유지)
-          }}
+          onClick={() => toggleTab("my")}
           variant={activeTab === "my" ? "default" : "outline"}
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
@@ -117,12 +116,6 @@ export default function Filter({
         >
           <Home className="h-4 w-4" />
           나의 동네
-          <ChevronDown
-            className={cn(
-              "h-3 w-3 transition-transform",
-              activeTab === "my" && "rotate-180"
-            )}
-          />
         </Button>
       </div>
 
@@ -157,8 +150,11 @@ export default function Filter({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    onClick={() => onChange({ ...value, keyword: "" })}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      // ✅ 키워드만 비우고, 검색모드는 탭으로 유지됨
+                      onChange({ ...value, keyword: "" })
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 text-foreground/70 hover:text-foreground"
                   >
                     <X className="h-4 w-4" />
                   </Button>
