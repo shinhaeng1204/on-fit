@@ -38,6 +38,13 @@ export default function ChatRoomList() {
     });
   };
 
+  const handleReadRoom = (roomId: string) => {
+    queryClient.setQueryData(['chatRooms'], (old?:ChatRoomListItem[]) =>
+    (old ?? []).map(r =>
+      r.roomId === roomId ? {...r, unreadCount: 0} : r
+    ))
+  }
+
   // 방 나가기 후 캐시 업데이트
   const handleLeaveRoom = (roomId: string) => {
     // Optimistic Update: 서버 응답 기다리지 않고 UI에서 제거
@@ -83,6 +90,7 @@ export default function ChatRoomList() {
           unreadCount={room.unreadCount}
           canReview={room.canReview}
           onLeave={handleLeaveRoom}
+          onRead={handleReadRoom}
         />
       ))}
     </div>

@@ -67,6 +67,7 @@ export default function FitList({ items }: Props) {
   const [myLat, setMyLat] = useState<number | null>(null)
   const [myLng, setMyLng] = useState<number | null>(null)
 
+  // 내 집(프로필) 위치
   const [homeLat, setHomeLat] = useState<number | null>(null)
   const [homeLng, setHomeLng] = useState<number | null>(null)
 

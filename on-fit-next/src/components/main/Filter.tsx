@@ -61,7 +61,7 @@ export default function Filter({
     <div className="mx-5 my-4 flex flex-col gap-2">
       {/* Tabs */}
       <div className="flex gap-2">
-        {/* 검색 탭 */}
+        {/* 검색 탭 (모드 ON/OFF) */}
         <Button
           onClick={() => toggleTab("search")}
           variant={activeTab === "search" ? "default" : "outline"}
@@ -82,7 +82,7 @@ export default function Filter({
           />
         </Button>
 
-        {/* 필터 탭 */}
+        {/* 필터 탭 (UI만 열고 닫기 — 상태 강제 변경 ❌) */}
         <Button
           onClick={() => toggleTab("filter")}
           variant={activeTab === "filter" ? "default" : "outline"}
@@ -138,7 +138,9 @@ export default function Filter({
                 <input
                   type="text"
                   value={value.keyword}
-                  onChange={(e) => onChange({ ...value, keyword: e.target.value })}
+                  onChange={(e) =>
+                    onChange({ ...value, keyword: e.target.value })
+                  }
                   placeholder="운동 번개 제목으로 검색..."
                   className="w-full h-10 pl-10 pr-10 rounded-md border border-border bg-background/50 text-sm"
                 />
