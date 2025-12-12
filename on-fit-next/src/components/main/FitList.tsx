@@ -20,7 +20,7 @@ const initialFilter: FilterValue = {
 }
 
 // 거리 계산 (하버사인)
-const R = 6371 // 지구 반지름 (km)
+const R = 6371
 function deg2rad(deg: number) {
   return (deg * Math.PI) / 180
 }
@@ -39,19 +39,17 @@ function getDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
   return R * c
 }
 
-const RADIUS_KM = 5 // 기본 반경 5km
+const RADIUS_KM = 5
 
-// region_label 또는 location에서 시/도, 시군구, 동 뽑기
 function getRegionParts(item: postType) {
   const base = (item as any).region_label ?? (item as any).location ?? ""
-  const parts = base.split(" ")
+  const parts = String(base).split(" ")
   const sido = parts[0] ?? ""
   const sigungu = parts[1] ?? ""
   const dong = parts[2] ?? ""
   return { base, sido, sigungu, dong }
 }
 
-// "부산광역시" vs "부산" 정규화
 function normalizeSido(name: string) {
   if (!name) return ""
   return name.replace(/(특별시|광역시|특별자치시|특별자치도|자치시|도)$/g, "")
@@ -60,13 +58,12 @@ function normalizeSido(name: string) {
 export default function FitList({ items }: Props) {
   const [filter, setFilter] = useState<FilterValue>(initialFilter)
 
-  // 검색 모드(탭) ON/OFF
+  // 검색 모드(탭) ON/OFF (Filter에서 탭 변경으로만 제어)
   const [searchTriggered, setSearchTriggered] = useState(false)
 
   // 나의 동네 모드(탭) ON/OFF
   const [useMyTown, setUseMyTown] = useState(false)
 
-  // 내 현재 위치
   const [myLat, setMyLat] = useState<number | null>(null)
   const [myLng, setMyLng] = useState<number | null>(null)
 
@@ -74,24 +71,19 @@ export default function FitList({ items }: Props) {
   const [homeLat, setHomeLat] = useState<number | null>(null)
   const [homeLng, setHomeLng] = useState<number | null>(null)
 
-  // 마감 지난 글 제거
   const validItems = useMemo(() => {
     const now = new Date()
-
     return items.filter((item) => {
-      if (!(item as any).date_time) return true
-
-      const deadline = new Date((item as any).date_time)
+      const dt = (item as any).date_time
+      if (!dt) return true
+      const deadline = new Date(dt)
       if (Number.isNaN(deadline.getTime())) return true
-
       return deadline >= now
     })
   }, [items])
 
-  // 현재 위치 가져오기
   useEffect(() => {
     if (!navigator.geolocation) return
-
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         setMyLat(coords.latitude)
@@ -104,14 +96,11 @@ export default function FitList({ items }: Props) {
     )
   }, [])
 
-
-  // 나의 동네(집 좌표) 가져오기
   useEffect(() => {
     ;(async () => {
       try {
         const res = await api.get("/api/profile/me")
         const profile = res.data.item ?? res.data.profile ?? res.data
-
         setHomeLat(profile.home_lat)
         setHomeLng(profile.home_lng)
       } catch (e) {
@@ -138,15 +127,12 @@ export default function FitList({ items }: Props) {
   const levelOptions = ["실력 선택", "브론즈", "실버", "골드"]
 
   const filteredItems = useMemo(() => {
-
-    
-    // 1) 검색 모드가 켜져있으면: 전국 기반(반경/지역 무시) + (검색어 없으면 전체)
+    // ✅ 1) 검색탭(검색모드) ON이면: 전국 기반 + (키워드 없으면 전체)
     if (searchTriggered) {
       const keywordLower = filter.keyword.trim().toLowerCase()
 
-      if (keywordLower === "") {
-        return validItems
-      }
+      // 키워드 없으면 "전체"
+      if (keywordLower === "") return validItems
 
       return validItems.filter((item) => {
         const title = String((item as any).title ?? "").toLowerCase()
@@ -167,7 +153,7 @@ export default function FitList({ items }: Props) {
       })
     }
 
-    // 2) (검색 모드가 아니더라도) 키워드가 입력돼있으면: 전국 제목 검색(위치/필터 무시)
+    // 2) 검색모드 OFF인데 키워드 있으면: (너 정책대로) 전국 제목 검색 (위치/필터 무시)
     const keywordLower = filter.keyword.trim().toLowerCase()
     if (keywordLower !== "") {
       return validItems.filter((item) =>
@@ -206,16 +192,13 @@ export default function FitList({ items }: Props) {
       const sigunguOk = !hasSigunguFilter || rawSigungu === filter.sigungu
 
       // (A) 지역 필터 모드
-      if (hasRegionFilter) {
-        return sportOk && levelOk && sidoOk && sigunguOk
-      }
+      if (hasRegionFilter) return sportOk && levelOk && sidoOk && sigunguOk
 
       // (B) 나의 동네 반경 모드
       if (canUseRadiusFromHome) {
         const lat = (item as any).latitude
         const lng = (item as any).longitude
         if (lat == null || lng == null) return false
-
         const d = getDistanceKm(homeLat!, homeLng!, lat, lng)
         return sportOk && levelOk && d <= RADIUS_KM
       }
@@ -225,15 +208,23 @@ export default function FitList({ items }: Props) {
         const lat = (item as any).latitude
         const lng = (item as any).longitude
         if (lat == null || lng == null) return false
-
         const d = getDistanceKm(myLat!, myLng!, lat, lng)
         return sportOk && levelOk && d <= RADIUS_KM
       }
 
-      // (D) 기본 모드(위치 못 받은 상태 등): sport/level만 적용
+      // (D) 기본 모드
       return sportOk && levelOk
     })
-  }, [validItems, filter, myLat, myLng, searchTriggered, homeLat, homeLng, useMyTown])
+  }, [
+    validItems,
+    filter,
+    myLat,
+    myLng,
+    searchTriggered,
+    homeLat,
+    homeLng,
+    useMyTown,
+  ])
 
   const handleReset = () => {
     setFilter(initialFilter)
@@ -244,12 +235,11 @@ export default function FitList({ items }: Props) {
       <Filter
         value={filter}
         onChange={(v) => {
-          // 검색 모드가 켜져있더라도 값 바꾸면 검색모드 종료(정책 유지)
-          setSearchTriggered(false)
+          // ✅ 여기서 searchTriggered를 끄면 안 됨 (탭이 열려있으면 검색모드 유지 정책 위반)
           setFilter(v)
         }}
         onReset={() => {
-          setSearchTriggered(false)
+          // ✅ 초기화는 "값만" 초기화 (모드는 탭이 관리)
           handleReset()
         }}
         sportsOptions={sportsOptions}
@@ -259,7 +249,7 @@ export default function FitList({ items }: Props) {
         onSearch={(active) => setSearchTriggered(active)}
         onMyTownToggle={(active) => {
           setUseMyTown(active)
-          if (active) setSearchTriggered(false)
+          if (active) setSearchTriggered(false) // 정책: 나의동네 켜면 검색 OFF
         }}
       />
 
