@@ -53,7 +53,7 @@ export default function LocationViewer({ onPick }: Props) {
     const defaultCenter = new kakao.maps.LatLng(37.5665, 126.9780)
     const _map = new kakao.maps.Map(boxRef.current, {
       center: defaultCenter,
-      level: 7,
+      level: 8,
     })
 
     const _marker = new kakao.maps.Marker({

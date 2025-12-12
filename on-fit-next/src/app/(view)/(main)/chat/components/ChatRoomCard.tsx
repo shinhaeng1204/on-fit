@@ -16,6 +16,7 @@ type ChatRoomCardProps = {
   unreadCount: number;
   canReview: boolean;
   onLeave: (roomId: string) => void;
+  onRead?: (roomId: string) => void;
 };
 
 export default function ChatRoomCard({
@@ -28,11 +29,15 @@ export default function ChatRoomCard({
   unreadCount,
   canReview,
   onLeave,
+  onRead,
 }: ChatRoomCardProps) {
   const router = useRouter();
 
   // 카드 클릭 → 채팅 입장 + 읽음 처리
   const handleChatRoomCard = () => {
+
+    onRead?.(roomId);
+    
     api.post("/api/chat/read", { roomId }).catch((err) => {
       console.error("read 처리 실패", err);
     });
