@@ -1,11 +1,10 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Card } from '../common/Card'
-import DropBox from '../common/DropBox'
-import { Funnel, Search, X, ChevronDown, Home } from 'lucide-react'
-import { Button } from '../common/Button'
-import { cn } from '@/lib/utils'
+import { useState } from "react"
+import DropBox from "../common/DropBox"
+import { Funnel, Search, X, ChevronDown, Home } from "lucide-react"
+import { Button } from "../common/Button"
+import { cn } from "@/lib/utils"
 
 export type FilterValue = {
   sport: string
@@ -36,38 +35,33 @@ export default function Filter({
   sigunguOptions,
   levelOptions,
   onSearch,
-  onMyTownToggle
-  
+  onMyTownToggle,
 }: FilterProps) {
-  const [activeTab, setActiveTab] = useState<'search' | 'filter' | 'my' | null>(null)
+  const [activeTab, setActiveTab] = useState<"search" | "filter" | "my" | null>(
+    null
+  )
 
-  const toggleTab = (tab: 'search' | 'filter' | 'my') => {
-    setActiveTab(activeTab === tab ? null : tab)
+  const toggleTab = (tab: "search" | "filter" | "my") => {
+    setActiveTab((prev) => (prev === tab ? null : tab))
   }
-
- 
-
 
   const handleReset = () => onReset?.()
 
   return (
     <div className="mx-5 my-4 flex flex-col gap-2">
-      {/* =======================  
-          Tabs  
-      ========================== */}
+      {/* Tabs */}
       <div className="flex gap-2">
-        {/* 검색 탭 */}
+        {/* 검색 탭 (모드 ON/OFF) */}
         <Button
           onClick={() => {
-            const next = activeTab === 'search' ? null : 'search'
-            toggleTab('search')
-            onSearch?.(next === 'search')
-            onMyTownToggle?.(false)
+            const next = activeTab === "search" ? null : "search"
+            toggleTab("search")
+            onSearch?.(next === "search")
           }}
-          variant={activeTab === 'search' ? 'default' : 'outline'}
+          variant={activeTab === "search" ? "default" : "outline"}
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-            activeTab === 'search'
+            activeTab === "search"
               ? "bg-primary text-primary-foreground border-primary shadow-sm"
               : "bg-card/50 border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
           )}
@@ -77,22 +71,20 @@ export default function Filter({
           <ChevronDown
             className={cn(
               "h-3 w-3 transition-transform",
-              activeTab === 'search' && "rotate-180"
+              activeTab === "search" && "rotate-180"
             )}
           />
         </Button>
 
-        {/* 필터 탭 */}
+        {/* 필터 탭 (UI만 열고 닫기 — 상태 강제 변경 ❌) */}
         <Button
           onClick={() => {
-            toggleTab('filter')
-            onSearch?.(false)
-            onMyTownToggle?.(false)
+            toggleTab("filter")
           }}
-          variant={activeTab === 'filter' ? 'default' : 'outline'}
+          variant={activeTab === "filter" ? "default" : "outline"}
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-            activeTab === 'filter'
+            activeTab === "filter"
               ? "bg-primary text-primary-foreground border-primary shadow-sm"
               : "bg-card/50 border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
           )}
@@ -102,35 +94,50 @@ export default function Filter({
           <ChevronDown
             className={cn(
               "h-3 w-3 transition-transform",
-              activeTab === 'filter' && "rotate-180"
+              activeTab === "filter" && "rotate-180"
             )}
           />
         </Button>
-        <Button onClick={() => {
-          const next = activeTab === 'my' ? null : 'my'
-          toggleTab('my')
-          onSearch?.(false)
-          onMyTownToggle?.(next === 'my')
-          
-        }} variant={activeTab === 'my' ? 'default' : 'outline'} className='text-muted-foreground'><Home/>나의 동네</Button>
-      </div>
-      
 
-      {/* =======================  
-          SLIDE DOWN CONTENT  
-      ========================== */}
+        {/* 나의 동네 (모드 ON/OFF) */}
+        <Button
+          onClick={() => {
+            const next = activeTab === "my" ? null : "my"
+            toggleTab("my")
+            onMyTownToggle?.(next === "my")
+            if (next === "my") onSearch?.(false) // 나의동네 켜면 검색모드 OFF(정책 유지)
+          }}
+          variant={activeTab === "my" ? "default" : "outline"}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+            activeTab === "my"
+              ? "bg-primary text-primary-foreground border-primary shadow-sm"
+              : "bg-card/50 border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
+          )}
+        >
+          <Home className="h-4 w-4" />
+          나의 동네
+          <ChevronDown
+            className={cn(
+              "h-3 w-3 transition-transform",
+              activeTab === "my" && "rotate-180"
+            )}
+          />
+        </Button>
+      </div>
+
+      {/* Slide down content (search/filter만 내용 있음) */}
       <div
         className={cn(
           "overflow-hidden transition-all duration-200 ease-out",
-          activeTab === 'search' || activeTab === 'filter' ? "max-h-48 opacity-100" : "max-h-0 opacity-0"
+          activeTab === "search" || activeTab === "filter"
+            ? "max-h-48 opacity-100"
+            : "max-h-0 opacity-0"
         )}
       >
         <div className="p-4 bg-card/50 backdrop-blur-sm rounded-lg border border-border">
-
-          {/* =======================  
-              🔍 SEARCH SECTION  
-          ========================== */}
-          {activeTab === 'search' && (
+          {/* SEARCH */}
+          {activeTab === "search" && (
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -138,12 +145,13 @@ export default function Filter({
                 <input
                   type="text"
                   value={value.keyword}
-                  onChange={(e) => onChange({ ...value, keyword: e.target.value })}
+                  onChange={(e) =>
+                    onChange({ ...value, keyword: e.target.value })
+                  }
                   placeholder="운동 번개 제목으로 검색..."
                   className="w-full h-10 pl-10 pr-10 rounded-md border border-border bg-background/50 text-sm"
                 />
 
-                {/* 내부 X 버튼 → Button으로 교체 */}
                 {value.keyword.length > 0 && (
                   <Button
                     type="button"
@@ -159,10 +167,8 @@ export default function Filter({
             </div>
           )}
 
-          {/* =======================  
-              🧩 FILTER SECTION  
-          ========================== */}
-          {activeTab === 'filter' && (
+          {/* FILTER */}
+          {activeTab === "filter" && (
             <div className="flex flex-wrap items-center gap-3">
               <div className="basis-[150px] flex-shrink-0">
                 <DropBox
@@ -200,26 +206,16 @@ export default function Filter({
                 />
               </div>
 
-              {/* 초기화 버튼 */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9"
-                onClick={handleReset}
-              >
+              <Button variant="ghost" size="sm" className="h-9" onClick={handleReset}>
                 <div className="flex items-center justify-center gap-1">
                   <X className="h-4 w-4" />
                   초기화
                 </div>
               </Button>
             </div>
-            
           )}
-          
         </div>
-        
       </div>
-      
     </div>
   )
 }
