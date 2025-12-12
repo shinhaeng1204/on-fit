@@ -11,7 +11,7 @@ export default async function Home() {
 
       {/* 히어로 섹션 */}
       <Hero />
-      <OnboardingModal isNewUser={true}/>
+      <OnboardingModal />
 
       {/* 리스트 섹션 */}
       <FitListInfinite />

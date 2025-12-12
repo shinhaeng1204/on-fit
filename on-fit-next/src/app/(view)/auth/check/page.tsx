@@ -19,7 +19,7 @@ export default async function AuthCheckPage({ searchParams }: { searchParams: Pr
     .eq("id", user.id)
     .single()
 
-  if (!profile?.nickname || !profile?.location) {
+  if (!profile?.nickname || !profile?.home_region) {
     redirect(`/profile-setup?next=${encodeURIComponent(next)}`)
   }
 

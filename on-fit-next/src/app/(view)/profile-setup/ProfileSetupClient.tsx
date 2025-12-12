@@ -5,6 +5,7 @@ import { useRef } from 'react'
 import { Dumbbell, MapPin, User } from 'lucide-react'
 import LocationPicker from '@/components/location/LocationPicker'
 import {handleMaxLength} from "@/lib/handle-max-length";
+import { useRouter } from 'next/navigation';
 
 const EXERCISES = [
   '축구','농구','야구','배구','테니스',
@@ -17,13 +18,30 @@ type Props = {
 }
 
 export default function ProfileSetupClient({ saveProfile }: Props) {
+  const router = useRouter()
+
   const regionRef = useRef<HTMLInputElement>(null)
   const latRef = useRef<HTMLInputElement>(null)
   const lngRef = useRef<HTMLInputElement>(null)
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    const formData = new FormData(e.currentTarget)
+
+    // 1️⃣ 서버 액션 실행
+    await saveProfile(formData)
+
+    // 2️⃣ 🔑 온보딩 트리거 저장
+    localStorage.setItem('showOnboarding', 'true')
+
+    // 3️⃣ 홈으로 이동
+    router.push('/')
+  }
+
   return (
     <form
-      action={saveProfile}
+      onSubmit={handleSubmit} 
       className="w-full max-w-2xl"
     >
       <div className="rounded-xl border bg-card">

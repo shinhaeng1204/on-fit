@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent } from "./Dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./Dialog";
 import {
   Carousel,
   CarouselContent,
@@ -9,6 +9,7 @@ import {
 } from "./Carousel"
 import { Button } from "./Button";
 import { Users, MapPin, Plus, Calendar, MessageCircle, Trophy } from "lucide-react";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface OnboardingSlide {
   icon: React.ReactNode;
@@ -54,20 +55,22 @@ const slides: OnboardingSlide[] = [
   },
 ];
 
-interface OnboardingModalProps {
-  isNewUser: boolean;
-}
-
-export function OnboardingModal({ isNewUser }: OnboardingModalProps) {
+export function OnboardingModal(){
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false)
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    if (isNewUser) {
-      setOpen(true);
+    setMounted(true)
+
+    const shouldShow = localStorage.getItem('showOnboarding')
+    if (shouldShow === 'true') {
+      setOpen(true)
+      // 🔑 1회성 트리거 → 즉시 제거
+      localStorage.removeItem('showOnboarding')
     }
-  }, [isNewUser]);
+  }, [])
 
   useEffect(() => {
     if (!api) return;
@@ -79,7 +82,6 @@ export function OnboardingModal({ isNewUser }: OnboardingModalProps) {
   }, [api]);
 
   const handleClose = () => {
-    localStorage.setItem("hasSeenOnboarding", "true");
     setOpen(false);
   };
 
@@ -100,14 +102,24 @@ export function OnboardingModal({ isNewUser }: OnboardingModalProps) {
   }
 };
 
+ const isLast = current === slides.length-1
+  /* hydration mismatch 방지 */
+  if (!mounted) return null
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="max-w-[600px] w-full p-0 gap-0 h-auto overflow-hidden">
-        <Carousel setApi={setApi} className="w-[600px]">
+      <DialogContent className="h-auto overflow-hidden">
+        <VisuallyHidden>
+            <DialogTitle>온보딩 안내</DialogTitle>
+            <DialogDescription>
+                운동 번개 서비스 시작을 위한 온보딩 안내 설명입니다.
+            </DialogDescription>
+        </VisuallyHidden>
+        <Carousel setApi={setApi} className="w-full">
           <CarouselContent>
             {slides.map((slide, index) => (
               <CarouselItem key={index}>
-                <div className="flex flex-col items-center justify-center p-8 text-center min-h-[320px]">
+                 <div className="box-border flex flex-col items-center justify-center p-8 text-center min-h-[320px]">
                   <div className="mb-6 flex justify-center w-full">{slide.icon}</div>
                   <h2 className="text-xl font-bold mb-3 w-full">{slide.title}</h2>
                   <p className="text-muted-foreground text-sm leading-relaxed w-full max-w-[280px] mx-auto whitespace-pre-line">
@@ -133,14 +145,24 @@ export function OnboardingModal({ isNewUser }: OnboardingModalProps) {
             ))}
           </div>
 
-          <div className="flex gap-2">
+          {/* 👉 데스크탑 버전 버튼 (이전 / 다음) */}
+          <div className="hidden md:flex gap-2">
             <Button variant="outline" className="flex-1" onClick={handlePrev}>
               이전
             </Button>
             <Button className="flex-1" onClick={handleNext}>
-              {current === slides.length - 1 ? "시작하기" : "다음"}
+              {isLast ? "시작하기" : "다음"}
             </Button>
           </div>
+
+          {/* 👉 모바일 버전 버튼: 마지막 페이지에서만 표시 */}
+          {isLast && (
+            <div className="flex md:hidden mt-4">
+              <Button className="w-full" onClick={handleClose}>
+                시작하기
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
