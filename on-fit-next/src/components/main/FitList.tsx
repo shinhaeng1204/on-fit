@@ -5,8 +5,6 @@ import Filter, { FilterValue } from "./Filter"
 import FitCard from "./FitCard"
 import { postType } from "@/types/post"
 import { SIDO_OPTIONS, getSigunguOptions } from "@/constants/korea-regions"
-import { Button } from "../common/Button"
-import { Home } from "lucide-react"
 import { api } from "@/lib/axios"
 
 type Props = {
@@ -18,7 +16,7 @@ const initialFilter: FilterValue = {
   sido: "시·도 선택",
   sigungu: "시·군·구 선택",
   level: "실력 선택",
-  keyword:"",
+  keyword: "",
 }
 
 // 거리 계산 (하버사인)
@@ -45,11 +43,11 @@ const RADIUS_KM = 5 // 기본 반경 5km
 
 // region_label 또는 location에서 시/도, 시군구, 동 뽑기
 function getRegionParts(item: postType) {
-  const base = item.region_label ?? item.location ?? ""
+  const base = (item as any).region_label ?? (item as any).location ?? ""
   const parts = base.split(" ")
-  const sido = parts[0] ?? ""      // 부산광역시
-  const sigungu = parts[1] ?? ""   // 남구
-  const dong = parts[2] ?? ""      // 안락2동 (있으면)
+  const sido = parts[0] ?? ""
+  const sigungu = parts[1] ?? ""
+  const dong = parts[2] ?? ""
   return { base, sido, sigungu, dong }
 }
 
@@ -61,50 +59,54 @@ function normalizeSido(name: string) {
 
 export default function FitList({ items }: Props) {
   const [filter, setFilter] = useState<FilterValue>(initialFilter)
-  
+
+  // 검색 모드(탭) ON/OFF
   const [searchTriggered, setSearchTriggered] = useState(false)
 
-  // 나의 동네 모드 여부
+  // 나의 동네 모드(탭) ON/OFF
   const [useMyTown, setUseMyTown] = useState(false)
 
-  // 내 위치 상태
+  // 내 현재 위치
   const [myLat, setMyLat] = useState<number | null>(null)
   const [myLng, setMyLng] = useState<number | null>(null)
 
+  // 내 집(프로필) 위치
   const [homeLat, setHomeLat] = useState<number | null>(null)
   const [homeLng, setHomeLng] = useState<number | null>(null)
 
+  // 마감 지난 글 제거
   const validItems = useMemo(() => {
     const now = new Date()
 
     return items.filter((item) => {
-      if (!item.date_time) return true
-      
-      const deadline = new Date(item.date_time)
+      if (!(item as any).date_time) return true
 
-      if(Number.isNaN(deadline.getTime())) return true
+      const deadline = new Date((item as any).date_time)
+      if (Number.isNaN(deadline.getTime())) return true
 
       return deadline >= now
     })
   }, [items])
 
+  // 현재 위치 가져오기
   useEffect(() => {
     if (!navigator.geolocation) return
 
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-       
         setMyLat(coords.latitude)
         setMyLng(coords.longitude)
       },
-      (err) => {
+      () => {
         setMyLat(null)
         setMyLng(null)
       }
     )
   }, [])
 
-    useEffect(() => {
+
+  // 나의 동네(집 좌표) 가져오기
+  useEffect(() => {
     ;(async () => {
       try {
         const res = await api.get("/api/profile/me")
@@ -118,13 +120,10 @@ export default function FitList({ items }: Props) {
     })()
   }, [])
 
-  useEffect(() => {
-  }, [myLat, myLng])
-
   const sportsOptions = useMemo(() => {
     const set = new Set<string>()
     items.forEach((item) => {
-      if (item.sport) set.add(item.sport)
+      if ((item as any).sport) set.add((item as any).sport)
     })
     return ["종목 선택", ...Array.from(set)]
   }, [items])
@@ -139,123 +138,102 @@ export default function FitList({ items }: Props) {
   const levelOptions = ["실력 선택", "브론즈", "실버", "골드"]
 
   const filteredItems = useMemo(() => {
-    // 검색 버튼을 눌렀다면 → 전국 기반 필터링 (반경/지역 무시)
-    if (searchTriggered) {
-      const keywordLower = filter.keyword.trim().toLowerCase();
 
-      //  검색 버튼만 누르고 검색어가 없으면 전국 카드 전체 반환
+    
+    // 1) 검색 모드가 켜져있으면: 전국 기반(반경/지역 무시) + (검색어 없으면 전체)
+    if (searchTriggered) {
+      const keywordLower = filter.keyword.trim().toLowerCase()
+
       if (keywordLower === "") {
-        return validItems;
+        return validItems
       }
 
-      //  검색 + 필터 조합 (전국 기반)
-      return validItems.filter(item => {
-        const keywordOk = item.title.toLowerCase().includes(keywordLower);
+      return validItems.filter((item) => {
+        const title = String((item as any).title ?? "").toLowerCase()
+        const keywordOk = title.includes(keywordLower)
 
         const sportOk =
-          filter.sport === "종목 선택" || item.sport === filter.sport;
+          filter.sport === "종목 선택" || (item as any).sport === filter.sport
 
         const levelOk =
-          filter.level === "실력 선택" || item.level === filter.level;
+          filter.level === "실력 선택" || (item as any).level === filter.level
 
-        const { sido: itemSido, sigungu: itemSigungu } = getRegionParts(item);
-        const sidoOk = filter.sido === "시·도 선택" || filter.sido === itemSido;
-        const sigunguOk = filter.sigungu === "시·군·구 선택" || filter.sigungu === itemSigungu;
+        const { sido: itemSido, sigungu: itemSigungu } = getRegionParts(item)
+        const sidoOk = filter.sido === "시·도 선택" || filter.sido === itemSido
+        const sigunguOk =
+          filter.sigungu === "시·군·구 선택" || filter.sigungu === itemSigungu
 
-        return keywordOk && sportOk && levelOk && sidoOk && sigunguOk;
-      });
+        return keywordOk && sportOk && levelOk && sidoOk && sigunguOk
+      })
     }
 
-    const keywordLower = filter.keyword.trim().toLowerCase();
-
-    //  제목 검색이 존재하면 → 전국 데이터에서 검색 (위치/필터 무시)
+    // 2) (검색 모드가 아니더라도) 키워드가 입력돼있으면: 전국 제목 검색(위치/필터 무시)
+    const keywordLower = filter.keyword.trim().toLowerCase()
     if (keywordLower !== "") {
       return validItems.filter((item) =>
-        item.title.toLowerCase().includes(keywordLower)
-      );
+        String((item as any).title ?? "").toLowerCase().includes(keywordLower)
+      )
     }
-    const hasSidoFilter = filter.sido !== "시·도 선택"
 
-    // 값이 비어있으면(falsey) 필터 OFF 로 간주
+    // 3) 지역 필터 적용 여부
+    const hasSidoFilter = filter.sido !== "시·도 선택"
     const hasSigunguFilter =
       !!filter.sigungu &&
       filter.sigungu !== "시·군·구 선택" &&
       filter.sigungu !== "전체"
 
     const hasRegionFilter = hasSidoFilter || hasSigunguFilter
-    const canUseRadius =
-      !hasRegionFilter && myLat != null && myLng != null
 
-    const canUseRadiusFromHome = 
-    !hasRegionFilter && useMyTown && homeLat != null && homeLng != null
+    // 4) 반경 모드 가능 여부
+    const canUseRadius = !hasRegionFilter && myLat != null && myLng != null
+    const canUseRadiusFromHome =
+      !hasRegionFilter && useMyTown && homeLat != null && homeLng != null
 
-    const result = validItems.filter((item) => {
-      const { base, sido: rawSido, sigungu: rawSigungu, dong } =
-        getRegionParts(item)
+    // 5) 최종 필터
+    return validItems.filter((item) => {
+      const { sido: rawSido, sigungu: rawSigungu } = getRegionParts(item)
 
       const itemSidoNorm = normalizeSido(rawSido)
       const filterSidoNorm = normalizeSido(filter.sido)
 
       const sportOk =
-        filter.sport === "종목 선택" || item.sport === filter.sport
+        filter.sport === "종목 선택" || (item as any).sport === filter.sport
 
       const levelOk =
-        filter.level === "실력 선택" || item.level === filter.level
+        filter.level === "실력 선택" || (item as any).level === filter.level
 
-      const sidoOk =
-        !hasSidoFilter || itemSidoNorm === filterSidoNorm
+      const sidoOk = !hasSidoFilter || itemSidoNorm === filterSidoNorm
+      const sigunguOk = !hasSigunguFilter || rawSigungu === filter.sigungu
 
-      const sigunguOk =
-        !hasSigunguFilter || rawSigungu === filter.sigungu
-
-      // 지역 필터 모드
+      // (A) 지역 필터 모드
       if (hasRegionFilter) {
-        const pass = sportOk && levelOk && sidoOk && sigunguOk
-        
-        return pass
+        return sportOk && levelOk && sidoOk && sigunguOk
       }
 
+      // (B) 나의 동네 반경 모드
       if (canUseRadiusFromHome) {
-        if (item.latitude == null || item.longitude == null) {
-          return false
-        }
+        const lat = (item as any).latitude
+        const lng = (item as any).longitude
+        if (lat == null || lng == null) return false
 
-        const d = getDistanceKm(
-          homeLat!,
-          homeLng!,
-          item.latitude,
-          item.longitude
-        )
-        const distanceOk = d <= RADIUS_KM
-
-        return sportOk && levelOk && distanceOk
+        const d = getDistanceKm(homeLat!, homeLng!, lat, lng)
+        return sportOk && levelOk && d <= RADIUS_KM
       }
 
-      // 반경 필터 모드
+      // (C) 현재 위치 반경 모드
       if (canUseRadius) {
-        if (item.latitude == null || item.longitude == null) {
-          
-          return false
-        }
+        const lat = (item as any).latitude
+        const lng = (item as any).longitude
+        if (lat == null || lng == null) return false
 
-        const d = getDistanceKm(myLat!, myLng!, item.latitude, item.longitude)
-        const distanceOk = d <= RADIUS_KM      
-
-        return sportOk && levelOk && distanceOk
+        const d = getDistanceKm(myLat!, myLng!, lat, lng)
+        return sportOk && levelOk && d <= RADIUS_KM
       }
 
-      // 기본 모드
-      const pass = sportOk && levelOk
-      
-      return pass
+      // (D) 기본 모드(위치 못 받은 상태 등): sport/level만 적용
+      return sportOk && levelOk
     })
-
-    return result
   }, [validItems, filter, myLat, myLng, searchTriggered, homeLat, homeLng, useMyTown])
-
-  useEffect(() => {
-
-  }, [filteredItems])
 
   const handleReset = () => {
     setFilter(initialFilter)
@@ -263,14 +241,14 @@ export default function FitList({ items }: Props) {
 
   return (
     <>
-   
       <Filter
         value={filter}
-        onChange={(v)=>{
+        onChange={(v) => {
+          // 검색 모드가 켜져있더라도 값 바꾸면 검색모드 종료(정책 유지)
           setSearchTriggered(false)
           setFilter(v)
         }}
-        onReset={()=>{
+        onReset={() => {
           setSearchTriggered(false)
           handleReset()
         }}
@@ -278,18 +256,16 @@ export default function FitList({ items }: Props) {
         sidoOptions={sidoOptions}
         sigunguOptions={sigunguOptions}
         levelOptions={levelOptions}
-        onSearch={(active)=>setSearchTriggered(active)}
+        onSearch={(active) => setSearchTriggered(active)}
         onMyTownToggle={(active) => {
           setUseMyTown(active)
-          if (active) {
-            setSearchTriggered(false)
-          }
+          if (active) setSearchTriggered(false)
         }}
       />
-    
+
       <div className="mx-5 flex flex-col gap-6 md:grid md:grid-cols-3">
         {filteredItems.map((fit) => (
-          <FitCard key={fit.id} {...fit} />
+          <FitCard key={(fit as any).id} {...fit} />
         ))}
       </div>
     </>
