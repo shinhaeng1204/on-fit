@@ -198,3 +198,16 @@
 
 
 
+/* Radix Dialog positioner override */
+[data-radix-dialog-content-wrapper] {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  [data-radix-dialog-content-wrapper] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}

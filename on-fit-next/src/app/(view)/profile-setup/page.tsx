@@ -60,5 +60,4 @@ async function saveProfile(formData: FormData) {
     throw new Error(error.message)
   }
 
-  redirect('/')
 }
