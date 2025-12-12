@@ -62,9 +62,22 @@ export const NotificationDropdown = ({
 
       {/* 알림 팝업 */}
       <PopoverContent
-        className="w-80 p-0 bg-card border-border z-50"
-        align="end"
-      >
+  align="end"
+  side="bottom"
+  sideOffset={8}
+  className="
+    z-50 p-0 bg-card border-border
+
+    /* 데스크탑 */
+    w-80
+
+    /* 모바일 */
+    max-md:w-[260px]
+    max-md:right-2
+    max-md:left-auto
+    max-md:translate-x-0
+  "
+>
         {/* 상단 헤더 */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h3 className="font-semibold text-lg">알림</h3>
