@@ -1,36 +1,157 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏃‍♂️ 온핏 (on-fit)
 
-## Getting Started
+동네에서 바로 만나는 운동 메이트\
+실력 · 취향 · 시간대에 맞춰 즉시 모이고, 함께 성장하는 근거리 운동 커뮤니티 플랫폼
 
-First, run the development server:
+## 📌 서비스 개요
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+온핏(on-fit) 은 혼자 운동하기 어려운 사람들을 위해,\
+동네 기반 + 실력 기반 매칭으로 누구나 쉽게 운동 모임을 만들고 참여할 수 있는 서비스입니다.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+근거리에서 실력 수준이 맞는 사람들과 즉시 참여 가능한 운동 모임을 제공합니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🎯 목표
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. 운동을 꾸준히 하고 싶지만 함께할 사람이 없는 문제 해결
 
-## Learn More
+2. 실력·연령·지역 미스매치로 인한 참여 장벽 제거
 
-To learn more about Next.js, take a look at the following resources:
+3. 신뢰 가능한 커뮤니티 문화 형성 (노쇼 제재 / 뱃지 시스템)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 👥 주요 대상
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* 20~40대 직장인 및 대학생
 
-## Deploy on Vercel
+* 근거리에서 가볍게 운동할 사람을 찾는 이용자
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+* 실력 / 연령 / 지역 기준 필터링된 매칭을 원하는 사용자
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🧩 주요 기능
+### 🏠 메인 페이지
+
+* 모집글 리스트
+* 운동 종목, 지역, 실력 기준 표시
+
+### 📄 모집글 상세 페이지
+
+* 운동 종목, 시간, 장소, 인원, 실력 표시
+* 상세 소개/ 준비물/ 참가비 표시
+* 참여 버튼 클릭 시 그룹 채팅방 자동 생성
+* 작성자 프로필 보기 / 팔로우 / 게시글 신고
+
+### 👤 마이 페이지
+
+* 프로필 이미지, 닉네임 변경가능
+* 누적 참여 횟수, 현재 진행 횟수, 팔로우 / 팔로워 표시
+* 획득한 뱃지 목록
+* 내가 참여한 번개 모임 기록 / 내가 작성한 게시글 (전체/진행중/완료 필터링)
+* 내가 받은 후기
+
+### ✏️ 게시글 생성
+
+* 종목 선택
+* 제목 작성
+* 간단한 소개글 작성
+* 날짜 / 시간 / 장소 설정
+* 모집 인원 / 실력 기준 선택
+* 준비물 / 참가비 작성
+* 등록 즉시 메인 리스트 반영
+
+### 📅 달력 페이지
+* 날짜별 번개 모임 현황 한눈에 보기
+* 참여 중 / 주최 중 / 팔로우 중 모임 강조 표시
+* 해당 날짜 클릭 시 일정 상세 보기 가능
+* 연결된 일정 클릭 시 상세 페이지로 이동 가능
+
+### 📋채팅 리스트 페이지
+* 현재 참여중인 채팅 목록
+* 제목, 종목, 인원수, 최근 채팅 날짜 표시
+* 안 읽은 메세지 표시 기능
+* 완료된 채팅의 경우 리뷰하러 가기 노출
+
+### 💬 채팅 시스템
+* 모집글 참여 시 자동 그룹 채팅방 생성 또는 참여
+* 실시간 채팅 기능
+* 참여자 목록 표시 / 참여자 프로필 상세 모달(팔로우/언팔로우 기능 탑재)
+* 방장 및 참여자 구분
+
+### 🎈 리뷰 페이지
+* 완료한 모임에 한해 각 참여자들에게 리뷰 가능
+* 각 멤버에 대한 신고하기 기능
+* 작성 완료 시 마이페이지에 나의 리뷰 자동으로 추가
+
+### 🔐 인증 및 사용자 시스템
+* 카카오 OAuth 로그인
+* 구글 계정 기반 간편 가입
+* 자체 회원 가입 가능
+
+### 📍 동네 설정
+* 카카오 맵 기반 GPS 기반 자동 탐지 또는 직접 설정
+* 내 동네 기준 게시글 우선 노출
+
+### 🔔 팔로우 & 알림
+* 특정 유저 팔로우 시
+* 새 모집글 등록 → 푸시 알림
+* 팔로우 한 유저가 게시글을 만들었을 때
+* 새로운 채팅이 추가 되었을 때
+* 내가 주최한 모임에 참여자가 추가 되었을 때
+
+## 🛡️ 커뮤니티 & 제재 시스템
+### 🧩 뱃지 시스템
+| 조건       | 	뱃지     | 	설명       |
+|----------|---------|-----------|
+| 3회 참여    | 	🥉 브론즈 | 	첫 꾸준한 활동 |
+| 10회 참여   | 	🥈 실버  | 	중급 참여자   |
+| 50회 참여	  | 🥇 골드	  | 지역 핵심 유저  |
+|  100회 참여 |	💎 플래티넘	| 헌신적인 멤버   |
+
+### 🚫 노쇼 제재
+사전 취소 없이 미참여 시 누적 관리
+누적 3회 이상 → 일정 기간 참여 제한 (1주 ~ 1달)
+
+### ⚠️ 신고 기능
+
+부적절한 언행 / 허위 모집 / 상업적 이용 신고
+관리자 검토 후 경고 또는 계정 정지
+
+## 🛠️ 기술 스택
+### Frontend
+* Framework: Next.js (App Router)
+* Library: React 19
+* Styling: Tailwind CSS
+* State: React-query
+* Language: TypeScript (strict)
+
+### Backend
+* Runtime: Next.js 15 Route Handlers / Server Actions
+* Node.js: 18
+* Infra 원칙: 읽기 캐시 최대화, 쓰기 검증 최소화
+
+### Database
+* Supabase PostgreSQL
+* PostGIS: 위치 기반 검색 (ST_DWithin, ST_Distance)
+
+### Auth
+* Auth.js (NextAuth) + Kakao OAuth
+* Session: DB Session 또는 JWT
+
+### Realtime / Chat
+* Pusher Channels
+* (대안) Ably / Socket.IO + Redis Adapter
+
+### Push Notification
+* Web Push API + Firebase Cloud Messaging (FCM)
+* 모임 리마인더 / 팔로우 알림 / 노쇼 경고
+
+## 🗓️ 추진 일정
+|주차	|기간	|내용|
+|-|-|-|
+|1주차	|10.30 ~ 10.31	|주제 선정 · 기획 · 디자인|
+|2주차	|11.03 ~ 11.07	|MVP 개발|
+|3주차	|11.10 ~ 11.14	|MVP 개발|
+|4주차	|11.17 ~ 11.21	|QA · 리팩토링|
+|5주차	|11.24 ~ 11.26	|마무리 · 배포|
+
+## 🚀 비전
+운동을 약속으로, 사람을 연결하다. \
+온핏은 동네 운동 문화를 만드는 플랫폼을 지향합니다.
