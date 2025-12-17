@@ -2,7 +2,7 @@ export type BadgeItem = {
   id: string;
   name: string;
   description?: string;
-  level?: '초심자' | '브론즈' | '실버' | '골드' | '플레티넘';
+  level?: '첫걸음' | '초심자' | '활동가' | '베테랑' | '레전드';
 };
 
 export type ProfileStats = {
@@ -15,7 +15,7 @@ export type ProfileStats = {
 export type Profile = {
   id: string;
   nickname: string;
-  level: '초심자' | '브론즈' | '실버' | '골드' | '플레티넘';
+  level: '첫걸음' | '초심자' | '활동가' | '베테랑' | '레전드';
   region?: string;
   profile_image?: string;
   preferred_exercises?: string[]; // Supabase 컬럼명에 맞게

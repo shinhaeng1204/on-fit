@@ -59,8 +59,7 @@ export default function ChatParticipants({ roomId, onClose }: ChatParticipantsPr
                     {p.role === "host" ? "방장" : "참여자"}
                   </div>
                 </div>
-                {/* TODO: 추후 profiles에 추가되면 실제 데이터 필요 */}
-                <Badge type="브론즈" />
+               
             </button>
           ))}
         </div>

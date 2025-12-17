@@ -1,3 +1,14 @@
+export type ReviewUser = {
+  id: string;
+  nickname: string | null;
+  profile_image: string | null;
+};
+
+export type ReviewRoom = {
+  id: string;
+  name: string | null;
+};
+
 export type Review = {
   id: string;
   reviewer_id: string;
@@ -6,14 +17,7 @@ export type Review = {
   content: string;
   created_at: string;
 
-  reviewer?: {
-    id: string;
-    nickname: string;
-    profile_image?: string | null;
-  };
+  reviewer?: ReviewUser | null;
 
-  room?: {
-    id: string;
-    name?: string | null;
-  };
+  room?: ReviewRoom | null;
 };

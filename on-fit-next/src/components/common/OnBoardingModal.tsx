@@ -51,7 +51,7 @@ const slides: OnboardingSlide[] = [
   {
     icon: <Trophy className="w-16 h-16 text-primary" />,
     title: "뱃지를 모아보세요",
-    description: "참여 횟수에 따라 브론즈, 실버, 골드, 플래티넘 \n뱃지를 획득할 수 있어요!",
+    description: "참여 횟수에 따라 초심자, 활동가, 베테랑, 레전드 \n뱃지를 획득할 수 있어요!",
   },
 ];
 

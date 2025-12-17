@@ -1,7 +1,8 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { MapPin } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import LocationPicker from '@/components/location/LocationPicker';
 
 type Props = {
@@ -9,9 +10,28 @@ type Props = {
 };
 
 export default function RegionSetupClient({ saveRegion }: Props) {
+  const router = useRouter();
+
   const regionRef = useRef<HTMLInputElement>(null);
   const latRef = useRef<HTMLInputElement>(null);
   const lngRef = useRef<HTMLInputElement>(null);
+
+  // 사용자가 실제로 동네를 선택했는지 추적 (취소 시 경고용)
+  const [isDirty, setIsDirty] = useState(false);
+
+  const handleCancel = () => {
+    if (isDirty) {
+      const ok = window.confirm(
+        '변경사항이 저장되지 않았습니다. 그대로 나가시겠어요?'
+      );
+      if (!ok) return;
+    }
+
+    // 바로 이전 페이지로 돌아가기
+    router.back();
+    // 혹은 항상 마이페이지로 보내고 싶으면:
+    // router.push('/mypage');
+  };
 
   return (
     <form
@@ -45,16 +65,28 @@ export default function RegionSetupClient({ saveRegion }: Props) {
                 if (regionRef.current) regionRef.current.value = region;
                 if (latRef.current) latRef.current.value = String(lat);
                 if (lngRef.current) lngRef.current.value = String(lng);
+                setIsDirty(true); // 사용자가 위치를 한 번이라도 선택하면 dirty 처리
               }}
             />
           </div>
 
-          <button
-            type="submit"
-            className="w-full rounded-md px-4 py-3 font-medium bg-primary text-primary-foreground hover:opacity-90 transition"
-          >
-            동네 저장하기
-          </button>
+          {/* 버튼 영역: 취소 + 저장 */}
+          <div className="mt-6 flex gap-3">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="w-full rounded-md px-4 py-3 text-sm font-medium border border-border bg-background hover:bg-muted transition"
+            >
+              취소
+            </button>
+
+            <button
+              type="submit"
+              className="w-full rounded-md px-4 py-3 text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition"
+            >
+              동네 저장하기
+            </button>
+          </div>
         </div>
       </div>
     </form>

@@ -13,10 +13,14 @@ import { getMyReviews } from '@/lib/reviews';
 
 import ActivityTabsContainer from '@/app/(view)/(main)/mypage/components/ActivityTabsContainer';
 import type { ActivityItem } from '@/app/(view)/(main)/mypage/components/ActivityTabs';
-import type { FollowUser, MyPageStats } from '@/app/(view)/(main)/mypage/types';
+import type {
+  FollowUser,
+  MyPageStats,
+} from '@/app/(view)/(main)/mypage/types';
 import { getBadgeLevelByCompletedCount } from '@/app/(view)/(main)/mypage/badges';
 import { redirect } from 'next/navigation';
 import MyPageToastWatcher from '@/app/(view)/(main)/mypage/components/MyPageToastWatcher';
+import type { BadgeType } from '@/types/post';
 
 export default async function MyPage() {
   const supabase = await createSupabaseServerClient();
@@ -28,8 +32,9 @@ export default async function MyPage() {
     redirect('/auth'); // 팀 규칙에 맞는 경로로 수정 가능
   }
 
-  // ✅ 기본 마이페이지 데이터 (프로필 + 트로피)
-  const { profile, badges } = await getMyPageData();
+  // ✅ 기본 마이페이지 데이터 (프로필)
+  // getMyPageData가 badges도 리턴하더라도, 여기서는 profile만 사용
+  const { profile } = await getMyPageData();
 
   const name = profile.nickname ?? '';
   const avatarUrl = profile.profile_image ?? '';
@@ -38,6 +43,29 @@ export default async function MyPage() {
   const region: string = profile.home_region ?? '';
 
   const exercises = (profile.sport_preference ?? []) as string[];
+
+  // 기준이 되는 현재 시각 (진행중/완료 판별용)
+  const now = new Date();
+
+  // ===========================
+  // 0) 내 누적 트로피 불러오기 (v_user_trophies)
+  // ===========================
+  const { data: trophyRows, error: trophyError } = await supabase
+    .from('v_user_trophies')
+    .select('trophy_id, name, level, description')
+    .eq('user_id', user.id);
+
+  if (trophyError) {
+    console.error('failed to load trophies for me', trophyError);
+  }
+
+  const badges =
+    trophyRows?.map((t) => ({
+      id: t.trophy_id,
+      name: t.name,
+      level: t.level as BadgeType, // '초심자' | '브론즈' | '실버' | '골드' | '플레티넘'
+      description: t.description ?? undefined,
+    })) ?? [];
 
   // ===========================
   // 1) 팔로워 / 팔로잉 + 완료 횟수 → 대표 뱃지 포함 목록
@@ -154,12 +182,18 @@ export default async function MyPage() {
     .order('date_time', { ascending: false });
 
   const created: ActivityItem[] =
-    createdPosts?.map((p) => ({
-      id: p.id,
-      title: p.title,
-      date: p.date_time,
-      status: p.status === '모집중' ? 'open' : 'close',
-    })) ?? [];
+    createdPosts?.map((p) => {
+      const isCompleted =
+        p.date_time ? new Date(p.date_time) < now : false;
+
+      return {
+        id: p.id,
+        title: p.title,
+        date: p.date_time,
+        // 날짜가 지났으면 완료(close), 아니면 진행중(open)
+        status: isCompleted ? 'close' : 'open',
+      };
+    }) ?? [];
 
   // ✅ 내가 참여 중인 모임
   const { data: participantRows } = await supabase
@@ -185,12 +219,17 @@ export default async function MyPage() {
     }
 
     participated =
-      joinedPosts?.map((p) => ({
-        id: p.id,
-        title: p.title,
-        date: p.date_time,
-        status: p.status === '모집중' ? 'open' : 'close',
-      })) ?? [];
+      joinedPosts?.map((p) => {
+        const isCompleted =
+          p.date_time ? new Date(p.date_time) < now : false;
+
+        return {
+          id: p.id,
+          title: p.title,
+          date: p.date_time,
+          status: isCompleted ? 'close' : 'open',
+        };
+      }) ?? [];
   }
 
   const activeCount = participated.filter(

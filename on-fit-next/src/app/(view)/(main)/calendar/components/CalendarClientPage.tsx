@@ -319,7 +319,7 @@ export default function CalendarClientPage() {
 
         {/* DIALOG */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[80vh] overflow-y-auto p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle className="text-lg sm:text-2xl flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />
