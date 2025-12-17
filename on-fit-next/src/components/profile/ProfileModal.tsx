@@ -26,7 +26,7 @@ type BadgeItem = {
 type ProfileModalData = {
   profile_image: string | null;
   nickname: string;
-  level: '초심자' | '브론즈' | '실버' | '골드' | '플레티넘';
+  level: '첫걸음' | '초심자' | '활동가' | '베테랑' | '레전드';
   followers: string[];
   sport_preference: string[];
   badges: BadgeItem[];
@@ -142,7 +142,7 @@ export default function ProfileModal({
                 <p className="text-2xl font-semibold truncate flex-1 min-w-0">
                   {data?.nickname}
                 </p>
-                <Badge className="flex-shrink-0" type={data?.level ?? '브론즈'} />
+                <Badge className="flex-shrink-0" type={data?.level ?? '초심자'} />
               </div>
 
               {/* 참여/팔로워/팔로잉 */}

@@ -108,7 +108,7 @@ export default function PostInfo({id} : {id:string}) {
               <div>
                 <p className="text-sm font-medium mb-1">실력</p>
                 <p className="text-sm text-muted-foreground">
-                  <Badge type={data?.level ?? "브론즈"} />
+                  <Badge type={data?.level ?? "활동가"} />
                 </p>
               </div>
             </div>

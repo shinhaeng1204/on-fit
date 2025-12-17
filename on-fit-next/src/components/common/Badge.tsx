@@ -4,19 +4,19 @@ import { cn } from "@/lib/utils";
 
 const BadgeStyles: Record<string, string> = {
   // 초심자: 진한 초록 계열
-  초심자:
+  첫걸음:
     "bg-gradient-to-r from-green-600 to-green-400 text-white border-green-500/60",
 
-  브론즈:
+  초심자:
     "bg-gradient-to-r from-amber-700 to-amber-500 text-white border-amber-300/40",
 
-  실버:
+  활동가:
     "bg-gradient-to-r from-slate-400 to-slate-200 text-slate-900 border-slate-300/40",
 
-  골드:
+  베테랑:
     "bg-gradient-to-r from-yellow-500 to-yellow-300 text-yellow-900 border-yellow-300/40",
 
-  플레티넘:
+  레전드:
     "bg-gradient-to-r from-cyan-400 to-blue-400 text-white border-cyan-200/40",
 };
 
