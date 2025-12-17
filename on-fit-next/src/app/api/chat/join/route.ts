@@ -30,11 +30,6 @@ export async function POST(req: Request) {
     const roomId = post.room_id;
     if (!roomId) return fail("해당 포스트에 연결된 방이 없습니다.", 400);
 
-    // 🔥 1) 내가 만든 모임인지 체크
-    if (post.author_id === user.id) {
-      return fail("본인이 만든 모임에는 참여할 수 없습니다.", 400);
-    }
-
     // 🔥 2) 이미 참여했는지 체크
     const { data: existing } = await supabase
       .from("participants")

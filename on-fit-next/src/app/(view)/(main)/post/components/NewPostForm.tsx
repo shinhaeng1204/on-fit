@@ -12,6 +12,7 @@ import LocationPicker from '@/components/location/LocationPicker'
 import { SIDO_OPTIONS, getSigunguOptions } from '@/constants/korea-regions'
 import { postType } from '@/types/post'
 import {handleMaxLength} from "@/lib/handle-max-length";
+import {useQueryClient} from "@tanstack/react-query";
 
 type Mode = 'create' | 'edit'
 
@@ -78,6 +79,7 @@ export default function NewPostForm({
   initialData,
 }: NewPostFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const parsedLocation = initialData ? parseLocation(initialData.location) : null
   const dt = splitDateTime(initialData?.date_time)
@@ -176,6 +178,10 @@ export default function NewPostForm({
       setSigungu(getSigunguOptions('서울특별시')[0] ?? '')
       setDetailLocation('')
       setPickedLocation(null)
+
+      await queryClient.invalidateQueries({
+        queryKey: ["posts"],
+      })
 
       router.push('/')
     } catch (err: any) {
