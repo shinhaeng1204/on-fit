@@ -8,7 +8,7 @@ export interface RecruitStatusProps {
 }
 
 /* 실력 */
-export type BadgeType = "브론즈" | "실버" | "골드" | "플레티넘" | "초심자";
+export type BadgeType = "첫걸음" | "초심자" | "활동가" | "베테랑" | "레전드";
 
 export interface BadgeProps {
   type: BadgeType;

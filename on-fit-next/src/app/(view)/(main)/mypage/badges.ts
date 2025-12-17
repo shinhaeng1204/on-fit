@@ -1,7 +1,7 @@
 // src/app/mypage/badges.ts
 import type { BadgeType } from '@/types/post';
 
-// BadgeSection / TrophySection 에서 쓰는 형태
+// TrophySection / ProfileHeader 등에서 공통으로 사용하는 타입
 export type MyPageBadgeItem = {
   id: string;
   name: string;
@@ -10,55 +10,60 @@ export type MyPageBadgeItem = {
 };
 
 /**
- * 참여 횟수(count)를 기반으로
- * 마이페이지에서 사용할 뱃지 리스트 생성
+ * 참여 완료 횟수(count)를 기반으로
+ * 마이페이지에서 사용할 "누적 트로피 목록" 생성
+ *
+ * - 항상 첫걸음은 포함
+ * - 조건 달성 시 위에서부터 계속 추가
  */
 export function getBadgesByJoinedCount(count: number): MyPageBadgeItem[] {
   const badges: MyPageBadgeItem[] = [];
 
-  // 0회 ~ 9회 참여
-  if (count < 10) {
-    badges.push({
-      id: 'novice',
-      name: '초심자',
-      level: '초심자',
-      description: '아직은 시작 단계예요. 함께 성장해봐요!',
-    });
-  }
+  // ✅ 0회 이상: 첫걸음 (항상 표시)
+  badges.push({
+    id: 'first-step',
+    name: '첫걸음',
+    level: '첫걸음',
+    description: '첫 모임을 향한 시작이에요!',
+  });
 
+  // ✅ 10회 이상
   if (count >= 10) {
     badges.push({
-      id: 'bronze',
-      name: '브론즈 트로피',
-      level: '브론즈',
-      description: '10회 이상 참여한 사용자예요.',
+      id: 'beginner',
+      name: '초심자',
+      level: '초심자',
+      description: '운동 모임에 익숙해지고 있어요.',
     });
   }
 
-  if (count >= 30) {
-    badges.push({
-      id: 'silver',
-      name: '실버 트로피',
-      level: '실버',
-      description: '30회 이상 참여한 사용자예요.',
-    });
-  }
-
+  // ✅ 50회 이상
   if (count >= 50) {
     badges.push({
-      id: 'gold',
-      name: '골드 트로피',
-      level: '골드',
-      description: '50회 이상 참여한 사용자예요.',
+      id: 'active',
+      name: '활동가',
+      level: '활동가',
+      description: '꾸준히 운동에 참여하고 있어요.',
     });
   }
 
-  if (count >= 80) {
+  // ✅ 100회 이상
+  if (count >= 100) {
     badges.push({
-      id: 'platinum',
-      name: '플레티넘 트로피',
-      level: '플레티넘',
-      description: '80회 이상 참여한 사용자예요.',
+      id: 'veteran',
+      name: '베테랑',
+      level: '베테랑',
+      description: '운동 모임의 핵심 멤버예요.',
+    });
+  }
+
+  // ✅ 300회 이상
+  if (count >= 300) {
+    badges.push({
+      id: 'legend',
+      name: '레전드',
+      level: '레전드',
+      description: '온핏의 전설적인 참여자예요.',
     });
   }
 
@@ -67,18 +72,14 @@ export function getBadgesByJoinedCount(count: number): MyPageBadgeItem[] {
 
 /**
  * 참여 완료 횟수(count)를 기반으로
- * 대표 트로피 레벨 하나만 반환하는 함수
+ * "대표 트로피 레벨" 하나만 반환
  *
- * - 80회 이상: 플레티넘
- * - 50회 이상: 골드
- * - 30회 이상: 실버
- * - 10회 이상: 브론즈
- * - 그 미만 : 초심자
+ * 👉 프로필 상단, 팔로워 리스트에서 사용
  */
 export function getBadgeLevelByCompletedCount(count: number): BadgeType {
-  if (count >= 80) return '플레티넘';
-  if (count >= 50) return '골드';
-  if (count >= 30) return '실버';
-  if (count >= 10) return '브론즈';
-  return '초심자';
+  if (count >= 300) return '레전드';
+  if (count >= 100) return '베테랑';
+  if (count >= 50) return '활동가';
+  if (count >= 10) return '초심자';
+  return '첫걸음';
 }
