@@ -94,7 +94,7 @@ export default function ProfileModal({
             </p>
 
             <div className="flex items-center gap-3">
-              {profileId && (
+              {(profileId && profileId !== userId) && (
                 <Button
                   variant={isFollowing ? 'outline' : 'sport'}
                   size="sm"
