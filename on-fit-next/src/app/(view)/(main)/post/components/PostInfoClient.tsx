@@ -25,14 +25,6 @@ export default function PostInfoClient ({postId, roomId, title, hostId} : PostIn
   const handleJoinChat = async () => {
     try {
 
-      if (!roomId) {
-        // 룸이 없으면 생성
-        const res = await api.post("/api/chat", { postId: postId });
-        const { roomId } = res.data;
-        router.push(`/chat/${roomId}`);
-        return;
-      }
-
       const res = await api.post("/api/chat/join", { postId: postId });
       const is_joined = res.data.already;
 
