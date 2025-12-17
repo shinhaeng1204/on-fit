@@ -92,7 +92,7 @@ export default function MainLayoutShell({
               >
                 <MapPin className="w-5 h-5" />
                 <span className="hidden md:block">
-                  {region ?? '현재 위치 설정'}
+                  {region ?? '현재 위치 확인'}
                 </span>
               </button>
 
